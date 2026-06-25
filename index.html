@@ -142,6 +142,13 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .map-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .map-filter-btn{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid rgba(74,124,95,.22);color:var(--sage);background:#fff;cursor:pointer;transition:all .18s;font-family:var(--fb);white-space:nowrap}
 .pf-btn{padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid rgba(74,124,95,.2);color:var(--sage);background:#fff;cursor:pointer;transition:all .2s;font-family:var(--fb);white-space:nowrap}
+.htab{padding:12px 20px;border:none;background:none;font-size:13px;font-weight:600;color:var(--stone);cursor:pointer;border-bottom:3px solid transparent;font-family:var(--fb);white-space:nowrap;transition:all .2s}
+.htab.act{color:var(--pine);border-bottom-color:var(--pine)}
+.htab:hover{color:var(--pine)}
+.h-card{background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:16px;padding:20px;margin-bottom:16px}
+.h-stat{background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:14px;padding:18px;text-align:center}
+.h-stat-n{font-family:var(--fd);font-size:32px;font-weight:700;color:var(--pine)}
+.h-stat-l{font-size:12px;color:var(--stone);margin-top:4px}
 .pf-btn:hover,.pf-btn.act{background:var(--pine);color:#fff;border-color:var(--pine)}
 .save-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:transform .15s;z-index:2}
 .save-btn:hover{transform:scale(1.15)}
@@ -491,7 +498,7 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .pm-tag{font-size:12px;font-weight:500;padding:5px 12px;border-radius:8px;background:var(--mist);color:var(--stone)}
 .pm-tag.act{background:rgba(74,124,95,.12);color:var(--pine);border:1px solid rgba(74,124,95,.2)}
 .pay-btn{width:100%;padding:14px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
-.pay-btn:hover{background:var(--moss)} 
+.pay-btn:hover{background:var(--moss)}
 .pay-note{text-align:center;font-size:11px;color:var(--stone);margin-top:9px}
 .pay-success{text-align:center;padding:24px 10px}
 .ps-icon{font-size:56px;margin-bottom:14px}
@@ -571,7 +578,8 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   </ul>
   <div class="nr">
     <div class="lp"><div class="ld"></div> Live</div>
-    <button class="nb ol" onclick="openBookMo(1)">Book a Stay</button>
+    <button class="nb" onclick="openTravellerProfile()" style="background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);color:var(--pine);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">🏔️ My Profile</button>
+<button class="nb ol" onclick="openBookMo(1)">Book a Stay</button>
     <button class="nb" onclick="goTo('stays-bg')">Find Stays →</button>
     <button class="ham" id="hamBtn" onclick="openMobMenu()" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -695,6 +703,11 @@ input[type=range]{flex:1;accent-color:var(--pine)}
           <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
         </div>
       </div>
+      <div style="position:absolute;bottom:80px;right:12px;z-index:999;display:none;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
+        <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
+          📍 Add a Place
+        </button>
+      </div>
       <div class="map-sidebar">
         <div class="ms-head">
           <div class="ms-title">Destinations <span id="ms-count" style="font-weight:400;color:var(--sage)"></span></div>
@@ -734,7 +747,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       </div>
       <div class="pg">
         <label>Travel Date</label>
-        <input type="date" class="pi" id="ppDate" onchange="runFC()"/>
+        <input type="date" class="pi" id="ppDate" onchange="runFC()" style="font-size:16px;cursor:pointer"/>
       </div>
       <div class="pg">
         <label>Nights</label>
@@ -771,6 +784,27 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 
       <!-- Main advice -->
       <div id="fcadv" style="margin-bottom:16px"></div>
+
+      <!-- 4-Week Calendar Forecast -->
+      <div id="fcWeekly" style="display:none;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:12px">📅 Best Time to Visit — Next 4 Weeks</div>
+        <div id="fcWeeklyGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+        <div style="margin-top:12px;background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px">Week-by-Week Breakdown</div>
+          <div id="fcWeekDetail"></div>
+        </div>
+      </div>
+
+      <!-- Day picker calendar -->
+      <div id="fcCalendar" style="display:none;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:12px">🗓 Pick Your Travel Week</div>
+        <div id="fcCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center"></div>
+        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#2d8a4e;border-radius:3px"></div>Low crowd</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#b07d2a;border-radius:3px"></div>Moderate</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#c0392b;border-radius:3px"></div>Busy</div>
+        </div>
+      </div>
 
       <!-- Location context -->
       <div id="fcLocation" style="display:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.7)"></div>
@@ -853,8 +887,8 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <div class="ft-logo" style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0"><polygon points="18,24 25,10 32,24" fill="rgba(255,255,255,0.15)"/><polygon points="14,24 22,8 30,24" fill="rgba(255,255,255,0.25)"/><polygon points="7,25 18,4 29,25" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.2" stroke-linejoin="round"/><polygon points="7,25 18,4 29,25" fill="rgba(255,255,255,0.75)"/><polygon points="18,4 22,12 14,12" fill="#1a3d2b" opacity="0.5"/><path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg><div><div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;line-height:1.1">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span></div><div style="font-family:sans-serif;font-size:9px;letter-spacing:2px;color:#c9a84c;line-height:1;margin-top:2px">HIMACHAL · OFFBEAT</div></div></div>
   <p>Promoting offbeat travel · Supporting local communities · Preserving Pahari culture</p>
   <p style="margin-top:8px;font-size:11px;opacity:.4">© 2025 PahariPath · Built for Himachal Pradesh · Eco &amp; Responsible Tourism</p>
-  <button onclick="setView('admin')" style="margin-top:12px;background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.3);font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;font-family:inherit">⚙ Admin Login</button>
-  <button onclick="setView('admin')" style="margin-top:12px;background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.3);font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;font-family:inherit">⚙ Admin Login</button>
+  <!-- Hidden access: type "pahari" anywhere for admin, go to /#host for host login -->
+<div style="margin-top:12px;height:20px" id="secretZone" onclick="handleSecretClick()"></div>
 </footer>
 </div>
 <div style="margin-top:10px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
@@ -864,6 +898,62 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us</a></div><!-- /home -->
 
 <!-- ADMIN LOGIN -->
+<!-- HOST LOGIN -->
+<div id="view-host-login" class="view">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2d5a40,#1a3d2b);padding:20px">
+    <div style="background:#fff;border-radius:20px;padding:40px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.25);text-align:center">
+      <div style="width:52px;height:52px;background:var(--pine);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px">🏡</div>
+      <div style="font-family:var(--fd);font-size:26px;color:var(--pine);margin-bottom:6px">Host Login</div>
+      <p style="font-size:13px;color:var(--stone);margin-bottom:28px;line-height:1.6">Welcome back. Manage your PahariPath listing, view bookings and guest feedback.</p>
+      <div style="margin-bottom:14px;text-align:left">
+        <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px">Email</label>
+        <input type="email" id="hostEmail" class="fi" placeholder="your@email.com" onkeydown="if(event.key==='Enter')document.getElementById('hostPass').focus()"/>
+      </div>
+      <div style="margin-bottom:20px;text-align:left">
+        <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px">Password</label>
+        <input type="password" id="hostPass" class="fi" placeholder="••••••••" onkeydown="if(event.key==='Enter')doHostLogin()"/>
+      </div>
+      <div id="hostLoginErr" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px;text-align:left"></div>
+      <button onclick="doHostLogin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Sign In →</button>
+      <button onclick="setView('home')" style="width:100%;padding:10px;background:none;border:none;font-size:13px;color:var(--stone);cursor:pointer;margin-top:12px;font-family:var(--fb)">← Back to site</button>
+      <p style="font-size:11px;color:var(--stone);margin-top:16px;opacity:.6">Not registered? <a href="#" onclick="showHostRegister()" style="color:var(--pine);font-weight:600">Register as a Host →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- HOST DASHBOARD -->
+<div id="view-host" class="view">
+  <div style="min-height:100vh;background:#f4f5f2">
+    <!-- Host nav -->
+    <div style="background:var(--pine);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:22px">🏡</div>
+        <div>
+          <div style="font-family:var(--fd);font-size:16px;color:#fff;font-weight:600">Host Dashboard</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6)" id="hostWelcome">Welcome</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="setView('home')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--fb)">← Site</button>
+        <button onclick="doHostLogout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--fb)">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Host tabs -->
+    <div style="background:#fff;border-bottom:1px solid #eee;padding:0 24px;display:flex;gap:0;overflow-x:auto">
+      <button class="htab act" onclick="hTab('overview',this)">📊 Overview</button>
+      <button class="htab" onclick="hTab('bookings',this)">📋 Bookings</button>
+      <button class="htab" onclick="hTab('guests',this)">👥 Guests</button>
+      <button class="htab" onclick="hTab('listing',this)">🏡 My Listing</button>
+      <button class="htab" onclick="hTab('crowd',this)">🚦 Crowd Update</button>
+      <button class="htab" onclick="hTab('earnings',this)">💰 Earnings</button>
+    </div>
+
+    <!-- Host content -->
+    <div style="padding:24px;max-width:900px;margin:0 auto" id="hostContent"></div>
+  </div>
+</div>
+
 <div id="view-admin-login" class="view">
   <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a3d2b,#2d5a40);padding:20px">
     <div style="background:#fff;border-radius:20px;padding:40px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.25);text-align:center">
@@ -912,6 +1002,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="adm-ni" onclick="adTab('feedback',this)">⭐ Host Feedback</div>
       <div class="adm-ni" onclick="adTab('ngo',this)">🤝 NGO / Clean-ups</div>
       <div class="adm-ni" onclick="adTab('media',this)">📷 Media / 360°</div>
+      <div class="adm-ni" onclick="adTab('pins',this)">📍 Community Pins</div>
       <div class="adm-ni" onclick="adTab('profiles',this)">🏅 Traveller Profiles</div>
       <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:10px">
         <div class="adm-ni" onclick="setView('home')">← Back to Site</div>
@@ -936,6 +1027,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
           <button class="pd-tab act" onclick="pdTab(this,'photo')">📷 Photos</button>
           <button class="pd-tab" onclick="pdTab(this,'vtour')">🌐 Virtual Tour</button>
           <button class="pd-tab" onclick="pdTab(this,'video')">▶ Videos</button>
+          <button class="pd-tab" onclick="pdTab(this,'forecast')">📅 Forecast</button>
         </div>
         <div id="pdPhotoSec">
           <div class="pd-media" id="pdmedia"></div>
@@ -944,6 +1036,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
         <div id="pdVtourSec" style="display:none">
           <div class="vtour" id="vtourBox"></div>
         </div>
+        <div id="pdForecastSec" style="display:none;padding:4px 0"></div>
         <div id="pdVideoSec" style="display:none">
           <div id="pdvids" class="vg"></div>
           <div id="pdvid-empty" style="display:none;padding:40px;text-align:center;background:#f5f5f3;border-radius:12px;color:var(--stone);font-size:13px">No videos added yet. Add via Admin → Media.</div>
@@ -1204,6 +1297,224 @@ const ALL=[
 
 
 
+// ═══ HOST AUTH + DASHBOARD ═══
+let _hostUser = null;
+let _hostStay = null;
+
+async function doHostLogin(){
+  const email = (document.getElementById('hostEmail')?.value||'').trim();
+  const pass  = document.getElementById('hostPass')?.value||'';
+  const errEl = document.getElementById('hostLoginErr');
+  if(!email||!pass){errEl.textContent='Please enter email and password';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const {data,error} = await _sb.auth.signInWithPassword({email,password:pass});
+  if(error){
+    errEl.textContent='Incorrect email or password';errEl.style.display='block';return;
+  }
+  _hostUser = data.user;
+  // Find their stay by matching email to contact or a hosts table
+  const {data:stays} = await _sb.from('stays').select('*').eq('host_email', email);
+  _hostStay = stays&&stays.length ? stays[0] : null;
+
+  // If no stay found by email, check if they have a partner application
+  if(!_hostStay){
+    const {data:apps} = await _sb.from('partner_applications').select('*').eq('phone', email).limit(1);
+    if(apps&&apps.length) _hostStay = {name: apps[0].property_name, loc: apps[0].location, pn: apps[0].price_per_night, id: null};
+  }
+
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-host').classList.add('active');
+  window.scrollTo(0,0);
+  const wel = document.getElementById('hostWelcome');
+  if(wel) wel.textContent = _hostStay ? `Managing: ${_hostStay.name}` : `Welcome, ${email.split('@')[0]}`;
+  hTab('overview', document.querySelector('.htab'));
+}
+
+async function doHostLogout(){
+  await _sb.auth.signOut();
+  _hostUser=null; _hostStay=null;
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-home').classList.add('active');
+  window.scrollTo(0,0);
+  toast('Signed out of host dashboard');
+}
+
+function hTab(tab, btn){
+  document.querySelectorAll('.htab').forEach(b=>b.classList.remove('act'));
+  if(btn) btn.classList.add('act');
+  const el = document.getElementById('hostContent');
+
+  if(tab==='overview'){
+    const stay = _hostStay;
+    el.innerHTML=`
+      <h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:20px">📊 Overview</h2>
+      ${stay ? `
+      <div style="background:linear-gradient(135deg,#1a3d2b,#2d5a40);border-radius:20px;padding:24px;color:#fff;margin-bottom:20px">
+        <div style="font-size:28px;margin-bottom:8px">${stay.emoji||'🏡'}</div>
+        <div style="font-family:var(--fd);font-size:22px;font-weight:600">${stay.name}</div>
+        <div style="font-size:13px;opacity:.7;margin-top:4px">📍 ${stay.loc} · ₹${(stay.pn||0).toLocaleString()}/night</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px">
+          ${[{n:'—',l:'Bookings this month'},{n:'—',l:'Avg rating'},{n:'—',l:'Response rate'}].map(s=>`
+          <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:14px;text-align:center">
+            <div style="font-size:24px;font-weight:700">${s.n}</div>
+            <div style="font-size:10px;opacity:.6;margin-top:3px">${s.l}</div>
+          </div>`).join('')}
+        </div>
+      </div>` : `
+      <div class="h-card" style="text-align:center;padding:40px">
+        <div style="font-size:40px;margin-bottom:12px">🏡</div>
+        <div style="font-size:16px;font-weight:600;color:var(--pine);margin-bottom:8px">No listing found</div>
+        <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Your property hasn't been listed yet. Apply to join PahariPath.</p>
+        <button onclick="showPartnerForm()" style="background:var(--pine);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Apply to List Your Property</button>
+      </div>`}
+
+      <div class="h-card">
+        <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:12px">📢 Quick Actions</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <button onclick="hTab('crowd',document.querySelectorAll('.htab')[4])" style="padding:12px;background:#f0f6f2;border:1.5px solid rgba(74,124,95,.2);border-radius:10px;font-size:13px;font-weight:600;color:var(--pine);cursor:pointer;font-family:var(--fb)">🚦 Update Crowd Level</button>
+          <button onclick="hTab('bookings',document.querySelectorAll('.htab')[1])" style="padding:12px;background:#f0f6f2;border:1.5px solid rgba(74,124,95,.2);border-radius:10px;font-size:13px;font-weight:600;color:var(--pine);cursor:pointer;font-family:var(--fb)">📋 View Bookings</button>
+          <button onclick="hTab('guests',document.querySelectorAll('.htab')[2])" style="padding:12px;background:#f0f6f2;border:1.5px solid rgba(74,124,95,.2);border-radius:10px;font-size:13px;font-weight:600;color:var(--pine);cursor:pointer;font-family:var(--fb)">👥 Submit Guest Feedback</button>
+          <button onclick="hTab('listing',document.querySelectorAll('.htab')[3])" style="padding:12px;background:#f0f6f2;border:1.5px solid rgba(74,124,95,.2);border-radius:10px;font-size:13px;font-weight:600;color:var(--pine);cursor:pointer;font-family:var(--fb)">✏️ Edit Listing</button>
+        </div>
+      </div>
+
+      <div class="h-card">
+        <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:12px">📖 Host Guidelines</div>
+        ${[
+          ['✅','Respond to bookings within 2 hours','Faster response = higher ranking on PahariPath'],
+          ['🌱','Encourage eco pledges','Guests who take pledges earn PAHADI points — they return more often'],
+          ['📸','Add photos to your listing','Stays with photos get 3× more bookings'],
+          ['⭐','Submit guest feedback after checkout','It awards PAHADI points and builds trust'],
+          ['🚦','Update crowd levels weekly','Accurate data keeps guests happy and improves your rating'],
+        ].map(([i,t,d])=>`<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f5f5f3">
+          <div style="font-size:20px">${i}</div>
+          <div><div style="font-size:13px;font-weight:600">${t}</div><div style="font-size:12px;color:var(--stone);margin-top:2px">${d}</div></div>
+        </div>`).join('')}
+      </div>`;
+  }
+
+  else if(tab==='bookings'){
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:20px">📋 Your Bookings</h2><div id="hostBookingList"><div style="text-align:center;padding:40px;color:var(--stone)">Loading bookings…</div></div>`;
+    // Load bookings for this stay
+    if(_hostStay&&_hostStay.id){
+      _sb.from('bookings').select('*').eq('stay_name',_hostStay.name).order('created_at',{ascending:false}).then(({data})=>{
+        const list=document.getElementById('hostBookingList');
+        if(!list)return;
+        if(!data||!data.length){list.innerHTML='<div class="h-card" style="text-align:center;padding:40px;color:var(--stone)">No bookings yet. Share your listing to get started!</div>';return;}
+        list.innerHTML=data.map(b=>`<div class="h-card" style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="font-family:monospace;font-size:11px;background:#f0f6f2;color:var(--pine);padding:3px 8px;border-radius:6px">${b.id}</span>
+              <span style="font-size:11px;font-weight:600;color:${b.status==='confirmed'?'#2d8a4e':'#b07d2a'}">${b.status.toUpperCase()}</span>
+            </div>
+            <div style="font-size:15px;font-weight:600;color:var(--ink)">${b.guest}</div>
+            <div style="font-size:12px;color:var(--stone);margin-top:3px">📅 ${b.dates} · 👥 ${b.guests||'—'} guests · 🌙 ${b.nights||'—'} nights</div>
+            ${b.guest_phone?`<div style="font-size:12px;color:var(--stone);margin-top:2px">📱 <a href="tel:${b.guest_phone}" style="color:var(--pine)">${b.guest_phone}</a></div>`:''}
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:18px;font-weight:700;color:var(--pine)">${b.amount}</div>
+            ${b.eco?'<div style="font-size:11px;color:#2d8a4e;margin-top:3px">🌱 Eco booking</div>':''}
+            <a href="https://wa.me/91${b.guest_phone||''}" target="_blank" style="display:inline-block;margin-top:8px;background:#25D366;color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none">💬 WhatsApp Guest</a>
+          </div>
+        </div>`).join('');
+      });
+    } else {
+      document.getElementById('hostBookingList').innerHTML='<div class="h-card" style="text-align:center;padding:40px;color:var(--stone)">Your property listing needs to be set up first. Contact hello@paharipath.in</div>';
+    }
+  }
+
+  else if(tab==='guests'){
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">👥 Guest Feedback</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Submit feedback after a guest checks out. This awards them PAHADI points and builds their responsible travel profile.</p>
+    <div class="h-card">
+      <div class="fg"><label>Guest Name</label><input class="fi" id="fbGuestName" placeholder="Guest full name"/></div>
+      <div class="fg"><label>Guest Phone</label><input class="fi" id="fbGuestPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+      <div class="fg"><label>Booking Reference</label><input class="fi" id="fbRef" placeholder="PP240001"/></div>
+      <div class="fg"><label>Stay</label><input class="fi" id="fbStay" value="${_hostStay?_hostStay.name:''}" placeholder="Property name"/></div>
+      <div class="fg"><label>Overall Rating</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+          ${['excellent','good','average','poor'].map(r=>`<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="fbRating" value="${r}" ${r==='good'?'checked':''}/> ${r.charAt(0).toUpperCase()+r.slice(1)}</label>`).join('')}
+        </div>
+      </div>
+      <div class="fg"><label>Positive Behaviours (check all that apply)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          ${[['fbB1','Kept property clean'],['fbB2','Followed eco pledges'],['fbB3','Respectful to locals'],['fbB4','Punctual check-in/out'],['fbB5','No single-use plastic'],['fbB6','Supported local vendors'],['fbB7','Gave helpful feedback'],['fbB8','Recommended to others']].map(([id,l])=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="${id}"/> ${l}</label>`).join('')}
+        </div>
+      </div>
+      <div class="fg"><label>Comments (optional)</label><textarea class="fi" id="fbComment" rows="3" placeholder="Any notes about this guest's stay…"></textarea></div>
+      <button onclick="submitHostFeedback()" style="background:var(--pine);color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb);width:100%">Submit Feedback ✓</button>
+    </div>`;
+  }
+
+  else if(tab==='listing'){
+    const s = _hostStay;
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:20px">🏡 My Listing</h2>
+    ${s ? `
+    <div class="h-card">
+      <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:16px">Current Listing Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        ${[['Property Name',s.name],['Location',s.loc],['Type',s.type||'Homestay'],['Price per night',s.price||'₹'+s.pn+'/night'],['Contact',s.contact||'—'],['Eco certified',s.eco?'✅ Yes':'❌ No']].map(([k,v])=>`<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);margin-bottom:4px">${k}</div><div style="font-size:14px;color:var(--ink)">${v}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="h-card">
+      <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:12px">Update Details</div>
+      <p style="font-size:13px;color:var(--stone);margin-bottom:16px">To update your listing details, contact us at <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a> or WhatsApp <a href="https://wa.me/91XXXXXXXXXX" style="color:var(--pine)">+91 XXXXXXXXXX</a>. Full self-edit coming soon.</p>
+    </div>` : '<div class="h-card" style="text-align:center;padding:40px;color:var(--stone)">No listing found. <button onclick="showPartnerForm()" style="background:var(--pine);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-left:10px">Apply Now</button></div>'}`;
+  }
+
+  else if(tab==='crowd'){
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">🚦 Update Crowd Level</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Let travellers know how busy your area is right now. This helps guests plan better and builds trust in PahariPath data.</p>
+    <div class="h-card">
+      <div class="fg"><label>Your Destination</label>
+        <select class="fi" id="hostCrowdPlace">
+          <option value="">— Select your destination —</option>
+          ${ALL.map(p=>`<option value="${p.id}" ${_hostStay&&p.name===_hostStay.loc.split(',')[1]?.trim()?'selected':''}>${p.name} — ${p.district}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg">
+        <label>Current Crowd Level: <strong id="hostCrowdVal">50%</strong></label>
+        <input type="range" id="hostCrowdRange" min="0" max="100" value="50" oninput="document.getElementById('hostCrowdVal').textContent=this.value+'%'"
+          style="width:100%;margin-top:8px;accent-color:var(--pine)"/>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--stone);margin-top:4px">
+          <span>🟢 Empty</span><span>🟡 Moderate</span><span>🔴 Very Crowded</span>
+        </div>
+      </div>
+      <div class="fg"><label>Notes (optional)</label><input class="fi" id="hostCrowdNote" placeholder="e.g. Weekend festival, road blocked, school holidays…"/></div>
+      <button onclick="hostSaveCrowd()" style="background:var(--pine);color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb);width:100%">Update Crowd Level ✓</button>
+    </div>
+    <div class="h-card" style="background:#f0f6f2">
+      <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:8px">Why this matters</div>
+      <p style="font-size:13px;color:var(--stone);line-height:1.7">Your crowd updates directly change what travellers see on the PahariPath map and destination cards. Accurate data means guests arrive with the right expectations — and leave better reviews.</p>
+    </div>`;
+  }
+
+  else if(tab==='earnings'){
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:20px">💰 Earnings</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+      ${[['₹—','This month'],['₹—','Total earned'],['—','Bookings total']].map(([n,l])=>`<div class="h-stat"><div class="h-stat-n">${n}</div><div class="h-stat-l">${l}</div></div>`).join('')}
+    </div>
+    <div class="h-card">
+      <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:12px">How earnings work</div>
+      ${[['💳','Guest pays full amount via PahariPath (Razorpay)'],['📊','PahariPath deducts 10-15% platform commission'],['💸','Balance transferred to your bank within 48 hours of check-in'],['📱','You get WhatsApp notification for every new booking']].map(([i,t])=>`<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f5f5f3"><div style="font-size:20px">${i}</div><div style="font-size:13px;color:var(--ink)">${t}</div></div>`).join('')}
+      <p style="font-size:12px;color:var(--stone);margin-top:14px">For payout queries: <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a></p>
+    </div>`;
+  }
+}
+
+async function hostSaveCrowd(){
+  const pid = parseInt(document.getElementById('hostCrowdPlace')?.value||'0');
+  const val = parseInt(document.getElementById('hostCrowdRange')?.value||'50');
+  if(!pid){toast('Please select your destination');return;}
+  const {error}=await _sb.from('crowd_overrides').upsert({place_id:pid,crowd_value:val,updated_at:new Date().toISOString()},{onConflict:'place_id'});
+  if(error){toast('Error: '+error.message);return;}
+  const p=ALL.find(x=>x.id===pid);if(p)p.crowd=val;
+  CROWD_OVR[pid]=val;
+  if(typeof renderCrowd==='function')renderCrowd();
+  if(typeof renderMap==='function')renderMap();
+  toast(`✓ Crowd level updated to ${val}% — live for all travellers now`);
+}
+
 // ═══ ERROR BOUNDARY ═══
 window.onerror = function(msg, src, line, col, err){
   console.error('PahariPath Error:', msg, 'at', src+':'+line);
@@ -1265,7 +1576,7 @@ async function ppInit(){
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3d2b;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;z-index:9999;font-family:DM Sans,sans-serif';
   t.textContent='Loading PahariPath…';
   document.body.appendChild(t);
-  await Promise.all([loadStays(), loadCrowdOverrides(), loadZoneCaps(), loadNgoActivities(), loadHostFeedbacks()]);
+  await Promise.all([loadStays(), loadCrowdOverrides(), loadZoneCaps(), loadNgoActivities(), loadHostFeedbacks(), loadPlaceMedia()]);
   document.body.removeChild(t);
   const {data:{session}}=await _sb.auth.getSession();
   if(session){ adminLoggedIn=true; await loadBookings(); }
@@ -1455,7 +1766,52 @@ const ALTS=[
 // BOOKINGS loaded from Supabase — see let BOOKINGS=[] above
 
 // Media store (images/videos per place id) — still local, no backend needed
-let MEDIA = (function(){try{return JSON.parse(localStorage.getItem('pp_media')||'{}')}catch(e){return {}}})();
+// MEDIA — now loaded from Supabase place_media table
+let MEDIA = {};
+
+async function loadPlaceMedia(){
+  const {data}=await _sb.from('place_media').select('*');
+  if(data) data.forEach(r=>{ MEDIA[r.place_id]={videos:r.videos||[],images:r.images||[]}; });
+}
+
+async function loadAdminMedia(){
+  const pid=document.getElementById('mediaDestSel')?.value;
+  const listEl=document.getElementById('adminMediaList');
+  if(!pid||!listEl) return;
+  const {data}=await _sb.from('place_media').select('*').eq('place_id',parseInt(pid)).maybeSingle();
+  const videos=data?.videos||[];
+  listEl.innerHTML=videos.length
+    ? `<div style="font-size:12px;font-weight:700;color:var(--stone);margin-bottom:8px;text-transform:uppercase">Saved Videos (${videos.length})</div>`
+      +videos.map((v,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0ee">
+        <div style="flex:1;font-size:12px;color:#444;word-break:break-all">${v}</div>
+        <button onclick="adminDeleteMedia(${pid},${i})" style="background:#fee;border:1px solid #fcc;color:#c0392b;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Remove</button>
+      </div>`).join('')
+    : '<div style="font-size:13px;color:var(--stone);padding:12px 0">No videos added yet for this destination.</div>';
+}
+
+async function adminSaveMedia(){
+  const pid=parseInt(document.getElementById('mediaDestSel')?.value||'0');
+  const url=(document.getElementById('mediaYtUrl')?.value||'').trim();
+  if(!pid){toast('Please select a destination');return;}
+  if(!url||!url.includes('youtube')){toast('Please enter a valid YouTube URL');return;}
+  const {data:existing}=await _sb.from('place_media').select('*').eq('place_id',pid).maybeSingle();
+  const videos=[...(existing?.videos||[]),url];
+  const {error}=await _sb.from('place_media').upsert({place_id:pid,videos,images:existing?.images||[]},{onConflict:'place_id'});
+  if(error){toast('Error saving: '+error.message);return;}
+  MEDIA[pid]={...(MEDIA[pid]||{}),videos};
+  document.getElementById('mediaYtUrl').value='';
+  toast('✓ Video saved — will appear in place detail for all users');
+  loadAdminMedia();
+}
+
+async function adminDeleteMedia(pid,idx){
+  const {data:existing}=await _sb.from('place_media').select('*').eq('place_id',pid).maybeSingle();
+  const videos=(existing?.videos||[]).filter((_,i)=>i!==idx);
+  await _sb.from('place_media').upsert({place_id:pid,videos,images:existing?.images||[]},{onConflict:'place_id'});
+  MEDIA[pid]={...(MEDIA[pid]||{}),videos};
+  toast('Video removed');
+  loadAdminMedia();
+}
 // Crowd overrides — loaded from Supabase on init, fallback to empty
 let CROWD_OVR = {};
 
@@ -1605,6 +1961,7 @@ function makePopupHTML(p){
     ${nearbyHTML}
     <div class="lf-acts">
       <button class="lf-btn lf-btn-p" onclick="openPD(${p.id});_lmap&&_lmap.closePopup()">Explore →</button>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${PLACE_COORDS[p.id]?PLACE_COORDS[p.id][0]+','+PLACE_COORDS[p.id][1]:''}" target="_blank" rel="noopener" class="lf-btn" style="background:#4285f4;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center">🧭 Go</a>
       <button class="lf-btn lf-btn-s" onclick="waSharePlace(${p.id},'${p.name.replace(/'/g,"\\'")}')">📲 Share</button>
     </div>
   </div>`;
@@ -1623,10 +1980,21 @@ function buildSidebar(filter){
   el.innerHTML=list.map(p=>{
     const c=getCrowd(p.crowd,p.zone);
     const hasStay=stayPlaceIds.has(p.id);
+    const cl=c<40?'#2d8a4e':c<70?'#b07d2a':'#c0392b';
     return`<div class="ms-item" id="ms-${p.id}" onclick="flyTo(${p.id})">
       <span class="ms-emoji">${p.emoji}</span>
-      <div class="ms-info"><div class="ms-name">${p.name}${hasStay?' <span style="font-size:9px;background:#e6f4ec;color:#1e6b3c;padding:1px 5px;border-radius:8px;font-weight:600">STAY</span>':''}</div><div class="ms-sub">${p.district}${p.altitude?' · '+p.altitude:''}</div></div>
-      <div class="ms-dot" style="background:${cColor(c)}" title="${c}% busy"></div>
+      <div class="ms-info">
+        <div class="ms-name">${p.name}${hasStay?` <span style="font-size:9px;background:#e6f4ec;color:#1e6b3c;padding:1px 5px;border-radius:8px;font-weight:600">STAY</span>`:''}</div>
+        <div class="ms-sub">${p.district}${p.altitude?' · '+p.altitude:''}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <div style="flex:1;background:#eee;border-radius:99px;height:4px"><div style="width:${c}%;background:${cl};border-radius:99px;height:4px"></div></div>
+          <span style="font-size:10px;font-weight:700;color:${cl}">${c}%</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <button onclick="event.stopPropagation();openPD(${p.id})" style="background:var(--pine);color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap">Explore</button>
+        ${hasStay?'<button onclick="event.stopPropagation();bookFromMap('+p.id+')" style="background:#25D366;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap">Book</button>':''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -1644,6 +2012,12 @@ function highlightSidebarItem(id){
   document.querySelectorAll('.ms-item').forEach(el=>el.classList.remove('highlighted'));
   const el=document.getElementById('ms-'+id);
   if(el){el.classList.add('highlighted');el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+
+function bookFromMap(placeId){
+  const stay=STAYS.find(s=>s.placeid===placeId);
+  if(stay) openBookMo(stay.id);
+  else toast('No stays listed here yet — check back soon!');
 }
 
 function flyTo(id){
@@ -1789,6 +2163,20 @@ function initMap(){
   });
 
   buildSidebar('all');
+  loadCommunityPins();
+
+  // Render POI layer on zoom change
+  _lmap.on('zoomend', ()=>{ buildSidebar(_mFilter); renderPOILayer(); });
+
+  // Click on map to add pin when in add mode
+  _lmap.on('click', (e)=>{
+    if(!_addPinMode) return;
+    if(_pendingPin) _lmap.removeLayer(_pendingPin);
+    _pendingPin = L.marker([e.latlng.lat,e.latlng.lng],{
+      icon: L.divIcon({html:'<div style="font-size:28px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))">📍</div>',className:'',iconSize:[30,30],iconAnchor:[15,30]})
+    }).addTo(_lmap);
+    openAddPinForm(e.latlng.lat, e.latlng.lng);
+  });
 
   // Invalidate size after CSS transition
   setTimeout(()=>_lmap.invalidateSize(),300);
@@ -1996,9 +2384,8 @@ function renderStays(){
         <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">⭐ ${s.rating}</span></div>
         <div class="s-contact">📞 ${s.contact}</div>
         <div style="display:flex;gap:7px" onclick="event.stopPropagation()">
-          <button class="s-btn" onclick="openBookMo(${s.id})" style="flex:1">Book / Pay</button>
-          <button class="s-btn" onclick="waBook(${s.id})" style="flex:1;background:#25D366">WhatsApp</button>
-          ${photos.length?`<button class="s-btn" onclick="openStayPhotos(${s.id},0)" style="flex:0 0 auto;background:#2d2d2d;padding:9px 12px">📷</button>`:''}
+          <button class="s-btn" onclick="openBookMo(${s.id})" style="flex:1;font-weight:700">🔒 Book / Pay</button>
+          <button class="s-btn" onclick="waBook(${s.id})" style="flex:1;background:#25D366;color:#fff;border:none;font-weight:600">💬 WhatsApp</button>
         </div>
       </div>
     </div>`;
@@ -2027,9 +2414,8 @@ function renderStayCard(s){
       <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">⭐ ${s.rating}</span></div>
       <div class="s-contact">📞 ${s.contact}</div>
       <div style="display:flex;gap:7px" onclick="event.stopPropagation()">
-        <button class="s-btn" onclick="openBookMo(${s.id})" style="flex:1">Book / Pay</button>
-        <button class="s-btn" onclick="waBook(${s.id})" style="flex:1;background:#25D366">WhatsApp</button>
-        ${photos.length?`<button class="s-btn" onclick="openStayPhotos(${s.id},0)" style="flex:0 0 auto;background:#2d2d2d;padding:9px 12px">📷</button>`:''}
+        <button class="s-btn" onclick="openBookMo(${s.id})" style="flex:1;font-weight:700">🔒 Book / Pay</button>
+        <button class="s-btn" onclick="waBook(${s.id})" style="flex:1;background:#25D366;color:#fff;border:none;font-weight:600">💬 WhatsApp</button>
       </div>
     </div>
   </div>`;
@@ -2266,6 +2652,163 @@ function fltr(btn,f){
 }
 
 // ═══ FORECAST ═══
+function renderWeeklyForecast(p, selectedDate){
+  const weeklyEl = document.getElementById('fcWeekly');
+  const calEl = document.getElementById('fcCalendar');
+  const gridEl = document.getElementById('fcWeeklyGrid');
+  const detailEl = document.getElementById('fcWeekDetail');
+  const calGridEl = document.getElementById('fcCalGrid');
+  if(!weeklyEl||!gridEl) return;
+
+  const ZS_MAP = (typeof ZS !== 'undefined') ? ZS : {};
+  const seas_arr = ZS_MAP[p.zone||'kullu'] || ZS_MAP.kullu || [];
+
+  // Day multipliers (Mon-Sun)
+  const dM = [1.3, 1, 0.95, 0.95, 0.97, 1.15, 1.5];
+  const mM = {good:1, warn:1.3, rain:0.7, snow:0.3, dry:0.9};
+
+  function crowdForDate(d){
+    const mo = d.getMonth();
+    const dy = d.getDay();
+    const seas = seas_arr[mo] || 'good';
+    return Math.min(98, Math.round(p.crowd * dM[dy] * (mM[seas]||1)));
+  }
+
+  function crowdColor(c){ return c<40?'#2d8a4e':c<70?'#b07d2a':'#c0392b'; }
+  function crowdLabel(c){ return c<40?'Low':c<70?'Moderate':'Busy'; }
+  function crowdEmoji(c){ return c<40?'🟢':c<70?'🟡':'🔴'; }
+
+  // Generate 4 weeks from today
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const weeks = [];
+
+  for(let w=0; w<4; w++){
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() + (w*7));
+    const days = [];
+    let weekTotal = 0;
+    for(let d=0; d<7; d++){
+      const day = new Date(weekStart);
+      day.setDate(weekStart.getDate() + d);
+      const c = crowdForDate(day);
+      weekTotal += c;
+      days.push({date:day, crowd:c});
+    }
+    const avgCrowd = Math.round(weekTotal/7);
+    weeks.push({weekStart, days, avgCrowd});
+  }
+
+  // Best week
+  const bestWeek = weeks.reduce((a,b)=>a.avgCrowd<b.avgCrowd?a:b);
+
+  // ── 4-week summary cards ──
+  gridEl.innerHTML = weeks.map((w,i)=>{
+    const label = i===0?'This Week':i===1?'Next Week':`Week ${i+1}`;
+    const dateRange = `${w.weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} – ${new Date(w.weekStart.getTime()+6*86400000).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`;
+    const isBest = w===bestWeek;
+    const isSelected = selectedDate >= w.days[0].date && selectedDate <= w.days[6].date;
+    return `<div onclick="selectForecastWeek(${i})" style="
+      background:${isSelected?'rgba(255,255,255,.18)':isBest?'rgba(58,171,102,.2)':'rgba(255,255,255,.06)'};
+      border:1.5px solid ${isSelected?'rgba(255,255,255,.5)':isBest?'rgba(58,171,102,.5)':'rgba(255,255,255,.1)'};
+      border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;transition:all .2s
+    ">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px">${label}</div>
+      <div style="font-size:22px;margin-bottom:4px">${crowdEmoji(w.avgCrowd)}</div>
+      <div style="font-size:18px;font-weight:700;color:#fff">${w.avgCrowd}%</div>
+      <div style="font-size:10px;color:${crowdColor(w.avgCrowd)};font-weight:600;margin-top:2px">${crowdLabel(w.avgCrowd)}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:4px">${dateRange}</div>
+      ${isBest?'<div style="font-size:9px;background:rgba(58,171,102,.3);color:#7fd4a0;border-radius:20px;padding:2px 7px;margin-top:5px;font-weight:600">✓ BEST WEEK</div>':''}
+    </div>`;
+  }).join('');
+
+  // ── Week detail breakdown ──
+  detailEl.innerHTML = weeks.map((w,i)=>{
+    const label = i===0?'This Week':i===1?'Next Week':`Week ${i+1} (${w.weekStart.toLocaleDateString('en-IN',{month:'long'})})`;
+    const dateRange = `${w.weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} – ${new Date(w.weekStart.getTime()+6*86400000).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`;
+    const isBest = w===bestWeek;
+    // Best day in week
+    const bestDay = w.days.reduce((a,b)=>a.crowd<b.crowd?a:b);
+    const worstDay = w.days.reduce((a,b)=>a.crowd>b.crowd?a:b);
+    const seas = seas_arr[w.weekStart.getMonth()]||'good';
+    const weatherMap = {good:'☀️ Clear',warn:'🌤 Warm',rain:'🌧 Monsoon',snow:'❄️ Snow',dry:'🌥 Cool'};
+
+    return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+        <div style="font-size:13px;font-weight:600;color:#fff">${label} <span style="font-size:11px;color:rgba(255,255,255,.4)">${dateRange}</span></div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${isBest?'<span style="font-size:10px;background:rgba(58,171,102,.3);color:#7fd4a0;border-radius:20px;padding:2px 8px;font-weight:700">BEST</span>':''}
+          <span style="font-size:12px;font-weight:700;color:${crowdColor(w.avgCrowd)}">${crowdEmoji(w.avgCrowd)} ${w.avgCrowd}% avg</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:3px;margin-bottom:6px">
+        ${w.days.map(d=>{
+          const isToday=d.date.toDateString()===today.toDateString();
+          const isSel=d.date.toDateString()===selectedDate.toDateString();
+          return `<div style="flex:1;text-align:center">
+            <div style="font-size:9px;color:rgba(255,255,255,.4)">${['S','M','T','W','T','F','S'][d.date.getDay()]}</div>
+            <div style="height:32px;background:${crowdColor(d.crowd)};border-radius:4px;margin:3px 0;opacity:${0.4+d.crowd/150};${isSel?'outline:2px solid #fff;':''}" title="${d.crowd}%"></div>
+            <div style="font-size:9px;color:rgba(255,255,255,.5)">${d.date.getDate()}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:12px;font-size:11px;color:rgba(255,255,255,.5);flex-wrap:wrap">
+        <span>🌤 ${weatherMap[seas]||'Clear'}</span>
+        <span>✅ Best day: ${bestDay.date.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})} (${bestDay.crowd}%)</span>
+        <span>⚠️ Avoid: ${worstDay.date.toLocaleDateString('en-IN',{weekday:'short'})} (${worstDay.crowd}%)</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── 30-day calendar grid ──
+  const days7 = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let calHTML = days7.map(d=>`<div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.35);padding:4px 0">${d}</div>`).join('');
+
+  // Fill blank days before month start
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  for(let i=0;i<monthStart.getDay();i++) calHTML+=`<div></div>`;
+
+  // 30 days from today
+  for(let d=0;d<30;d++){
+    const day = new Date(today);
+    day.setDate(today.getDate()+d);
+    const c = crowdForDate(day);
+    const isToday = d===0;
+    const isSel = day.toDateString()===selectedDate.toDateString();
+    calHTML+=`<div onclick="selectCalDay(${day.getTime()})" style="
+      background:${isSel?'#fff':crowdColor(c)};
+      color:${isSel?'var(--pine)':'#fff'};
+      border-radius:6px;padding:5px 2px;font-size:11px;font-weight:${isToday||isSel?'700':'400'};
+      opacity:${0.35+c/140};cursor:pointer;text-align:center;
+      border:${isToday?'1.5px solid #fff':'1px solid transparent'};
+      transition:all .15s
+    " title="${day.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})} · ${c}% crowd">
+      ${day.getDate()}
+    </div>`;
+  }
+  calGridEl.innerHTML = calHTML;
+
+  weeklyEl.style.display='block';
+  calEl.style.display='block';
+}
+
+function selectForecastWeek(weekIdx){
+  const today = new Date();
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() + (weekIdx*7));
+  // Set to Monday of that week
+  const mon = new Date(weekStart);
+  mon.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+  document.getElementById('ppDate').value = mon.toISOString().split('T')[0];
+  runFC();
+}
+
+function selectCalDay(timestamp){
+  const d = new Date(timestamp);
+  document.getElementById('ppDate').value = d.toISOString().split('T')[0];
+  runFC();
+}
+
 function detectLocation(){
   const btn=document.getElementById('locBtnText');
   const icon=document.getElementById('locBtnIcon');
@@ -2350,14 +2893,7 @@ function runFC(){
     distInfo=`📍 ${km}km from your location · ~${hrs}h drive via hill roads`;
   }
 
-  // Budget estimate
   const stayMatch=STAYS.filter(s=>s.placeid===p.id);
-  const avgStay=stayMatch.length?Math.round(stayMatch.reduce((s,x)=>s+x.pn,0)/stayMatch.length):2000;
-  const tCount=parseInt(travellers)||2;
-  const stayTotal=avgStay*nights;
-  const fuelEst=distInfo?Math.round(parseInt(distInfo)*3.5/10)*10:0;
-  const foodEst=tCount*600*nights;
-  const totalEst=stayTotal+foodEst+(fuelEst||2000);
 
   // Update header
   document.getElementById('planEmoji').textContent=p.emoji||'🏔️';
@@ -2373,7 +2909,7 @@ function runFC(){
     {i:ls.i,l:'Road Safety',c:ls.c,v:ls.l,s:ls.d.substring(0,40)},
     {i:sf.i,l:'Snow Status',c:sf.c,v:sf.l,s:sf.d.substring(0,40)},
     {i:'📅',l:'Best Season',c:'g',v:p.bestTime||'Year round',s:p.altitude||'—'},
-    {i:'💰',l:'Est. Budget',c:'g',v:'₹'+totalEst.toLocaleString(),s:`for ${travellers} · ${nights}N`},
+    // Budget estimate removed per user request
   ];
   document.getElementById('fccards').innerHTML=cards.map(c=>`<div class="fcc fc-${c.c}"><div class="fcc-i">${c.i}</div><div class="fcc-l">${c.l}</div><div class="fcc-v">${c.v}</div><div class="fcc-s">${c.s}</div></div>`).join('');
   document.getElementById('fcadv').innerHTML=`<div class="fc-adv fca-${ac}">${adv}</div>`;
@@ -2474,6 +3010,9 @@ function runFC(){
     ctaEl.style.display='flex';
   } else ctaEl.style.display='none';
 
+  // ── Weekly forecast ──
+  renderWeeklyForecast(p, date);
+
   document.getElementById('planRes').classList.add('show');
   document.getElementById('plansec').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -2486,7 +3025,7 @@ function openPD(id){addRecentlyViewed(id);
   const c=getCrowd(p.crowd,p.zone);
   const media=MEDIA[id]||{images:[],videos:[]};
   document.getElementById('pdnav').textContent=p.name;
-  document.getElementById('pdname').textContent=p.name;
+  document.getElementById('pdname').textContent=p.name; document.getElementById('pdname').dataset.id=p.id;
   document.getElementById('pddist').textContent=`${p.district} District, Himachal Pradesh${p.altitude?' · '+p.altitude:''}`;
   document.getElementById('pdaname').textContent=p.name;
   document.getElementById('pdsname').textContent=p.name;
@@ -2561,6 +3100,114 @@ function pdTab(btn,t){
   document.getElementById('pdPhotoSec').style.display=t==='photo'?'block':'none';
   document.getElementById('pdVtourSec').style.display=t==='vtour'?'block':'none';
   document.getElementById('pdVideoSec').style.display=t==='video'?'block':'none';
+  const fcSec=document.getElementById('pdForecastSec');
+  if(fcSec) fcSec.style.display=t==='forecast'?'block':'none';
+  if(t==='forecast'){
+    const pid=parseInt(document.getElementById('pdname')?.dataset?.id||'0');
+    const p=ALL.find(x=>x.id===pid);
+    if(p) renderPlaceForecast(p);
+  }
+}
+
+function renderPlaceForecast(p){
+  const el=document.getElementById('pdForecastSec');
+  if(!el)return;
+  const ZS_MAP=(typeof ZS!=='undefined')?ZS:{};
+  const seas_arr=ZS_MAP[p.zone||'kullu']||ZS_MAP.kullu||[];
+  const dM=[1.3,1,0.95,0.95,0.97,1.15,1.5];
+  const mM={good:1,warn:1.3,rain:0.7,snow:0.3,dry:0.9};
+  const weatherMap={good:'☀️ Clear & Pleasant',warn:'🌤 Warm / Busy Season',rain:'🌧 Monsoon Rain',snow:'❄️ Snow / Cold',dry:'🌥 Cool & Dry'};
+
+  function crowdForDate(d){
+    const mo=d.getMonth(),dy=d.getDay();
+    const seas=seas_arr[mo]||'good';
+    return Math.min(98,Math.round(p.crowd*dM[dy]*(mM[seas]||1)));
+  }
+  function cColor(c){return c<40?'#2d8a4e':c<70?'#b07d2a':'#c0392b';}
+  function cEmoji(c){return c<40?'🟢':c<70?'🟡':'🔴';}
+  function cLab(c){return c<40?'Low crowd':c<70?'Moderate':'Busy';}
+
+  const today=new Date(); today.setHours(0,0,0,0);
+  const weeks=[];
+  for(let w=0;w<4;w++){
+    const ws=new Date(today); ws.setDate(today.getDate()+w*7);
+    const days=[];let tot=0;
+    for(let d=0;d<7;d++){
+      const day=new Date(ws); day.setDate(ws.getDate()+d);
+      const c=crowdForDate(day); tot+=c;
+      days.push({date:day,crowd:c});
+    }
+    weeks.push({ws,days,avg:Math.round(tot/7)});
+  }
+  const best=weeks.reduce((a,b)=>a.avg<b.avg?a:b);
+
+  el.innerHTML=`
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);margin-bottom:10px">4-Week Crowd Forecast</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+        ${weeks.map((w,i)=>{
+          const label=i===0?'This Week':i===1?'Next Week':`Week ${i+1}`;
+          const isBest=w===best;
+          const dr=`${w.ws.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}–${new Date(w.ws.getTime()+6*86400000).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`;
+          return `<div onclick="pdSelectWeek(${w.ws.getTime()})" style="background:${isBest?'#e8f4ed':'#f8faf8'};border:1.5px solid ${isBest?'#2d8a4e':'rgba(74,124,95,.15)'};border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer">
+            <div style="font-size:9px;font-weight:700;color:var(--stone);text-transform:uppercase;margin-bottom:4px">${label}</div>
+            <div style="font-size:20px">${cEmoji(w.avg)}</div>
+            <div style="font-size:16px;font-weight:700;color:${cColor(w.avg)};margin:2px 0">${w.avg}%</div>
+            <div style="font-size:9px;color:${cColor(w.avg)};font-weight:600">${cLab(w.avg)}</div>
+            <div style="font-size:8px;color:var(--stone);margin-top:3px">${dr}</div>
+            ${isBest?'<div style="font-size:8px;background:#d5ead9;color:#1a6b3a;border-radius:10px;padding:2px 5px;margin-top:4px;font-weight:700">✓ BEST</div>':''}
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- Week bars -->
+      ${weeks.map((w,i)=>{
+        const label=i===0?'This Week':i===1?'Next Week':`Week ${i+1}`;
+        const seas=seas_arr[w.ws.getMonth()]||'good';
+        const bestDay=w.days.reduce((a,b)=>a.crowd<b.crowd?a:b);
+        const worstDay=w.days.reduce((a,b)=>a.crowd>b.crowd?a:b);
+        return `<div style="margin-bottom:12px;padding:12px;background:#f8faf8;border-radius:10px;border:1px solid rgba(74,124,95,.1)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-size:13px;font-weight:600;color:var(--pine)">${label}</div>
+            <div style="font-size:12px;color:${cColor(w.avg)};font-weight:700">${cEmoji(w.avg)} ${w.avg}% avg · ${weatherMap[seas]}</div>
+          </div>
+          <div style="display:flex;gap:3px;align-items:flex-end;height:40px">
+            ${w.days.map(d=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+              <div style="width:100%;background:${cColor(d.crowd)};border-radius:3px 3px 0 0;height:${Math.round(d.crowd*0.38)}px;opacity:.8;min-height:4px"></div>
+              <div style="font-size:8px;color:var(--stone)">${['S','M','T','W','T','F','S'][d.date.getDay()]}</div>
+            </div>`).join('')}
+          </div>
+          <div style="display:flex;gap:10px;margin-top:6px;font-size:11px;flex-wrap:wrap">
+            <span style="color:#2d8a4e">✅ Best: ${bestDay.date.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})} (${bestDay.crowd}%)</span>
+            <span style="color:#c0392b">⚠️ Avoid: ${worstDay.date.toLocaleDateString('en-IN',{weekday:'short'})} (${worstDay.crowd}%)</span>
+          </div>
+        </div>`;
+      }).join('')}
+
+      <div style="background:var(--pine);color:#fff;border-radius:10px;padding:12px 14px;margin-top:4px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">🏆 Best time to visit ${p.name}</div>
+        <div style="font-size:13px">${cEmoji(best.avg)} ${best.ws.toLocaleDateString('en-IN',{day:'numeric',month:'long'})} – ${new Date(best.ws.getTime()+6*86400000).toLocaleDateString('en-IN',{day:'numeric',month:'long'})} · ${best.avg}% crowd</div>
+        <div style="font-size:11px;opacity:.7;margin-top:4px">Also best overall: ${p.bestTime||'Year round'}</div>
+      </div>
+    </div>`;
+}
+
+function pdSelectWeek(ts){
+  // Switch to Plan My Journey with this place and week selected
+  const place=ALL.find(x=>x.id===parseInt(document.getElementById('pdname')?.dataset?.id||'0'));
+  if(!place)return;
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-home').classList.add('active');
+  setTimeout(()=>{
+    document.getElementById('plansec').scrollIntoView({behavior:'smooth'});
+    document.getElementById('ppPlace').value='';
+    const si=document.getElementById('ppPlaceSearch');
+    if(si) si.value=`${place.emoji||'🏔️'} ${place.name} — ${place.district}`;
+    document.getElementById('ppPlace').value=place.id;
+    const d=new Date(ts);
+    document.getElementById('ppDate').value=d.toISOString().split('T')[0];
+    runFC();
+  },300);
 }
 
 // ═══ VIRTUAL TOUR ═══
@@ -2586,12 +3233,178 @@ function buildVtour(p){
       <div class="vt-lbl">📍 ${p.name} · ${p.district} · ${p.altitude||'Himachal Pradesh'}</div>
     </div>
     <div class="vt-ctrl">
-      <button class="vt-btn" onclick="toast('◀ In production: pans 360° left')">◀ Pan Left</button>
-      <button class="vt-btn" onclick="toast('▶ In production: pans 360° right')">Pan Right ▶</button>
-      <button class="vt-btn" onclick="toast('+ In production: zoom in')">+ Zoom</button>
-      <button class="vt-btn" onclick="toast('- In production: zoom out')">− Zoom</button>
-      <span style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.3)">Click ℹ hotspots · Upload panoramas via Admin</span>
+      <button class="vt-btn" onclick="vtPan(-30)">◀ Pan Left</button>
+      <button class="vt-btn" onclick="vtPan(30)">Pan Right ▶</button>
+      <button class="vt-btn" onclick="vtZoom(0.85)">＋ Zoom In</button>
+      <button class="vt-btn" onclick="vtZoom(1.15)">－ Zoom Out</button>
+      <span style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.3)">Drag to pan · Pinch to zoom</span>
     </div>`;
+
+  // Enable drag to pan
+  const canvas=document.querySelector('.vt-canvas');
+  if(canvas){
+    let dragging=false,startX=0,currentOffset=0;
+    canvas.style.cursor='grab';
+    canvas.addEventListener('mousedown',e=>{dragging=true;startX=e.clientX;canvas.style.cursor='grabbing';});
+    canvas.addEventListener('mousemove',e=>{if(!dragging)return;const dx=e.clientX-startX;startX=e.clientX;vtPan(dx*0.3);});
+    canvas.addEventListener('mouseup',()=>{dragging=false;canvas.style.cursor='grab';});
+    canvas.addEventListener('mouseleave',()=>{dragging=false;canvas.style.cursor='grab';});
+    // Touch support
+    let touchStartX=0;
+    canvas.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;},{passive:true});
+    canvas.addEventListener('touchmove',e=>{const dx=e.touches[0].clientX-touchStartX;touchStartX=e.touches[0].clientX;vtPan(dx*0.3);},{passive:true});
+  }
+}
+
+// ═══ VIRTUAL TOUR CONTROLS ═══
+let _vtAngle=0, _vtScale=1;
+function vtPan(deg){
+  _vtAngle+=deg;
+  const sky=document.querySelector('.vt-sky');
+  const mtn=document.querySelector('.vt-mtn');
+  const stars=document.querySelector('.vt-stars');
+  if(sky) sky.style.backgroundPositionX=(_vtAngle*2)+'px';
+  if(mtn) mtn.style.transform=`translateX(${_vtAngle*1.5}px)`;
+  if(stars) stars.style.transform=`translateX(${_vtAngle*0.5}px)`;
+}
+function vtZoom(factor){
+  _vtScale=Math.min(2.5,Math.max(0.6,_vtScale*factor));
+  const canvas=document.querySelector('.vt-canvas');
+  if(canvas) canvas.style.transform=`scale(${_vtScale})`;
+  canvas.style.transformOrigin='center center';
+}
+
+// ═══ POI / COMMUNITY PINS ═══
+const POI_TYPES = {
+  parking:    {icon:'🅿️', label:'Parking'},
+  viewpoint:  {icon:'🌅', label:'Viewpoint'},
+  waterfall:  {icon:'🌊', label:'Waterfall'},
+  dhaba:      {icon:'🍽️', label:'Dhaba / Food'},
+  temple:     {icon:'🛕', label:'Temple / Monastery'},
+  shop:       {icon:'🏪', label:'Shop / Market'},
+  medical:    {icon:'🏥', label:'Medical / Emergency'},
+  petrol:     {icon:'⛽', label:'Petrol Pump'},
+  network:    {icon:'📡', label:'Network Spot'},
+  road_alert: {icon:'⚠️', label:'Road Alert'},
+  campsite:   {icon:'🏕️', label:'Campsite'},
+  glacier:    {icon:'🧊', label:'Glacier / Snow Point'},
+  atm:        {icon:'🏧', label:'ATM'},
+};
+
+let _poiMarkers = [];
+let _poiData = [];
+let _addPinMode = false;
+let _pendingPin = null;
+
+async function loadCommunityPins(){
+  const {data} = await _sb.from('community_pins').select('*').eq('status','approved');
+  _poiData = data||[];
+  if(_lmap) renderPOILayer();
+}
+
+function renderPOILayer(){
+  // Remove old POI markers
+  _poiMarkers.forEach(m=>_lmap.removeLayer(m));
+  _poiMarkers=[];
+  const zoom = _lmap.getZoom();
+  if(zoom < 11) return; // Only show POIs when zoomed in enough
+
+  _poiData.forEach(pin=>{
+    const type = POI_TYPES[pin.type]||{icon:'📍',label:'Place'};
+    const icon = L.divIcon({
+      html:`<div style="font-size:${zoom>13?'22px':'18px'};filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));cursor:pointer">${type.icon}</div>`,
+      className:'',iconSize:[30,30],iconAnchor:[15,15]
+    });
+    const marker = L.marker([pin.lat,pin.lng],{icon})
+      .addTo(_lmap)
+      .on('click',()=>openPOIPopup(pin));
+    _poiMarkers.push(marker);
+  });
+
+  // Show "Add a Place" button when zoomed in enough
+  const addBtn = document.getElementById('addPinBtn');
+  if(addBtn) addBtn.style.display = zoom>=13 ? 'flex' : 'none';
+}
+
+function openPOIPopup(pin){
+  const type = POI_TYPES[pin.type]||{icon:'📍',label:'Place'};
+  const photos = pin.photos||[];
+  const mo = document.getElementById('poiMo');
+  document.getElementById('poiMoContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="font-size:36px">${type.icon}</div>
+      <div>
+        <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">${pin.name}</div>
+        <div style="font-size:12px;color:var(--stone);margin-top:2px">${type.label} · Added by community</div>
+      </div>
+    </div>
+    ${pin.description?`<p style="font-size:13px;color:var(--stone);line-height:1.7;margin-bottom:14px">${pin.description}</p>`:''}
+    ${photos.length?`<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px">
+      ${photos.map(p=>`<img src="${p}" style="height:120px;width:160px;object-fit:cover;border-radius:10px;flex-shrink:0" loading="lazy"/>`).join('')}
+    </div>`:''}
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.lat},${pin.lng}"
+        target="_blank" rel="noopener"
+        style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#4285f4;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;min-width:140px">
+        🧭 Google Maps
+      </a>
+      <a href="https://maps.apple.com/?daddr=${pin.lat},${pin.lng}"
+        target="_blank" rel="noopener"
+        style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#333;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;min-width:140px">
+        🍎 Apple Maps
+      </a>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--stone);text-align:center">📍 ${pin.lat.toFixed(5)}, ${pin.lng.toFixed(5)}</div>
+  `;
+  mo.style.display='flex'; mo.classList.add('open');
+}
+
+function startAddPin(){
+  _addPinMode = true;
+  toast('📍 Tap anywhere on the map to drop a pin');
+  document.getElementById('addPinBtn').innerHTML='❌ Cancel';
+  document.getElementById('addPinBtn').onclick = cancelAddPin;
+  _lmap.getContainer().style.cursor='crosshair';
+}
+
+function cancelAddPin(){
+  _addPinMode=false;
+  _lmap.getContainer().style.cursor='';
+  document.getElementById('addPinBtn').innerHTML='📍 Add a Place';
+  document.getElementById('addPinBtn').onclick=startAddPin;
+  if(_pendingPin){_lmap.removeLayer(_pendingPin);_pendingPin=null;}
+}
+
+function openAddPinForm(lat,lng){
+  _addPinMode=false;
+  _lmap.getContainer().style.cursor='';
+  document.getElementById('addPinBtn').innerHTML='📍 Add a Place';
+  document.getElementById('addPinBtn').onclick=startAddPin;
+  document.getElementById('pinLat').value=lat.toFixed(6);
+  document.getElementById('pinLng').value=lng.toFixed(6);
+  const mo=document.getElementById('addPinMo');
+  mo.style.display='flex'; mo.classList.add('open');
+}
+
+async function submitCommunityPin(){
+  const name=(document.getElementById('pinName')?.value||'').trim();
+  const type=document.getElementById('pinType')?.value||'viewpoint';
+  const desc=(document.getElementById('pinDesc')?.value||'').trim();
+  const lat=parseFloat(document.getElementById('pinLat')?.value||'0');
+  const lng=parseFloat(document.getElementById('pinLng')?.value||'0');
+  const submitter=(document.getElementById('pinSubmitter')?.value||'').trim();
+  if(!name){toast('Please enter a name for this place');return;}
+  if(!lat||!lng){toast('Location not set — tap map first');return;}
+  const {error}=await _sb.from('community_pins').insert({
+    name,type,description:desc,lat,lng,
+    submitted_by:submitter||'Anonymous',
+    status:'pending',photos:[]
+  });
+  if(error){toast('Error: '+error.message);return;}
+  const mo=document.getElementById('addPinMo');
+  mo.classList.remove('open');mo.style.display='none';
+  if(_pendingPin){_lmap.removeLayer(_pendingPin);_pendingPin=null;}
+  toast('Thanks! Your pin has been submitted for review. We will approve it within 24 hours.');
 }
 
 // ═══ HEATMAP ═══
@@ -2618,7 +3431,154 @@ function buildHeatmap(p){
 // ═══ CARBON ═══
 
 const CITY_ORIGINS={"Delhi":[28.6139,77.209],"Chandigarh":[30.7333,76.7794],"Amritsar":[31.634,74.8723],"Mumbai":[19.076,72.8777],"Bangalore":[12.9716,77.5946],"Hyderabad":[17.385,78.4867]};
-const PLACE_COORDS={1:[33.1,76.33],2:[31.8,78.57],3:[32.07,77.38],4:[31.38,77.2],5:[31.63,77.45],6:[30.97,77.35],7:[31.68,77.3],8:[33.03,76.38],9:[30.87,77.42],10:[31.58,78.18],11:[32.06,77.37],12:[31.72,77.95],13:[31.92,78.54],14:[32.32,78.02],15:[31.63,77.44],16:[31.65,77.36],17:[31.43,77.45],18:[31.47,77.41],19:[31.42,78.35],20:[31.57,77.06],21:[32.04,77.33],22:[31.64,77.33],23:[32.06,77.38],24:[32.36,76.4],25:[32.06,76.4],26:[31.27,77.45],27:[31.3,77.41],28:[32.08,77.41],29:[32.27,77.13],30:[31.55,77.34],31:[31.56,77.33],32:[31.54,77.35],33:[31.52,77.36],34:[31.7,77.45],35:[31.98,76.83],36:[31.65,77.35],37:[31.88,78.62],38:[32.07,78.18],39:[32.27,78.15],40:[32.29,78.08],41:[31.43,78.27],42:[32.5,76.95],43:[32.48,77.13],44:[32.02,77.32],45:[31.36,78.43],46:[31.77,77.08],47:[32.75,77.42],48:[32.48,77.62],49:[31.63,76.83],50:[32.33,78.01],51:[32.05,78.2],52:[32.32,78.02],53:[32.07,76.78],54:[31.54,78.26],55:[32.45,76.53],56:[32.6,76.63],57:[32.06,77.4],58:[32.25,76.31],59:[32.25,76.32],60:[31.83,76.25],61:[32.0,76.05],62:[32.3,75.89],63:[31.98,77.36],64:[32.06,77.42],65:[31.2,77.75],66:[31.2,77.52],67:[31.18,77.65],68:[31.51,77.8],69:[31.15,77.18],70:[31.12,77.65],71:[31.03,77.15],72:[32.54,75.97],73:[32.55,76.06],74:[32.56,76.13],75:[32.52,76.0],76:[32.52,75.96],77:[32.04,76.73],78:[32.11,76.54],79:[32.04,76.65],80:[32.1,76.27],81:[32.27,76.3],82:[32.24,76.32],83:[32.22,76.32],84:[31.88,76.32],85:[32.01,77.31],86:[32.24,77.19],87:[31.1,77.17],88:[30.97,77.21],89:[31.1,77.27],90:[30.9,76.97],91:[30.88,76.96],92:[30.99,77.13],93:[30.91,77.04],94:[30.83,77.3],95:[30.61,77.45],96:[30.43,77.62],97:[30.98,77.73],98:[30.57,77.3],99:[31.4,76.5],100:[31.33,76.55],101:[31.35,76.7],102:[31.83,76.5],103:[31.53,76.3],104:[31.78,76.13],105:[32.225,78.07],106:[32.3,78.01],107:[32.09,78.37],108:[32.58,76.62],109:[32.57,76.99],110:[32.78,76.95],111:[32.26,77.19],112:[32.13,77.18],113:[31.96,77.11],114:[32.08,77.35],115:[32.25,76.33],116:[31.55,78.3],117:[32.32,77.16],118:[32.37,77.25],119:[32.31,77.27],120:[32.1,77.27],121:[31.52,77.45],122:[32.18,77.17],123:[31.94,77.17],124:[32.78,77.78],125:[32.42,77.62],126:[32.46,76.4],127:[31.13,77.23],128:[31.34,77.05],129:[30.56,77.3],130:[31.98,76.1],131:[31.78,76.34],132:[32.36,77.13],133:[32.28,77.23],134:[32.25,77.18],135:[31.68,77.42],136:[32.33,77.21],137:[32.21,77.2],138:[32.3,77.2],139:[31.38,77.2],140:[31.53,76.9],141:[31.41,76.43],142:[31.68,76.5],143:[31.88,77.16],144:[32.06,78.10],145:[32.21,76.32],146:[31.4,76.78]};
+const PLACE_COORDS={
+  1:[33.09,76.33],   // Pangi Valley
+  2:[31.76,78.58],   // Pooh
+  3:[32.06,77.35],   // Rasol
+  4:[31.38,76.99],   // Karsog Valley
+  5:[31.67,77.42],   // Pundrik Rishi Lake
+  6:[30.85,77.43],   // Haripurdhar
+  7:[31.68,77.12],   // Thachi Valley
+  8:[33.03,76.52],   // Sach Pass
+  9:[30.85,77.62],   // Churdhar Peak
+  10:[31.57,78.22],  // Ribba
+  11:[32.05,77.37],  // Kalga
+  12:[31.73,78.12],  // Bhaba Valley
+  13:[31.92,78.54],  // Khab confluence
+  14:[32.27,78.02],  // Komic
+  15:[31.65,77.44],  // Shangarh
+  16:[31.63,77.36],  // Gushaini
+  17:[31.49,77.12],  // Janjheli
+  18:[31.46,77.05],  // Shikari Devi
+  19:[31.42,78.35],  // Rakcham
+  20:[31.57,76.99],  // Kamrunag
+  21:[32.03,77.33],  // Grahan
+  22:[31.74,77.33],  // Chehni Kothi
+  23:[32.06,77.38],  // Pulga
+  24:[32.36,76.38],  // Kareri Lake
+  25:[32.08,76.43],  // Andretta
+  26:[31.27,77.45],  // Narkanda
+  27:[31.30,77.42],  // Hatu Peak
+  28:[32.08,77.41],  // Tosh
+  29:[32.27,77.13],  // Sethan
+  30:[31.56,77.42],  // Sereolesar Lake
+  31:[31.55,77.33],  // Jibhi
+  32:[31.54,77.51],  // Shoja
+  33:[31.52,77.54],  // Jalori Pass
+  34:[31.73,77.58],  // GHNP
+  35:[31.98,76.83],  // Barot
+  36:[31.64,77.36],  // Tirthan Valley
+  37:[31.88,78.62],  // Nako Village
+  38:[32.08,78.18],  // Dhankar
+  39:[32.27,78.15],  // Langza
+  40:[32.29,78.08],  // Hikkim
+  41:[31.43,78.27],  // Sangla Valley
+  42:[32.50,76.95],  // Lahaul Valley
+  43:[32.48,77.13],  // Sissu
+  44:[32.02,77.32],  // Chalal
+  45:[31.36,78.43],  // Chitkul
+  46:[31.77,77.08],  // Prashar Lake
+  47:[32.75,77.42],  // Suraj Tal
+  48:[32.48,77.62],  // Chandratal Lake
+  49:[31.63,76.83],  // Rewalsar Lake
+  50:[32.33,78.01],  // Kibber
+  51:[32.05,78.20],  // Pin Valley
+  52:[32.32,78.03],  // Chicham Bridge
+  53:[32.07,76.78],  // Rajgundha
+  54:[31.54,78.26],  // Kalpa
+  55:[32.45,76.53],  // Bharmour
+  56:[32.60,76.63],  // Manimahesh Lake
+  57:[32.06,77.40],  // Kheerganga
+  58:[32.24,76.30],  // Naddi
+  59:[32.24,76.32],  // Dharamkot
+  60:[32.04,76.41],  // Masrur Rock Temple — CORRECTED
+  61:[32.00,76.05],  // Pong Dam Wetlands
+  62:[32.30,75.89],  // Nurpur
+  63:[31.98,77.36],  // Manikaran
+  64:[32.06,77.42],  // Sar Pass
+  65:[31.20,77.75],  // Rohru
+  66:[31.20,77.52],  // Thanedar
+  67:[31.18,77.65],  // Chanshal Pass
+  68:[31.51,77.80],  // Sarahan
+  69:[31.15,77.18],  // Naldhera
+  70:[31.12,77.65],  // Jubbal
+  71:[31.03,77.15],  // Shoghi
+  72:[32.54,75.97],  // Dalhousie
+  73:[32.55,76.06],  // Khajjiar
+  74:[32.56,76.13],  // Chamba Town
+  75:[32.52,76.00],  // Kalatop Sanctuary
+  76:[32.52,75.96],  // Dainkund Peak
+  77:[32.04,76.73],  // Bir Billing
+  78:[32.11,76.54],  // Palampur
+  79:[32.04,76.65],  // Baijnath
+  80:[32.10,76.27],  // Kangra Fort
+  81:[32.27,76.30],  // Triund
+  82:[32.24,76.32],  // McLeod Ganj
+  83:[32.22,76.32],  // Dharamshala
+  84:[31.88,76.32],  // Jawalamukhi
+  85:[32.01,77.31],  // Kasol
+  86:[32.24,77.19],  // Manali
+  87:[31.10,77.17],  // Shimla
+  88:[30.97,77.21],  // Chail
+  89:[31.10,77.27],  // Kufri
+  90:[30.90,76.97],  // Kasauli
+  91:[30.88,76.96],  // Dagshai
+  92:[30.99,77.13],  // Bon Monastery
+  93:[30.91,77.04],  // Barog
+  94:[30.83,77.30],  // Rajgarh
+  95:[30.61,77.45],  // Renuka Ji Lake
+  96:[30.43,77.62],  // Paonta Sahib
+  97:[30.98,77.73],  // Shillai
+  98:[30.57,77.30],  // Suketi Fossil Park
+  99:[31.40,76.50],  // Gobind Sagar Lake
+  100:[31.33,76.55], // Naina Devi Temple
+  101:[31.35,76.70], // Bahadurpur Fort
+  102:[31.83,76.50], // Sujanpur Tira
+  103:[31.53,76.30], // Deotsidh Baba
+  104:[31.78,76.13], // Chintpurni Temple
+  105:[32.23,78.07], // Kaza
+  106:[32.30,78.01], // Key Monastery
+  107:[32.09,78.37], // Tabo Monastery
+  108:[32.58,76.62], // Triloknath Temple
+  109:[32.57,76.99], // Keylong
+  110:[32.78,76.95], // Jispa
+  111:[32.26,77.19], // Vashisht
+  112:[32.13,77.18], // Naggar
+  113:[31.96,77.11], // Kullu Town
+  114:[32.08,77.35], // Malana
+  115:[32.25,76.33], // Bhagsu Nag
+  116:[31.55,78.30], // Kinner Kailash
+  117:[32.32,77.16], // Solang Valley
+  118:[32.37,77.25], // Rohtang Pass
+  119:[32.31,77.27], // Hamta Pass
+  120:[32.10,77.27], // Chanderkhani Pass
+  121:[31.52,77.45], // Nirmand
+  122:[32.18,77.17], // Katrain
+  123:[31.94,77.17], // Bijli Mahadev
+  124:[32.78,77.78], // Sarchu
+  125:[32.42,77.62], // Kunzum Pass
+  126:[32.46,76.40], // Indrahar Pass
+  127:[31.13,77.23], // Mashobra
+  128:[31.34,77.05], // Tatta Pani
+  129:[30.56,77.30], // Nahan
+  130:[31.98,76.10], // Pong Dam Una
+  131:[31.78,76.34], // Nadaun
+  132:[32.36,77.13], // Beas Kund
+  133:[32.28,77.23], // Bhrigu Lake
+  134:[32.25,77.18], // Old Manali
+  135:[31.68,77.42], // Sainj Valley
+  136:[32.33,77.21], // Gulaba
+  137:[32.21,77.20], // Jagatsukh
+  138:[32.30,77.20], // Kothi
+  139:[31.38,77.20], // Mamleshwar Temple
+  140:[31.53,76.90], // Sundernagar
+  141:[31.41,76.43], // Bhakra Dam
+  142:[31.68,76.50], // Tauni Devi
+  143:[31.88,77.16], // Bhuntar
+  144:[32.06,78.10], // Pin Parvati Pass
+  145:[32.21,76.32], // Dharamshala Lower
+  146:[31.40,76.78]  // Vyas Cave
+};
 
 function haversineKm(lat1,lon1,lat2,lon2){
   const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
@@ -2744,6 +3704,17 @@ function waBookCurrent() {
 
 // ═══ BOOKING MODAL ═══
 function openBookMo(sid){
+  // Auto-fill from traveller profile if logged in
+  if(_tProfile){
+    setTimeout(()=>{
+      const n=document.getElementById('gName');
+      const p=document.getElementById('gPhone');
+      const e=document.getElementById('gEmail');
+      if(n&&!n.value) n.value=_tProfile.name||'';
+      if(p&&!p.value) p.value=_tProfile.phone||'';
+      if(e&&!e.value&&_tProfile.email) e.value=_tProfile.email;
+    },200);
+  }
   const s=STAYS.find(x=>x.id===sid);if(!s)return;
   curBooking=s;
   document.getElementById('moTitle').textContent='Book — '+s.name;
@@ -3293,11 +4264,69 @@ function adTab(tab,el){
     <button class="ab ab-p" onclick="saveMedia()">Save Media</button></div>
     <div class="adm-panel"><h3>360° Panorama Upload (Virtual Tour)</h3>
     <p style="font-size:13px;color:var(--stone);margin-bottom:14px">In production: upload equirectangular panoramas to Supabase Storage. Pannellum.js renders them as immersive 360° tours.</p>
-    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <select class="ai" style="max-width:280px"><option>Select destination…</option>${ALL.map(p=>`<option>${p.name}</option>`).join('')}</select>
-      <div style="border:2px dashed rgba(74,124,95,.3);border-radius:10px;padding:14px 20px;cursor:pointer;font-size:13px;color:var(--stone)">📷 Drop 360° panorama here</div>
-      <button class="ab ab-p" onclick="toast('Panorama upload: Supabase Storage in production build')">Upload</button>
+    <div class="adm-panel">
+      <h3>Add YouTube Video to Destination</h3>
+      <div class="fg"><label>Select Destination</label>
+        <select class="ai" id="mediaDestSel" onchange="loadAdminMedia()">
+          <option value="">— Choose destination —</option>
+          ${ALL.map(p=>`<option value="${p.id}">${p.name} — ${p.district}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>YouTube URL</label>
+        <input class="ai" id="mediaYtUrl" placeholder="https://youtube.com/watch?v=..."/>
+      </div>
+      <button class="ab ab-p" onclick="adminSaveMedia()">Save Video</button>
+      <div id="adminMediaList" style="margin-top:16px"></div>
+    </div>
+    <div class="adm-panel">
+      <h3>360° Panoramas</h3>
+      <p style="font-size:13px;color:var(--stone)">Upload equirectangular panoramas to Supabase Storage. Pannellum.js renders them as immersive 360° tours.</p>
+      <div style="border:2px dashed rgba(74,124,95,.3);border-radius:10px;padding:20px;text-align:center;color:var(--stone);font-size:13px">📷 Panorama upload — connect Supabase Storage bucket to enable</div>
     </div></div>`;
+    loadAdminMedia();
+  }else if(tab==='pins'){
+    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">📍 Community Pins</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Review and approve community-submitted pins. Approved pins appear on the map for all users.</p>
+    <div id="adminPinsList"><div style="text-align:center;padding:40px;color:var(--stone)">Loading…</div></div>`;
+    // Load pending pins
+    Promise.all([
+      _sb.from('community_pins').select('*').eq('status','pending').order('created_at',{ascending:false}),
+      _sb.from('community_pins').select('*').eq('status','approved').order('created_at',{ascending:false})
+    ]).then(([{data:pending},{data:approved}])=>{
+      const el=document.getElementById('adminPinsList');
+      if(!el)return;
+      const pendingHTML=(pending||[]).length?`
+        <div class="adm-panel">
+          <h3>⏳ Pending Review (${pending.length})</h3>
+          ${(pending||[]).map(pin=>{const t=POI_TYPES[pin.type]||{icon:'📍',label:pin.type};return`
+          <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid #f0f0ee;flex-wrap:wrap">
+            <div style="font-size:32px">${t.icon}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:600">${pin.name}</div>
+              <div style="font-size:12px;color:var(--stone);margin-top:2px">${t.label} · ${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)} · by ${pin.submitted_by||'Anonymous'}</div>
+              ${pin.description?`<div style="font-size:12px;color:#444;margin-top:4px;font-style:italic">"${pin.description}"</div>`:''}
+            </div>
+            <div style="display:flex;gap:8px;flex-shrink:0">
+              <a href="https://www.google.com/maps?q=${pin.lat},${pin.lng}" target="_blank" style="padding:6px 12px;background:#f0f6f2;color:var(--pine);border-radius:7px;font-size:12px;font-weight:600;text-decoration:none">🗺 View</a>
+              <button onclick="adminApprovePin('${pin.id}')" style="padding:6px 12px;background:#2d8a4e;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">✓ Approve</button>
+              <button onclick="adminRejectPin('${pin.id}')" style="padding:6px 12px;background:#c0392b;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">✗ Reject</button>
+            </div>
+          </div>`;}).join('')}
+        </div>` : '<div class="adm-panel"><h3>⏳ Pending Review</h3><div style="padding:20px;text-align:center;color:var(--stone)">No pending pins — all clear!</div></div>';
+
+      const approvedHTML=`<div class="adm-panel"><h3>✅ Approved Pins (${(approved||[]).length})</h3>
+        ${(approved||[]).length?`<div style="overflow-x:auto"><table class="dt"><thead><tr><th>Type</th><th>Name</th><th>Location</th><th>By</th><th>Action</th></tr></thead><tbody>
+        ${(approved||[]).map(pin=>{const t=POI_TYPES[pin.type]||{icon:'📍'};return`<tr>
+          <td>${t.icon}</td><td style="font-weight:600">${pin.name}</td>
+          <td style="font-size:11px;font-family:monospace">${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}</td>
+          <td style="font-size:12px">${pin.submitted_by||'—'}</td>
+          <td><button onclick="adminRejectPin('${pin.id}')" style="padding:4px 10px;background:#fee;border:1px solid #fcc;color:#c0392b;border-radius:6px;font-size:11px;cursor:pointer">Remove</button></td>
+        </tr>`}).join('')}
+        </tbody></table></div>`:'<div style="padding:20px;text-align:center;color:var(--stone)">No approved pins yet.</div>'}
+      </div>`;
+
+      el.innerHTML=pendingHTML+approvedHTML;
+    });
   }else if(tab==='profiles'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">🏅 Traveller Profiles</h2>
     <p style="font-size:13px;color:var(--stone);margin-bottom:20px;line-height:1.7">Look up any traveller's full profile — name, tier, bookings, points history, badges, NGO activity.</p>
@@ -3524,6 +4553,20 @@ async function loadHostFeedbacks(){
   window._hostFeedbacks=data||[];
 }
 
+async function adminApprovePin(id){
+  await _sb.from('community_pins').update({status:'approved'}).eq('id',id);
+  toast('✓ Pin approved — now live on map');
+  adTab('pins',document.querySelector('.adm-ni[onclick*="pins"]'));
+  loadCommunityPins();
+}
+async function adminRejectPin(id){
+  if(!confirm('Remove this pin?'))return;
+  await _sb.from('community_pins').delete().eq('id',id);
+  toast('Pin removed');
+  adTab('pins',document.querySelector('.adm-ni[onclick*="pins"]'));
+  loadCommunityPins();
+}
+
 async function loadHostBadges(){
   // Build _hostBadges map from traveller_scores badges column
   const {data}=await _sb.from('traveller_scores').select('user_key,badges,phone_hint');
@@ -3736,6 +4779,186 @@ function togglePassVis() {
   else { inp.type = 'password'; eye.textContent = '👁'; }
 }
 
+// ═══ TRAVELLER PROFILE SYSTEM ═══
+let _tProfile = null; // logged in traveller
+
+async function openTravellerProfile(){
+  // Check if logged in
+  const saved = localStorage.getItem('pp_traveller');
+  if(saved){
+    try{ _tProfile = JSON.parse(saved); showTravellerDashboard(); return; }catch(e){}
+  }
+  showTravellerLogin();
+}
+
+function showTravellerLogin(){
+  const mo = document.getElementById('travellerMo');
+  if(!mo) return;
+  mo.style.display='flex'; mo.classList.add('open');
+  mo.querySelector('#tLoginView').style.display='block';
+  mo.querySelector('#tRegView').style.display='none';
+  mo.querySelector('#tDashView').style.display='none';
+}
+
+function showTravellerRegister(){
+  const mo = document.getElementById('travellerMo');
+  mo.querySelector('#tLoginView').style.display='none';
+  mo.querySelector('#tRegView').style.display='block';
+  mo.querySelector('#tDashView').style.display='none';
+}
+
+async function travellerLogin(){
+  const phone = (document.getElementById('tLoginPhone')?.value||'').trim();
+  const name  = (document.getElementById('tLoginName')?.value||'').trim();
+  if(!phone||!/^[6-9]\d{9}$/.test(phone)){toast('Enter valid 10-digit mobile');return;}
+  if(!name){toast('Enter your name');return;}
+  // Load score from Supabase
+  await loadTravellerScore(phone);
+  const ts = getTravellerScore();
+  _tProfile = {name, phone, ts};
+  // Save name to Supabase
+  await _sb.from('traveller_scores').upsert({user_key:_tsKey(phone), guest_name:name, phone_hint:phone},{onConflict:'user_key'});
+  localStorage.setItem('pp_traveller', JSON.stringify({name, phone}));
+  showTravellerDashboard();
+  toast(`Welcome back, ${name}! 🏔️`);
+}
+
+async function travellerRegister(){
+  const name  = (document.getElementById('tRegName')?.value||'').trim();
+  const phone = (document.getElementById('tRegPhone')?.value||'').trim();
+  const email = (document.getElementById('tRegEmail')?.value||'').trim();
+  const city  = (document.getElementById('tRegCity')?.value||'').trim();
+  if(!name||!phone){toast('Name and phone are required');return;}
+  if(!/^[6-9]\d{9}$/.test(phone)){toast('Enter valid 10-digit mobile');return;}
+  // Save to Supabase
+  const {error} = await _sb.from('traveller_scores').upsert({
+    user_key: _tsKey(phone), guest_name: name, phone_hint: phone,
+    points:0, stays:0, nights:0, eco:0, offbeat:0, pledges:0, history:[], badges:[]
+  },{onConflict:'user_key'});
+  if(error){toast('Error: '+error.message);return;}
+  _tProfile = {name, phone, email, city};
+  localStorage.setItem('pp_traveller', JSON.stringify({name, phone, email, city}));
+  await loadTravellerScore(phone);
+  showTravellerDashboard();
+  toast(`Welcome to PahariPath, ${name}! 🎉`);
+}
+
+async function showTravellerDashboard(){
+  const mo = document.getElementById('travellerMo');
+  if(!mo) return;
+  mo.style.display='flex'; mo.classList.add('open');
+  mo.querySelector('#tLoginView').style.display='none';
+  mo.querySelector('#tRegView').style.display='none';
+  mo.querySelector('#tDashView').style.display='block';
+
+  // Load latest score
+  if(_tProfile?.phone) await loadTravellerScore(_tProfile.phone);
+  const ts = getTravellerScore();
+  const title = getTravellerTitle(ts.points);
+  const nextTier = TRAVELLER_TITLES.find(t=>t.min>ts.points);
+  const ptsToNext = nextTier ? nextTier.min - ts.points : 0;
+  const progress = nextTier ? Math.round(((ts.points - title.min)/(nextTier.min - title.min))*100) : 100;
+
+  document.getElementById('tDashView').innerHTML = `
+    <!-- Profile card -->
+    <div style="background:linear-gradient(135deg,#1a3d2b,#2d5a40);border-radius:16px;padding:22px;color:#fff;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${title.icon}</div>
+        <div style="flex:1">
+          <div style="font-family:var(--fd);font-size:18px;font-weight:600">${_tProfile?.name||'Traveller'}</div>
+          <div style="font-size:12px;opacity:.7">📱 +91 ${_tProfile?.phone||''}</div>
+          <div style="font-size:11px;opacity:.6;margin-top:2px">${title.title}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--fd);font-size:28px;font-weight:700">${ts.points}</div>
+          <div style="font-size:10px;opacity:.5">PAHADI pts</div>
+        </div>
+      </div>
+      ${nextTier?`<div style="margin-bottom:4px;font-size:11px;opacity:.6;display:flex;justify-content:space-between"><span>Progress to ${nextTier.title}</span><span>${ptsToNext} pts to go</span></div>
+      <div style="background:rgba(255,255,255,.15);border-radius:99px;height:5px"><div style="background:#7fd4a0;border-radius:99px;height:5px;width:${progress}%"></div></div>`:''}
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+      ${[{n:ts.stays,l:'Stays',i:'🏡'},{n:ts.nights,l:'Nights',i:'🌙'},{n:ts.eco||0,l:'Eco',i:'🌱'},{n:(ts.badges||[]).length,l:'Badges',i:'🏅'}].map(s=>`
+      <div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:16px">${s.i}</div>
+        <div style="font-size:20px;font-weight:700;color:var(--pine)">${s.n}</div>
+        <div style="font-size:10px;color:var(--stone)">${s.l}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Badges -->
+    ${(ts.badges||[]).length?`<div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">🏅 Your Badges</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${(ts.badges||[]).map(b=>`<span style="background:#e8f4ed;color:#1a6b3a;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600">${b}</span>`).join('')}</div>
+    </div>`:''}
+
+    <!-- Recent activity -->
+    ${(ts.history||[]).length?`<div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">📋 Recent Activity</div>
+      ${(ts.history||[]).slice().reverse().slice(0,4).map(h=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f3">
+        <div style="font-size:13px">${h.stay||h.badge||'Activity'} <span style="font-size:11px;color:var(--stone)">· ${h.date}</span></div>
+        <div style="font-weight:700;color:var(--pine);font-size:13px">+${h.pts}</div>
+      </div>`).join('')}
+    </div>`:''}
+
+    <button onclick="travellerLogout()" style="width:100%;padding:11px;background:none;border:1.5px solid rgba(74,124,95,.2);border-radius:10px;font-size:13px;color:var(--stone);cursor:pointer;font-family:var(--fb)">Sign Out</button>
+  `;
+}
+
+function travellerLogout(){
+  localStorage.removeItem('pp_traveller');
+  _tProfile = null;
+  document.getElementById('travellerMo').classList.remove('open');
+  document.getElementById('travellerMo').style.display='none';
+  toast('Signed out');
+}
+
+// ═══ HOST REGISTER ═══
+function showHostRegister(){
+  document.getElementById('hostRegMo').style.display='flex';
+  document.getElementById('hostRegMo').classList.add('open');
+}
+
+async function submitHostRegister(){
+  const name  = (document.getElementById('hrName')?.value||'').trim();
+  const prop  = (document.getElementById('hrProp')?.value||'').trim();
+  const loc   = (document.getElementById('hrLoc')?.value||'').trim();
+  const phone = (document.getElementById('hrPhone')?.value||'').trim();
+  const email = (document.getElementById('hrEmail')?.value||'').trim();
+  const pass  = (document.getElementById('hrPass')?.value||'');
+  const price = document.getElementById('hrPrice')?.value||'';
+  const type  = document.getElementById('hrType')?.value||'Homestay';
+  if(!name||!prop||!loc||!phone||!email||!pass){toast('Please fill all required fields');return;}
+  if(!/^[6-9]\d{9}$/.test(phone)){toast('Enter valid 10-digit mobile');return;}
+  if(pass.length<6){toast('Password must be at least 6 characters');return;}
+  // Create Supabase auth user
+  const {data,error} = await _sb.auth.signUp({email, password:pass, options:{data:{name,role:'host'}}});
+  if(error){toast('Registration error: '+error.message);return;}
+  // Save partner application
+  await _sb.from('partner_applications').insert({property_name:prop,location:loc,owner_name:name,phone,price_per_night:parseInt(price)||0,property_type:type,eco_friendly:false,status:'pending'});
+  document.getElementById('hostRegMo').classList.remove('open');
+  document.getElementById('hostRegMo').style.display='none';
+  toast('✅ Registered! Check your email to verify, then login to the host dashboard.');
+}
+
+// ═══ SECRET ACCESS ═══
+// Admin: type "pahari" anywhere on page
+// Host: go to paharipath.in/#host or click secret zone 5 times
+let _secretClicks = 0;
+function handleSecretClick(){
+  _secretClicks++;
+  if(_secretClicks >= 3){ _secretClicks=0; setView('host-login'); }
+  setTimeout(()=>{_secretClicks=0;}, 2000);
+}
+
+// Check URL hash on load
+window.addEventListener('DOMContentLoaded', ()=>{
+  if(window.location.hash === '#host') setView('host-login');
+  if(window.location.hash === '#admin') setView('admin');
+});
+
 // Override setView to intercept admin access
 function setView(v) {
   if (v === 'admin') {
@@ -3758,6 +4981,7 @@ function setView(v) {
   const target = document.getElementById('view-' + v);
   if (target) { target.classList.add('active'); window.scrollTo(0, 0); }
   else console.warn('View not found: view-' + v);
+  if(v==='host-login') setTimeout(()=>{const e=document.getElementById('hostEmail');if(e)e.focus();},150);
 }
 
 
@@ -4035,6 +5259,8 @@ async function processPayment() {
   ngoBadges.forEach(b=>{if(!badges.includes(b))badges.push(b);});
   badges.push(newTitle.icon+' '+newTitle.title);
 
+  // Pre-fill traveller name in booking if logged in
+  const tp = _tProfile;
   document.getElementById('moTitle').textContent='Your E-Pass 🎟️';
   document.getElementById('moBody').innerHTML = `
     <div class="epass-wrap">
@@ -4270,6 +5496,116 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
   document.getElementById('utime').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
 }, 5*60*1000);
 </script>
+<!-- POI DETAIL MODAL -->
+<div id="poiMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:440px">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('poiMo').classList.remove('open');document.getElementById('poiMo').style.display='none'">✕</button>
+    <div id="poiMoContent"></div>
+  </div>
+</div>
+
+<!-- ADD PIN MODAL -->
+<div id="addPinMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';cancelAddPin();}" style="display:none">
+  <div class="mo-box" style="max-width:460px">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('addPinMo').classList.remove('open');document.getElementById('addPinMo').style.display='none';cancelAddPin()">✕</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:36px;margin-bottom:8px">📍</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">Add a Place</div>
+      <p style="font-size:13px;color:var(--stone);margin-top:6px">Help fellow travellers discover this spot. Our team reviews all submissions within 24 hours.</p>
+    </div>
+    <input type="hidden" id="pinLat"/>
+    <input type="hidden" id="pinLng"/>
+    <div class="fg"><label>Place Name *</label><input class="fi" id="pinName" placeholder="e.g. Hidden Waterfall above Tirthan"/></div>
+    <div class="fg"><label>Category *</label>
+      <select class="fi" id="pinType">
+        <option value="viewpoint">🌅 Viewpoint</option>
+        <option value="waterfall">🌊 Waterfall</option>
+        <option value="parking">🅿️ Parking</option>
+        <option value="dhaba">🍽️ Dhaba / Food</option>
+        <option value="temple">🛕 Temple / Monastery</option>
+        <option value="campsite">🏕️ Campsite</option>
+        <option value="petrol">⛽ Petrol Pump</option>
+        <option value="medical">🏥 Medical / Emergency</option>
+        <option value="atm">🏧 ATM</option>
+        <option value="network">📡 Network Spot</option>
+        <option value="road_alert">⚠️ Road Alert</option>
+        <option value="glacier">🧊 Glacier / Snow Point</option>
+        <option value="shop">🏪 Shop / Market</option>
+      </select>
+    </div>
+    <div class="fg"><label>Description</label><textarea class="fi" id="pinDesc" rows="3" placeholder="What makes this place special? Any tips for travellers?"></textarea></div>
+    <div class="fg"><label>Your Name (optional)</label><input class="fi" id="pinSubmitter" placeholder="Anonymous if left blank"/></div>
+    <div style="background:#f0f6f2;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--stone)">
+      📍 Pin will be placed at your selected location on the map. Photos can be added after approval by the community.
+    </div>
+    <button onclick="submitCommunityPin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit for Review ✓</button>
+  </div>
+</div>
+
+<!-- TRAVELLER PROFILE MODAL -->
+<div id="travellerMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:440px;max-height:90vh;overflow-y:auto">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('travellerMo').classList.remove('open');document.getElementById('travellerMo').style.display='none'">✕</button>
+
+    <!-- Login view -->
+    <div id="tLoginView">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:8px">🏔️</div>
+        <div style="font-family:var(--fd);font-size:22px;color:var(--pine);font-weight:600">Your PAHADI Profile</div>
+        <p style="font-size:13px;color:var(--stone);margin-top:6px">Track your journeys, earn points, unlock tier badges</p>
+      </div>
+      <div class="fg"><label>Your Name</label><input class="fi" id="tLoginName" placeholder="Full name"/></div>
+      <div class="fg"><label>Mobile Number</label><input class="fi" id="tLoginPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+      <button onclick="travellerLogin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb);margin-bottom:10px">View My Profile →</button>
+      <button onclick="showTravellerRegister()" style="width:100%;padding:11px;background:none;border:1.5px solid rgba(74,124,95,.2);border-radius:12px;font-size:13px;color:var(--pine);cursor:pointer;font-family:var(--fb)">New here? Create Profile</button>
+    </div>
+
+    <!-- Register view -->
+    <div id="tRegView" style="display:none">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:40px;margin-bottom:8px">🌱</div>
+        <div style="font-family:var(--fd);font-size:22px;color:var(--pine);font-weight:600">Create Your Profile</div>
+        <p style="font-size:13px;color:var(--stone);margin-top:6px">Join the PAHADI community of responsible travellers</p>
+      </div>
+      <div class="fg"><label>Full Name *</label><input class="fi" id="tRegName" placeholder="Your name"/></div>
+      <div class="fg"><label>Mobile Number *</label><input class="fi" id="tRegPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+      <div class="fg"><label>Email (optional)</label><input class="fi" id="tRegEmail" type="email" placeholder="for booking confirmations"/></div>
+      <div class="fg"><label>City / State</label><input class="fi" id="tRegCity" placeholder="Where are you from?"/></div>
+      <button onclick="travellerRegister()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb);margin-bottom:10px">Create My PAHADI Profile 🏔️</button>
+      <button onclick="showTravellerLogin()" style="width:100%;padding:11px;background:none;border:none;font-size:13px;color:var(--stone);cursor:pointer;font-family:var(--fb)">Already have a profile? Sign in</button>
+    </div>
+
+    <!-- Dashboard view -->
+    <div id="tDashView" style="display:none"></div>
+  </div>
+</div>
+
+<!-- HOST REGISTER MODAL -->
+<div id="hostRegMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:500px;max-height:90vh;overflow-y:auto">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('hostRegMo').classList.remove('open');document.getElementById('hostRegMo').style.display='none'">✕</button>
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:40px;margin-bottom:8px">🏡</div>
+      <div style="font-family:var(--fd);font-size:22px;color:var(--pine);font-weight:600">Register as a Host</div>
+      <p style="font-size:13px;color:var(--stone);margin-top:6px">List your property on PahariPath. Free to join — we earn only when you earn.</p>
+    </div>
+    <div class="fg"><label>Your Name *</label><input class="fi" id="hrName" placeholder="Host full name"/></div>
+    <div class="fg"><label>Property Name *</label><input class="fi" id="hrProp" placeholder="e.g. Tirthan River Cottage"/></div>
+    <div class="fg"><label>Location *</label><input class="fi" id="hrLoc" placeholder="Village, District, HP"/></div>
+    <div class="fg"><label>WhatsApp Number *</label><input class="fi" id="hrPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+    <div class="fg"><label>Email *</label><input class="fi" id="hrEmail" type="email" placeholder="Used for host dashboard login"/></div>
+    <div class="fg"><label>Password *</label><input class="fi" id="hrPass" type="password" placeholder="Min 6 characters"/></div>
+    <div class="fg"><label>Price per Night (₹)</label><input class="fi" id="hrPrice" type="number" placeholder="e.g. 2000"/></div>
+    <div class="fg"><label>Property Type</label>
+      <select class="fi" id="hrType">
+        <option>Homestay</option><option>Eco Cottage</option><option>Eco Camp</option><option>Heritage Stay</option><option>Village Stay</option><option>Lodge</option>
+      </select>
+    </div>
+    <button onclick="submitHostRegister()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Register & Get Listed →</button>
+    <p style="font-size:11px;color:var(--stone);text-align:center;margin-top:12px">Already registered? <a href="#host" onclick="setView('host-login')" style="color:var(--pine)">Host Login →</a></p>
+  </div>
+</div>
+
 <!-- COOKIE CONSENT -->
 <div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a3d2b;color:#fff;padding:14px 24px;z-index:99999;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--fb);font-size:13px">
   <div>🍪 We use cookies to improve your experience. No ads, no tracking — just analytics to help us serve you better. <a href="#" onclick="showPrivacy()" style="color:#7fd4a0;text-decoration:underline">Privacy Policy</a></div>
