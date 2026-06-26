@@ -17,6 +17,8 @@
 <meta name="twitter:title" content="PahariPath — Real Himachal Pradesh"/>
 <meta name="twitter:description" content="Live crowd tracking for 146+ HP destinations. Find quiet valleys and book local stays."/>
 <link rel="canonical" href="https://paharipath.in"/>
+<link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
+<meta name="robots" content="index, follow"/>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1a3d2b"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -661,6 +663,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <div>
       <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
       <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
+      <p style="font-size:11px;color:var(--stone);margin-top:3px;opacity:.7">Crowd levels are estimates based on historical data &amp; admin reports</p>
     </div>
     <div style="text-align:right">
       <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
@@ -785,26 +788,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <!-- Main advice -->
       <div id="fcadv" style="margin-bottom:16px"></div>
 
-      <!-- 4-Week Calendar Forecast -->
-      <div id="fcWeekly" style="display:none;margin-bottom:20px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:12px">📅 Best Time to Visit — Next 4 Weeks</div>
-        <div id="fcWeeklyGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
-        <div style="margin-top:12px;background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px">Week-by-Week Breakdown</div>
-          <div id="fcWeekDetail"></div>
-        </div>
-      </div>
 
-      <!-- Day picker calendar -->
-      <div id="fcCalendar" style="display:none;margin-bottom:20px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:12px">🗓 Pick Your Travel Week</div>
-        <div id="fcCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center"></div>
-        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#2d8a4e;border-radius:3px"></div>Low crowd</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#b07d2a;border-radius:3px"></div>Moderate</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#c0392b;border-radius:3px"></div>Busy</div>
-        </div>
-      </div>
 
       <!-- Location context -->
       <div id="fcLocation" style="display:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.7)"></div>
@@ -878,15 +862,33 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 <div class="about-sec">
   <h2 class="about-t">Why PahariPath?</h2>
   <p class="about-d">Himachal Pradesh is far more than Manali, Shimla, and Kasol. PahariPath shows you live crowd data across all 146 destinations, enforces visitor limits at sensitive zones, suggests quiet alternatives, and connects you directly with local homestays. No tourist-speak. No corporate stays. Just honest travel.</p>
+
+  <!-- NGO Impact Widget -->
+  <div id="ngoImpactWidget" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:28px auto;padding:20px 24px;background:rgba(74,124,95,.08);border:1px solid rgba(74,124,95,.15);border-radius:16px;max-width:560px">
+    <div style="width:100%;text-align:center;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--sage);margin-bottom:8px">🌿 Community Impact — powered by travellers like you</div>
+    <div style="flex:1;min-width:90px;text-align:center">
+      <div id="ngoCleanups" style="font-family:var(--fd);font-size:30px;font-weight:600;color:var(--pine)">—</div>
+      <div style="font-size:12px;color:var(--stone);margin-top:2px">Trail Clean-ups</div>
+    </div>
+    <div style="flex:1;min-width:90px;text-align:center">
+      <div id="ngoHours" style="font-family:var(--fd);font-size:30px;font-weight:600;color:var(--pine)">—</div>
+      <div style="font-size:12px;color:var(--stone);margin-top:2px">Volunteer Hours</div>
+    </div>
+    <div style="flex:1;min-width:90px;text-align:center">
+      <div id="ngoKg" style="font-family:var(--fd);font-size:30px;font-weight:600;color:var(--pine)">—</div>
+      <div style="font-size:12px;color:var(--stone);margin-top:2px">Waste Cleared (kg)</div>
+    </div>
+  </div>
+
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
     <button class="nb" onclick="goTo('stays-bg')">Find a Stay</button>
-    <button class="nb ol" onclick="toast('Partner listing — email hello@paharipath.in')">List Your Property</button>
+    <button class="nb ol" onclick="showPartnerForm()">List Your Property</button>
   </div>
 </div>
 <footer>
   <div class="ft-logo" style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0"><polygon points="18,24 25,10 32,24" fill="rgba(255,255,255,0.15)"/><polygon points="14,24 22,8 30,24" fill="rgba(255,255,255,0.25)"/><polygon points="7,25 18,4 29,25" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.2" stroke-linejoin="round"/><polygon points="7,25 18,4 29,25" fill="rgba(255,255,255,0.75)"/><polygon points="18,4 22,12 14,12" fill="#1a3d2b" opacity="0.5"/><path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg><div><div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;line-height:1.1">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span></div><div style="font-family:sans-serif;font-size:9px;letter-spacing:2px;color:#c9a84c;line-height:1;margin-top:2px">HIMACHAL · OFFBEAT</div></div></div>
   <p>Promoting offbeat travel · Supporting local communities · Preserving Pahari culture</p>
-  <p style="margin-top:8px;font-size:11px;opacity:.4">© 2025 PahariPath · Built for Himachal Pradesh · Eco &amp; Responsible Tourism</p>
+  <p style="margin-top:8px;font-size:11px;opacity:.4">© 2025–2026 PahariPath · Built for Himachal Pradesh · Eco &amp; Responsible Tourism</p>
   <!-- Hidden access: type "pahari" anywhere for admin, go to /#host for host login -->
 <div style="margin-top:12px;height:20px" id="secretZone" onclick="handleSecretClick()"></div>
 </footer>
@@ -895,7 +897,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <a href="#" onclick="showPrivacy()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Privacy Policy</a>
   <a href="#" onclick="showTerms()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Terms of Service</a>
   <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
-  <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us</a></div><!-- /home -->
+  <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us · hello@paharipath.in</a></div><!-- /home -->
 
 <!-- ADMIN LOGIN -->
 <!-- HOST LOGIN -->
@@ -946,6 +948,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <button class="htab" onclick="hTab('guests',this)">👥 Guests</button>
       <button class="htab" onclick="hTab('listing',this)">🏡 My Listing</button>
       <button class="htab" onclick="hTab('crowd',this)">🚦 Crowd Update</button>
+      <button class="htab" onclick="hTab('itinerary',this)">🗺️ Itinerary</button>
       <button class="htab" onclick="hTab('earnings',this)">💰 Earnings</button>
     </div>
 
@@ -1002,6 +1005,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="adm-ni" onclick="adTab('feedback',this)">⭐ Host Feedback</div>
       <div class="adm-ni" onclick="adTab('ngo',this)">🤝 NGO / Clean-ups</div>
       <div class="adm-ni" onclick="adTab('media',this)">📷 Media / 360°</div>
+      <div class="adm-ni" onclick="adTab('itinerary',this)">🗺️ Itineraries</div>
       <div class="adm-ni" onclick="adTab('pins',this)">📍 Community Pins</div>
       <div class="adm-ni" onclick="adTab('profiles',this)">🏅 Traveller Profiles</div>
       <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:10px">
@@ -1489,6 +1493,24 @@ function hTab(tab, btn){
     </div>`;
   }
 
+  else if(tab==='itinerary'){
+    const stay=_hostStay;
+    const pid=stay?.placeid||stay?.id||null;
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">🗺️ Destination Itinerary</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Customize the day-by-day plan shown to guests when they plan a trip to your destination. Your local knowledge makes it authentic.</p>
+    ${pid?`
+    <div class="h-card">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:12px">Editing itinerary for: <span style="color:var(--pine)">${ALL.find(p=>p.id===pid)?.name||stay?.name||'Your destination'}</span></div>
+      <input type="hidden" id="itnDestSel" value="${pid}"/>
+      <div id="adminItnDays"></div>
+      <button onclick="addItnDay()" style="background:none;border:1.5px dashed rgba(74,124,95,.3);color:var(--pine);border-radius:10px;padding:10px;font-size:13px;cursor:pointer;width:100%;font-family:var(--fb);margin-bottom:12px">+ Add Day</button>
+      <button onclick="adminSaveItinerary()" style="background:var(--pine);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb);width:100%">Save Itinerary ✓</button>
+    </div>`:'<div class="h-card" style="text-align:center;padding:40px;color:var(--stone)">Your property needs to be linked to a destination first. Contact hello@paharipath.in</div>'}`;
+    if(pid){
+      _itnData[pid]=_itnData[pid]||null;
+      loadAdminItinerary();
+    }
+  }
   else if(tab==='earnings'){
     el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:20px">💰 Earnings</h2>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
@@ -1567,8 +1589,10 @@ async function loadZoneCaps(){
 
 function showSkeletons(){
   const sk=()=>`<div class="pc"><div style="height:160px;background:linear-gradient(90deg,#f0f0ee 25%,#e8e8e6 50%,#f0f0ee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:16px 16px 0 0"></div><div style="padding:14px"><div style="height:13px;width:80%;background:linear-gradient(90deg,#f0f0ee 25%,#e8e8e6 50%,#f0f0ee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;margin-bottom:10px"></div><div style="height:11px;width:55%;background:linear-gradient(90deg,#f0f0ee 25%,#e8e8e6 50%,#f0f0ee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px"></div></div></div>`;
+  const csk=()=>`<div style="background:linear-gradient(90deg,#f0f0ee 25%,#e8e8e6 50%,#f0f0ee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:14px;height:90px;"></div>`;
   const pg=document.getElementById('pgrid');if(pg)pg.innerHTML=Array(6).fill(sk()).join('');
   const stg=document.getElementById('stgrid');if(stg)stg.innerHTML=Array(3).fill(sk()).join('');
+  const cg=document.getElementById('cgrid');if(cg)cg.innerHTML=Array(8).fill(csk()).join('');
 }
 async function ppInit(){
   showSkeletons();
@@ -2361,7 +2385,17 @@ function addRecentlyViewed(id){
 }
 function getRecentlyViewed(){try{return JSON.parse(localStorage.getItem('pp_rv')||'[]')}catch(e){return [];}}
 function renderStays(){
-  document.getElementById('stgrid').innerHTML=STAYS.map(s=>{
+  const grid = document.getElementById('stgrid');
+  if(!STAYS.length){
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 20px;background:#fff;border:1.5px dashed rgba(74,124,95,.2);border-radius:16px">
+      <div style="font-size:36px;margin-bottom:12px">🏡</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--pine);margin-bottom:6px">First stays coming soon</div>
+      <p style="font-size:13px;color:var(--stone);line-height:1.7;max-width:340px;margin:0 auto 16px">We're onboarding local homestays in Tirthan, Spiti &amp; Kinnaur. Want to list your property?</p>
+      <button onclick="showPartnerForm()" style="padding:11px 24px;background:var(--pine);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">List Your Property →</button>
+    </div>`;
+    return;
+  }
+  grid.innerHTML=STAYS.map(s=>{
     const photos=getStayPhotos(s.id);
     const firstPhoto=photos[0]||'';
     const cnt=photos.length;
@@ -2543,6 +2577,13 @@ function selectPlanPlace(id, label){
   document.getElementById('ppPlace').value=id;
   document.getElementById('ppPlaceSearch').value=label;
   document.getElementById('ppPlaceDrop').style.display='none';
+  // Pre-fetch itinerary in background so it's ready when runFC fires
+  if(!window._itnCache) window._itnCache={};
+  if(window._itnCache[id]===undefined){
+    _sb.from('place_itineraries').select('days').eq('place_id',id).maybeSingle().then(({data})=>{
+      window._itnCache[id]=data?.days?.length?data.days:null;
+    }).catch(()=>{ window._itnCache[id]=null; });
+  }
   runFC();
 }
 
@@ -2840,7 +2881,14 @@ function detectLocation(){
   },{timeout:8000});
 }
 
-function runFC(){
+async function runFC(){
+  // Show instant skeleton for itinerary while data loads
+  const _itinEl=document.getElementById('fcItinerary');
+  const _daysEl=document.getElementById('fcDays');
+  if(_daysEl&&_itinEl){
+    _daysEl.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.4);font-size:13px">⏳ Loading itinerary…</div>';
+    _itinEl.style.display='block';
+  }
   const pid=document.getElementById('ppPlace').value;
   let dv=document.getElementById('ppDate').value;
   const nights=parseInt(document.getElementById('ppNights').value)||2;
@@ -2919,37 +2967,88 @@ function runFC(){
   if(distInfo){locEl.textContent=distInfo;locEl.style.display='block';}
   else locEl.style.display='none';
 
-  // Day-by-day itinerary — unique per place using famousFor, vibes, altitude, zone
+  // Load custom itinerary from Supabase — cached per place
+  let customItn = null;
+  if(!window._itnCache) window._itnCache={};
+  if(window._itnCache[p.id] !== undefined){
+    customItn = window._itnCache[p.id];
+  } else {
+    try{
+      const {data:itnData} = await _sb.from('place_itineraries').select('days').eq('place_id',p.id).maybeSingle();
+      customItn = itnData?.days?.length ? itnData.days : null;
+      window._itnCache[p.id] = customItn;
+    }catch(e){ window._itnCache[p.id]=null; }
+  }
+
+  // ── PLACE-SPECIFIC ITINERARY BUILDER ──
   const vibes=(p.vibes||[]).map(v=>v.toLowerCase());
-  const famous=(p.famousFor||'').toLowerCase();
+  const famous=(p.famousFor||'');
+  const famousL=famous.toLowerCase();
   const zone=(p.zone||'').toLowerCase();
   const isHigh=alt>3000;
-  const isRiver=vibes.some(v=>['river','fishing','water'].includes(v))||famous.includes('river')||famous.includes('stream');
-  const isTrek=vibes.some(v=>['trek','trekking','hiking'].includes(v))||famous.includes('trek');
-  const isSpiritual=vibes.some(v=>['spiritual','temple','religious'].includes(v))||famous.includes('temple')||famous.includes('monastery');
-  const isAdventure=vibes.some(v=>['adventure','paragliding','camping'].includes(v))||famous.includes('paragliding');
-  const isVillage=vibes.some(v=>['village','rural','offbeat'].includes(v))||famous.includes('village')||famous.includes('homestay');
-  const isWildlife=vibes.some(v=>['wildlife','nature','forest'].includes(v))||famous.includes('wildlife')||famous.includes('sanctuary');
-  const isSnow=seas==='snow'||isHigh;
-  const isCulture=vibes.some(v=>['culture','heritage','art'].includes(v))||famous.includes('culture')||famous.includes('museum');
+  const isRiver=vibes.includes('river')||vibes.includes('fishing')||famousL.includes('river')||famousL.includes('stream')||famousL.includes('trout');
+  const isTrek=vibes.includes('trek')||vibes.includes('trekking')||famousL.includes('trek')||famousL.includes('pass')||famousL.includes('peak')||famousL.includes('summit');
+  const isSpiritual=vibes.includes('spiritual')||famousL.includes('temple')||famousL.includes('monastery')||famousL.includes('sacred')||famousL.includes('deity')||famousL.includes('shrine');
+  const isAdventure=vibes.includes('adventure')||famousL.includes('paragliding')||famousL.includes('extreme')||famousL.includes('pass');
+  const isVillage=vibes.includes('village')||famousL.includes('village')||famousL.includes('pahari life')||famousL.includes('traditional');
+  const isWildlife=vibes.includes('wildlife')||famousL.includes('wildlife')||famousL.includes('sanctuary')||famousL.includes('bird')||famousL.includes('leopard');
+  const isApple=famousL.includes('apple')||famousL.includes('orchard');
+  const isWine=famousL.includes('wine')||famousL.includes('grape');
+  const isCulture=vibes.includes('culture')||famousL.includes('culture')||famousL.includes('heritage')||famousL.includes('museum')||famousL.includes('fort');
+  const isLake=famousL.includes('lake')||famousL.includes('kund')||famousL.includes('tso');
+  const isSnow=seas==='snow'||(isHigh&&[10,11,0,1,2,3].includes(date.getMonth()));
+  const isCamp=vibes.includes('camping')||famousL.includes('camp');
+  const isBirding=famousL.includes('bird')||famousL.includes('wetland');
 
-  // Build activity pool unique to this place
+  // Zone-specific food, market, landscape
+  const zoneFood={spiti:'Tibetan Thukpa & Butter Tea',lahaul:'Chilra bread & local cheese',parvati:'Kasoli daal & curd rice',kangra:'Channa Madra & Bhatura',kullu:'Aktori & Siddu',shimla:'Sepu Vadi & apple juice',kinnaur:'Kinnauri dry fruits & wine',default:'Himachali Dham — rice, rajma, bhey, khatta'};
+  const zoneMkt={spiti:'Tibetan handicrafts & prayer flags',lahaul:'Yak wool shawls & dried apricots',parvati:'Silver jewelry & hippie market',kangra:'Kangra tea & Tibetan thangkas',kullu:'Kullu shawls & local honey',shimla:'Woollen caps & apple products',kinnaur:'Kinnauri caps, chulli oil & dry fruits',default:'Pahari pickles, shawls & local honey'};
+  const zoneLandscape={spiti:'high-altitude barren moonscape',lahaul:'glacier-fed green valleys',parvati:'dense pine & cannabis forests',kangra:'terraced tea gardens',kullu:'apple orchards & deodar groves',shimla:'rhododendron & oak forests',kinnaur:'apricot & walnut orchards',default:'deodar cedar forest'};
+  const food=zoneFood[zone]||zoneFood.default;
+  const mkt=zoneMkt[zone]||zoneMkt.default;
+  const landscape=zoneLandscape[zone]||zoneLandscape.default;
+
+  // Build activity pool — deeply tied to THIS place
   const actPool=[];
-  if(isTrek) actPool.push(`🥾 Trek to ${p.famousFor?.split(',')[0]||'nearby viewpoint'}`);
-  if(isRiver) actPool.push(`🎣 Morning by the ${zone==='tirthan'?'Tirthan':zone==='parvati'?'Parvati':'local'} river`);
-  if(isSpiritual) actPool.push(`🛕 Visit ${famous.includes('monastery')?'ancient monastery':'local temple'} at dawn`);
-  if(isAdventure) actPool.push(`🪂 ${famous.includes('paragliding')?'Paragliding session (book via host)':'Adventure activity'}`);
-  if(isVillage) actPool.push(`🏘️ Walk through nearby Pahari village, meet locals`);
-  if(isWildlife) actPool.push(`🦅 Wildlife spotting — ${famous.includes('snow leopard')?'snow leopard territory':'bird watching'}`);
-  if(isSnow) actPool.push(`❄️ Snow walk / snowball fight at ${p.altitude||'high altitude'}`);
-  if(isCulture) actPool.push(`🎭 Explore local ${famous.includes('museum')?'museum':'cultural heritage site'}`);
-  if(isHigh) actPool.push(`⛰️ Acclimatisation walk — take it slow above ${p.altitude||'3000m'}`);
-  actPool.push(`📸 Golden hour photography at ${p.name} viewpoint`);
-  actPool.push(`☕ Breakfast at local café, try Siddu & Dham`);
-  actPool.push(`🌲 Nature walk through ${zone==='spiti'?'barren moonscape':zone==='lahaul'?'high-altitude meadows':'deodar forest'}`);
-  actPool.push(`🛍️ Local market — ${zone==='spiti'?'Tibetan handicrafts':zone==='kullu'?'Kullu shawls':'Pahari souvenirs'}`);
-  actPool.push(`🌅 Sunset point — ask host for the secret local spot`);
-  actPool.push(`🍽️ Himachali Dham dinner — ${zone==='spiti'?'Tibetan Thukpa':'traditional rice, rajma, bhey'}`);
+
+  // Famous-for specific activities (most unique)
+  if(famous) actPool.push(`🎯 ${famous.split(',')[0].trim()} — the main reason to be here`);
+  if(isTrek) actPool.push(`🥾 Trek to ${famous.split(',')[0]||p.name+' viewpoint'} — start by 7am`);
+  if(isLake) actPool.push(`🏞️ Morning walk to ${famous.includes('lake')?famous.split(',')[0]:'the lake'} — serene before 9am`);
+  if(isSpiritual) actPool.push(`🛕 Dawn visit to ${famousL.includes('monastery')?'the monastery':'the temple'} — catch morning prayers`);
+  if(isRiver) actPool.push(`🎣 Sunrise by the ${p.district.split(' ')[0]} river — fishing or just listening`);
+  if(isAdventure&&famousL.includes('paragliding')) actPool.push(`🪂 Paragliding over ${p.name} — book through host (₹2,500–3,500)`);
+  if(isWildlife) actPool.push(`🦅 Wildlife trail — ${famousL.includes('snow leopard')?'snow leopard & ibex territory':'birdwatching & jungle walk'}`);
+  if(isApple) actPool.push(`🍎 Apple orchard walk — pick fresh from the tree (Aug–Oct season)`);
+  if(isWine) actPool.push(`🍇 Visit local grape farm, try Kinnauri home wine`);
+  if(isBirding) actPool.push(`🦢 Birding trail — ${p.name} is a designated ${famousL.includes('wetland')?'Ramsar wetland':'birding hotspot'}`);
+
+  // Zone-specific activities
+  if(zone==='spiti') actPool.push(`🏔️ Drive to Komic or Langza — spot snow leopard & fossil hunting`);
+  if(zone==='spiti') actPool.push(`🧘 Meditation session at Key Monastery — resident monks welcome visitors`);
+  if(zone==='parvati') actPool.push(`♨️ Kheerganga hot spring hike — 12km trek, worth every step`);
+  if(zone==='parvati') actPool.push(`🌿 Chalal village walk — cross the suspension bridge, meet the community`);
+  if(zone==='kangra') actPool.push(`🫖 Kangra tea estate tour — pick & brew your own cup`);
+  if(zone==='kangra') actPool.push(`🙏 Mcleod Ganj — Dalai Lama temple & Tibetan market`);
+  if(zone==='kullu') actPool.push(`🏄 Beas river rafting — white water run near Kullu town`);
+  if(zone==='kullu'&&isTrek) actPool.push(`🌸 Meadow hike above ${p.name} — rhododendron & wildflower fields in summer`);
+  if(zone==='shimla') actPool.push(`🚂 Toy train section between Shimla–Kandaghat if passing through`);
+  if(zone==='kinnaur') actPool.push(`🌉 Chakki Bridge — photogenic cantilever bridge over Sutlej gorge`);
+  if(zone==='lahaul') actPool.push(`🌊 Chandra river bank walk — turquoise glacial water at your feet`);
+  if(isSnow&&isHigh) actPool.push(`❄️ Snow trek at ${p.altitude} — crampon walk on frozen ground`);
+  if(isCamp) actPool.push(`⛺ Night camping under stars — no light pollution at ${p.altitude||'this altitude'}`);
+
+  // Universal but localised
+  actPool.push(`📸 Golden hour on ${p.name} ridge — shoot from the eastern slope`);
+  actPool.push(`🌅 Sunset view — ask your host for the exact spot locals go to`);
+  actPool.push(`🏘️ Village walk at dawn — when locals are out with cattle & chai`);
+  actPool.push(`☕ Slow morning — sit-out breakfast, let ${p.name} come to you`);
+  actPool.push(`🌲 Half-day nature walk through ${landscape}`);
+  actPool.push(`🛍️ Local market visit — ${mkt}`);
+  actPool.push(`🍽️ ${food} — Himachali soul food`);
+  actPool.push(`💬 Evening with host family — hear stories of the mountains`);
+  actPool.push(`🌙 Stargazing — ${isHigh?'One of India best dark skies':'Minimal light pollution here'}`);
+
 
   const dayPlans=[];
   for(let i=0;i<nights;i++){
@@ -2971,15 +3070,37 @@ function runFC(){
         `🚗 Return journey — drive safe`,
       ]};
     } else {
-      const dayActs=actPool.filter((_,idx)=>idx%nights===i%actPool.length).slice(0,2);
-      const fallback=actPool.slice(i*2,i*2+2);
-      const chosen=[...(dayActs.length>=2?dayActs:fallback),...actPool.slice(-2)].slice(0,4);
-      plan={title:`Day ${i+1} — Explore`,items:[...new Set(chosen)].slice(0,4)};
+      // Each middle day gets a UNIQUE set of activities — no repeats across days
+      const used=new Set();
+      // Assign activities round-robin so each day gets different ones
+      const daySpecific=actPool.filter((a,idx)=>{
+        // Distribute: day 1 gets idx 0,3,6... day 2 gets idx 1,4,7... etc
+        return (idx % Math.max(nights-2,1)) === ((i-1) % Math.max(nights-2,1));
+      });
+      // Fill from pool if not enough specific ones
+      const allAvail=[...daySpecific, ...actPool.filter(a=>!daySpecific.includes(a))];
+      const chosen=[];
+      for(const a of allAvail){
+        if(chosen.length>=4) break;
+        if(!used.has(a)){ chosen.push(a); used.add(a); }
+      }
+      // Give each day a unique title based on what's in it
+      const dayThemes=['🏞️ Into the Wild','🏘️ Local Life','⛰️ Higher Ground','🌊 Waterside','🛕 Sacred Trails','🍽️ Culture & Food','📸 Golden Shots'];
+      plan={title:`Day ${i+1} — ${dayThemes[(i-1)%dayThemes.length]}`,items:chosen.slice(0,4)};
     }
     dayPlans.push({dayName,plan});
   }
   const itinEl=document.getElementById('fcItinerary');
-  document.getElementById('fcDays').innerHTML=dayPlans.map((d,i)=>`
+  // Use custom itinerary if available, else auto-generated
+  const finalDays = customItn
+    ? customItn.slice(0,nights).map((day,i)=>{
+        const dayDate=new Date(date);dayDate.setDate(date.getDate()+i);
+        const dayName=dayDate.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'});
+        return {dayName, plan:{title:day.title, items:day.items}};
+      })
+    : dayPlans;
+
+  document.getElementById('fcDays').innerHTML=finalDays.map((d,i)=>`
     <div style="display:flex;gap:14px;margin-bottom:14px">
       <div style="flex-shrink:0;width:32px;height:32px;background:rgba(255,255,255,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;margin-top:2px">D${i+1}</div>
       <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px">
@@ -3009,9 +3130,6 @@ function runFC(){
     document.getElementById('fcCTASub').textContent=`From ₹${Math.min(...stayMatch.map(s=>s.pn)).toLocaleString()}/night · Book directly with local hosts`;
     ctaEl.style.display='flex';
   } else ctaEl.style.display='none';
-
-  // ── Weekly forecast ──
-  renderWeeklyForecast(p, date);
 
   document.getElementById('planRes').classList.add('show');
   document.getElementById('plansec').scrollIntoView({behavior:'smooth',block:'start'});
@@ -3411,18 +3529,38 @@ async function submitCommunityPin(){
 function buildHeatmap(p){
   const now=new Date(),nm=now.getMonth(),nd=now.getDay(),todayIdx=nd===0?6:nd-1;
   const dMults=[1,.95,.95,.97,1.15,1.5,1.3];
+  const mM_map={good:1,warn:1.18,rain:.72,snow:.42,dry:.88};
+
+  // Label by crowd level, not raw percentage — clearer for users
+  function crowdLabel(v){
+    if(v<25) return {label:'Very Low',short:'Low',color:'#1e7a45'};
+    if(v<45) return {label:'Low',short:'Low',color:'#3aab66'};
+    if(v<65) return {label:'Moderate',short:'Mod',color:'#e8a020'};
+    if(v<80) return {label:'High',short:'High',color:'#e05020'};
+    return {label:'Very Busy',short:'Busy',color:'#c0392b'};
+  }
+
   let html='<div></div>'+DN.map(d=>`<div class="hm-day">${d}</div>`).join('');
   for(let mi=0;mi<3;mi++){
     const mIdx=(nm+mi)%12;
     const cond=(ZS[p.zone||'kullu']||ZS.kullu)[mIdx];
-  const mM={good:1,warn:1.18,rain:.72,snow:.42,dry:.88}[cond]||1;
+    const mM=mM_map[cond]||1;
     html+=`<div class="hm-lbl">${MN[mIdx]}</div>`;
     dMults.forEach((dm,di)=>{
       const seed=((p.id*13)+(mIdx*7)+di*3)%9;
       const jitter=seed-4;
       const v=Math.min(97,Math.round(p.crowd*dm*mM+jitter));
+      const cl=crowdLabel(v);
       const isToday=mi===0&&di===todayIdx;
-      html+=`<div class="hm-cell" title="${DN[di]}, ${MN[mIdx]}: ~${v}% crowd" style="background:${hmColor(v)};${isToday?'outline:2.5px solid var(--ink);outline-offset:1px;':''}">${v}%</div>`;
+      const isBest=v===Math.min(...dMults.map((dm2,di2)=>{
+        const s=((p.id*13)+(mIdx*7)+di2*3)%9;
+        return Math.min(97,Math.round(p.crowd*dm2*mM+(s-4)));
+      }));
+      html+=`<div class="hm-cell" 
+        title="${DN[di]}, ${MN[mIdx]}: ${cl.label} crowd (~${v}%)" 
+        style="background:${hmColor(v)};${isToday?'outline:2.5px solid var(--ink);outline-offset:1px;':''}${isBest?'border-bottom:2px solid #fff;':''}">
+        <span style="font-size:9px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)">${cl.short}</span>
+      </div>`;
     });
   }
   document.getElementById('pdhm').innerHTML=html;
@@ -4237,6 +4375,8 @@ function adTab(tab,el){
     ${ngoWork.slice().reverse().map(w=>`<tr><td><b>${w.name}</b><br><span style="font-size:10px;color:var(--stone)">${w.phone}</span></td><td style="font-size:12px">${w.typeLabel}</td><td style="font-size:11px">${w.location}</td><td>${w.kg>0?w.kg+'kg':'—'}</td><td>${w.hours}h</td><td style="font-size:13px">${w.badge}</td><td style="color:var(--pine);font-weight:600">+${w.pts}</td><td style="font-size:11px">${w.date}</td></tr>`).join('')}
     </tbody></table></div>` : '<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">No activities logged yet. When volunteers join a clean-up, log their contribution here.</div>'}
     </div>`;
+    // NGO tab done
+  }else if(tab==='media'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Media Manager</h2>
     <div class="adm-panel"><h3>📷 Stay Photos (click a stay to manage)</h3>
     <p style="font-size:13px;color:var(--stone);margin-bottom:14px;line-height:1.7">Upload real photos for each stay. Guests see these in the card gallery and lightbox when browsing. Add comma-separated image URLs or paste direct photo links. Your own photos work best!</p>
@@ -4262,8 +4402,6 @@ function adTab(tab,el){
     <div class="fg"><label>Image URL(s) — comma separated</label><input class="ai" id="mediaImgs" placeholder="https://…, https://…"/></div>
     <div class="fg"><label>YouTube Video URL(s) — comma separated</label><input class="ai" id="mediaVids" placeholder="https://youtube.com/watch?v=…"/></div>
     <button class="ab ab-p" onclick="saveMedia()">Save Media</button></div>
-    <div class="adm-panel"><h3>360° Panorama Upload (Virtual Tour)</h3>
-    <p style="font-size:13px;color:var(--stone);margin-bottom:14px">In production: upload equirectangular panoramas to Supabase Storage. Pannellum.js renders them as immersive 360° tours.</p>
     <div class="adm-panel">
       <h3>Add YouTube Video to Destination</h3>
       <div class="fg"><label>Select Destination</label>
@@ -4282,8 +4420,28 @@ function adTab(tab,el){
       <h3>360° Panoramas</h3>
       <p style="font-size:13px;color:var(--stone)">Upload equirectangular panoramas to Supabase Storage. Pannellum.js renders them as immersive 360° tours.</p>
       <div style="border:2px dashed rgba(74,124,95,.3);border-radius:10px;padding:20px;text-align:center;color:var(--stone);font-size:13px">📷 Panorama upload — connect Supabase Storage bucket to enable</div>
-    </div></div>`;
+    </div>`;
     loadAdminMedia();
+  }else if(tab==='itinerary'){
+    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">🗺️ Destination Itineraries</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Edit the auto-generated day-by-day itinerary for any destination. Your custom itinerary overrides the auto-generated one.</p>
+    <div class="adm-panel">
+      <h3>Select Destination</h3>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
+        <div style="flex:1;min-width:200px">
+          <select class="ai" id="itnDestSel" onchange="loadAdminItinerary()">
+            <option value="">— Choose destination —</option>
+            ${ALL.map(p=>`<option value="${p.id}">${p.name} — ${p.district}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div id="adminItnEditor" style="display:none">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">Day-by-Day Activities</div>
+        <div id="adminItnDays"></div>
+        <button onclick="adminSaveItinerary()" style="margin-top:12px;background:var(--pine);color:#fff;border:none;padding:11px 24px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">Save Itinerary ✓</button>
+      </div>
+    </div>`;
+    loadAdminItinerary();
   }else if(tab==='pins'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">📍 Community Pins</h2>
     <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Review and approve community-submitted pins. Approved pins appear on the map for all users.</p>
@@ -4553,6 +4711,92 @@ async function loadHostFeedbacks(){
   window._hostFeedbacks=data||[];
 }
 
+// ═══ ITINERARY EDITOR ═══
+let _itnData = {}; // place_id → {days:[{title,items:[]}]}
+
+async function loadAdminItinerary(){
+  const pid = parseInt(document.getElementById('itnDestSel')?.value||'0');
+  const editor = document.getElementById('adminItnEditor');
+  const daysEl = document.getElementById('adminItnDays');
+  if(!pid||!editor||!daysEl){if(editor)editor.style.display='none';return;}
+  editor.style.display='block';
+  // Load from Supabase if exists
+  const {data} = await _sb.from('place_itineraries').select('*').eq('place_id',pid).maybeSingle();
+  const days = data?.days || [
+    {title:'Day 1 — Arrival',items:['Arrive and check in','Evening walk','Local dinner']},
+    {title:'Day 2 — Explore',items:['Morning hike','Visit local attractions','Photography']},
+    {title:'Day 3 — Departure',items:['Breakfast','Local market','Return journey']},
+  ];
+  _itnData[pid] = {days};
+  renderItnEditor(days, pid);
+}
+
+function renderItnEditor(days, pid){
+  const daysEl = document.getElementById('adminItnDays');
+  if(!daysEl)return;
+  daysEl.innerHTML = days.map((day,di)=>`
+    <div style="background:#f8faf8;border:1px solid rgba(74,124,95,.12);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+        <div style="background:var(--pine);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700">Day ${di+1}</div>
+        <input class="ai" value="${day.title}" id="itn_title_${di}" style="flex:1;font-weight:600" placeholder="Day title"/>
+        <button onclick="removeItnDay(${di})" style="background:#fee;border:1px solid #fcc;color:#c0392b;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Remove</button>
+      </div>
+      <div id="itn_items_${di}">
+        ${day.items.map((item,ii)=>`
+        <div style="display:flex;gap:8px;margin-bottom:6px" id="itn_item_${di}_${ii}">
+          <input class="ai" value="${item}" id="itn_item_val_${di}_${ii}" style="flex:1;font-size:13px" placeholder="Activity"/>
+          <button onclick="removeItnItem(${di},${ii})" style="background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;color:#999">✕</button>
+        </div>`).join('')}
+      </div>
+      <button onclick="addItnItem(${di})" style="background:none;border:1.5px dashed rgba(74,124,95,.3);color:var(--pine);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;width:100%;margin-top:4px;font-family:var(--fb)">+ Add Activity</button>
+    </div>
+  `).join('') + `<button onclick="addItnDay()" style="background:none;border:1.5px dashed rgba(74,124,95,.3);color:var(--pine);border-radius:10px;padding:10px;font-size:13px;cursor:pointer;width:100%;font-family:var(--fb)">+ Add Day</button>`;
+}
+
+function addItnDay(){
+  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
+  if(!pid)return;
+  _itnData[pid].days.push({title:`Day ${_itnData[pid].days.length+1} — Explore`,items:['Morning activity','Afternoon exploration','Evening rest']});
+  renderItnEditor(_itnData[pid].days, pid);
+}
+
+function removeItnDay(di){
+  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
+  _itnData[pid].days.splice(di,1);
+  renderItnEditor(_itnData[pid].days,pid);
+}
+
+function addItnItem(di){
+  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
+  _itnData[pid].days[di].items.push('New activity');
+  renderItnEditor(_itnData[pid].days,pid);
+}
+
+function removeItnItem(di,ii){
+  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
+  _itnData[pid].days[di].items.splice(ii,1);
+  renderItnEditor(_itnData[pid].days,pid);
+}
+
+function collectItnData(pid){
+  const days=(_itnData[pid]?.days||[]).map((day,di)=>{
+    const title=document.getElementById(`itn_title_${di}`)?.value||day.title;
+    const items=(day.items||[]).map((_,ii)=>document.getElementById(`itn_item_val_${di}_${ii}`)?.value||'').filter(Boolean);
+    return {title,items};
+  });
+  return days;
+}
+
+async function adminSaveItinerary(){
+  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
+  if(!pid){toast('Select a destination');return;}
+  const days=collectItnData(pid);
+  const {error}=await _sb.from('place_itineraries').upsert({place_id:pid,days},{onConflict:'place_id'});
+  if(error){toast('Error: '+error.message);return;}
+  _itnData[pid]={days};
+  toast('✓ Itinerary saved — shows in Plan My Journey for this destination');
+}
+
 async function adminApprovePin(id){
   await _sb.from('community_pins').update({status:'approved'}).eq('id',id);
   toast('✓ Pin approved — now live on map');
@@ -4635,6 +4879,16 @@ async function loadNgoActivities(){
     if(r.badge&&!window._ngoBadges[r.phone].includes(r.badge))
       window._ngoBadges[r.phone].push(r.badge);
   });
+  // Update public NGO impact widget
+  const activities=window._ngoWork||[];
+  const totalHours=activities.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
+  const totalKg=activities.reduce((s,r)=>s+(parseFloat(r.kg)||0),0);
+  const el1=document.getElementById('ngoCleanups');
+  const el2=document.getElementById('ngoHours');
+  const el3=document.getElementById('ngoKg');
+  if(el1) el1.textContent=activities.length||'0';
+  if(el2) el2.textContent=Math.round(totalHours)||'0';
+  if(el3) el3.textContent=Math.round(totalKg)||'0';
 }
 
 // ═══ ADMIN — BOOKINGS ═══
@@ -4922,6 +5176,16 @@ function showHostRegister(){
 }
 
 async function submitHostRegister(){
+  // Clear previous errors
+  ['hrName','hrProp','hrLoc','hrPhone','hrEmail','hrPass'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.borderColor='';el.style.background='';}
+  });
+  function markErr(id,msg){
+    const el=document.getElementById(id);
+    if(el){el.style.borderColor='#e05555';el.style.background='#fff8f8';el.focus();}
+    toast('⚠️ '+msg);
+  }
   const name  = (document.getElementById('hrName')?.value||'').trim();
   const prop  = (document.getElementById('hrProp')?.value||'').trim();
   const loc   = (document.getElementById('hrLoc')?.value||'').trim();
@@ -4930,9 +5194,15 @@ async function submitHostRegister(){
   const pass  = (document.getElementById('hrPass')?.value||'');
   const price = document.getElementById('hrPrice')?.value||'';
   const type  = document.getElementById('hrType')?.value||'Homestay';
-  if(!name||!prop||!loc||!phone||!email||!pass){toast('Please fill all required fields');return;}
-  if(!/^[6-9]\d{9}$/.test(phone)){toast('Enter valid 10-digit mobile');return;}
-  if(pass.length<6){toast('Password must be at least 6 characters');return;}
+  if(!name){markErr('hrName','Enter your full name');return;}
+  if(!prop){markErr('hrProp','Enter your property name');return;}
+  if(!loc){markErr('hrLoc','Enter your location');return;}
+  if(!phone){markErr('hrPhone','Enter your WhatsApp number');return;}
+  if(!/^[6-9]\d{9}$/.test(phone)){markErr('hrPhone','Enter a valid 10-digit mobile number');return;}
+  if(!email){markErr('hrEmail','Enter your email address');return;}
+  if(!/\S+@\S+\.\S+/.test(email)){markErr('hrEmail','Enter a valid email address');return;}
+  if(!pass){markErr('hrPass','Create a password');return;}
+  if(pass.length<6){markErr('hrPass','Password must be at least 6 characters');return;}
   // Create Supabase auth user
   const {data,error} = await _sb.auth.signUp({email, password:pass, options:{data:{name,role:'host'}}});
   if(error){toast('Registration error: '+error.message);return;}
@@ -5016,6 +5286,31 @@ window.addEventListener('DOMContentLoaded', function(){
 window.addEventListener('beforeunload', () => {
   sessionStorage.removeItem('pp_admin_auth');
   adminLoggedIn = false;
+});
+
+// ─── ESCAPE KEY: close any open modal ────────────────────────────────────────
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Escape') return;
+  const modals = [
+    {id:'privacyMo',   fn:null},
+    {id:'termsMo',     fn:null},
+    {id:'partnerMo',   fn:null},
+    {id:'travellerMo', fn:null},
+    {id:'hostRegMo',   fn:null},
+    {id:'addPinMo',    fn:cancelAddPin},
+    {id:'poiMo',       fn:null},
+    {id:'bookMo',      fn:closeMo},
+  ];
+  for(const m of modals){
+    const el=document.getElementById(m.id);
+    if(el && el.classList.contains('open')){
+      el.classList.remove('open');
+      el.style.display='none';
+      document.body.style.overflow='';
+      if(m.fn) try{m.fn();}catch(ex){}
+      break;
+    }
+  }
 });
 
 // ═══ BOOKING PRICE ENGINE ═══
@@ -5616,7 +5911,7 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
 </div>
 
 <!-- PRIVACY POLICY MODAL -->
-<div id="privacyMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
+<div id="privacyMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
   <div class="mo-box" style="max-width:600px;max-height:80vh;overflow-y:auto">
     <button class="mo-x" onclick="document.getElementById('privacyMo').classList.remove('open');document.getElementById('privacyMo').style.display='none'">✕</button>
     <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:16px">Privacy Policy</h2>
@@ -5632,7 +5927,7 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
 </div>
 
 <!-- TERMS OF SERVICE MODAL -->
-<div id="termsMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
+<div id="termsMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
   <div class="mo-box" style="max-width:600px;max-height:80vh;overflow-y:auto">
     <button class="mo-x" onclick="document.getElementById('termsMo').classList.remove('open');document.getElementById('termsMo').style.display='none'">✕</button>
     <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:16px">Terms of Service</h2>
@@ -5649,7 +5944,7 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
 </div>
 
 <!-- PARTNER LISTING FORM MODAL -->
-<div id="partnerMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
+<div id="partnerMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
   <div class="mo-box" style="max-width:560px">
     <button class="mo-x" onclick="document.getElementById('partnerMo').classList.remove('open');document.getElementById('partnerMo').style.display='none'">✕</button>
     <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:6px">List your property</h2>
