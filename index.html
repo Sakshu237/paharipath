@@ -17,8 +17,6 @@
 <meta name="twitter:title" content="PahariPath — Real Himachal Pradesh"/>
 <meta name="twitter:description" content="Live crowd tracking for 146+ HP destinations. Find quiet valleys and book local stays."/>
 <link rel="canonical" href="https://paharipath.in"/>
-<link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
-<meta name="robots" content="index, follow"/>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1a3d2b"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -556,6 +554,19 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   .fg-row{grid-template-columns:1fr}
 }
 </style>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').then(reg=>{
+      console.log('PahariPath SW registered');
+      // Pre-cache HP tiles when user visits map
+      document.addEventListener('mapOpened',()=>{
+        reg.active?.postMessage('PRECACHE_HP_TILES');
+      });
+    }).catch(e=>console.log('SW error:',e));
+  });
+}
+</script>
 </head>
 <body>
 <nav>
@@ -658,70 +669,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   </div>
 </section>
 <div class="stats-bar" id="sbar"></div>
-<section class="sec" id="crowd">
-  <div class="sec-hd">
-    <div>
-      <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
-      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
-      <p style="font-size:11px;color:var(--stone);margin-top:3px;opacity:.7">Crowd levels are estimates based on historical data &amp; admin reports</p>
-    </div>
-    <div style="text-align:right">
-      <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
-      <div id="utime" style="font-size:11px;color:var(--stone)"></div>
-    </div>
-  </div>
-  <div class="cg" id="cgrid"></div>
-  <div class="show-more"><button class="sm-btn" id="crowd-more-btn" onclick="toggleCrowd()">Show all 146 places ↓</button></div>
-</section>
-<div class="map-wrap" id="mapwrap">
-  <div class="map-card">
-    <div class="map-hd">
-      <div>
-        <div class="map-ttl">Live Destination Map — Himachal Pradesh</div>
-        <p style="font-size:12px;color:var(--stone);margin-top:2px" id="map-provider-note">Click any pin · 146 GPS locations · Live crowd colors</p>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-        <div class="map-leg">
-          <div class="leg-i"><div class="leg-d" style="background:#3aab66"></div>Quiet</div>
-          <div class="leg-i"><div class="leg-d" style="background:#e8a020"></div>Moderate</div>
-          <div class="leg-i"><div class="leg-d" style="background:#e24a4a"></div>Busy</div>
-        </div>
-        <div class="map-controls">
-          <button class="map-filter-btn act" onclick="mapFilter('all',this)">All 146</button>
-          <button class="map-filter-btn quiet-only" onclick="mapFilter('quiet',this)">🟢 Quiet Only</button>
-          <button class="map-filter-btn" onclick="mapFilter('trek',this)">Trek</button>
-          <button class="map-filter-btn" onclick="mapFilter('spiritual',this)">Spiritual</button>
-          <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
-          <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
-          <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
-        </div>
-      </div>
-    </div>
-    <div class="map-body">
-      <div id="lfmap-wrap" style="position:relative">
-        <div id="lfmap"></div>
-        <div id="map-fallback" class="map-offline" style="display:none">
-          <div class="map-offline-icon">🏔️</div>
-          <div class="map-offline-t">Map needs internet</div>
-          <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
-        </div>
-      </div>
-      <div style="position:absolute;bottom:80px;right:12px;z-index:999;display:none;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
-        <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
-          📍 Add a Place
-        </button>
-      </div>
-      <div class="map-sidebar">
-        <div class="ms-head">
-          <div class="ms-title">Destinations <span id="ms-count" style="font-weight:400;color:var(--sage)"></span></div>
-          <input class="ms-search" id="msSearch" placeholder="Filter by name or district…" oninput="filterSidebar(this.value)"/>
-        </div>
-        <div class="ms-list" id="msList"></div>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="mpop" style="display:none"></div>
 <div class="plan-sec" id="plansec">
   <div class="plan-in">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:32px">
@@ -824,6 +771,70 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <div class="alt-grid" id="altg"></div>
   </div>
 </div>
+
+<section class="sec" id="crowd">
+  <div class="sec-hd">
+    <div>
+      <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
+      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
+    </div>
+    <div style="text-align:right">
+      <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
+      <div id="utime" style="font-size:11px;color:var(--stone)"></div>
+    </div>
+  </div>
+  <div class="cg" id="cgrid"></div>
+  <div class="show-more"><button class="sm-btn" id="crowd-more-btn" onclick="toggleCrowd()">Show all 146 places ↓</button></div>
+</section>
+<div class="map-wrap" id="mapwrap">
+  <div class="map-card">
+    <div class="map-hd">
+      <div>
+        <div class="map-ttl">Live Destination Map — Himachal Pradesh</div>
+        <p style="font-size:12px;color:var(--stone);margin-top:2px" id="map-provider-note">Click any pin · 146 GPS locations · Live crowd colors</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+        <div class="map-leg">
+          <div class="leg-i"><div class="leg-d" style="background:#3aab66"></div>Quiet</div>
+          <div class="leg-i"><div class="leg-d" style="background:#e8a020"></div>Moderate</div>
+          <div class="leg-i"><div class="leg-d" style="background:#e24a4a"></div>Busy</div>
+        </div>
+        <div class="map-controls">
+          <button class="map-filter-btn act" onclick="mapFilter('all',this)">All 146</button>
+          <button class="map-filter-btn quiet-only" onclick="mapFilter('quiet',this)">🟢 Quiet Only</button>
+          <button class="map-filter-btn" onclick="mapFilter('trek',this)">Trek</button>
+          <button class="map-filter-btn" onclick="mapFilter('spiritual',this)">Spiritual</button>
+          <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
+          <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
+          <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
+        </div>
+      </div>
+    </div>
+    <div class="map-body">
+      <div id="lfmap-wrap" style="position:relative">
+        <div id="lfmap"></div>
+        <div id="map-fallback" class="map-offline" style="display:none">
+          <div class="map-offline-icon">🏔️</div>
+          <div class="map-offline-t">Map needs internet</div>
+          <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:80px;right:12px;z-index:999;display:none;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
+        <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
+          📍 Add a Place
+        </button>
+      </div>
+      <div class="map-sidebar">
+        <div class="ms-head">
+          <div class="ms-title">Destinations <span id="ms-count" style="font-weight:400;color:var(--sage)"></span></div>
+          <input class="ms-search" id="msSearch" placeholder="Filter by name or district…" oninput="filterSidebar(this.value)"/>
+        </div>
+        <div class="ms-list" id="msList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="mpop" style="display:none"></div>
 <section class="sec" id="explore">
   <div class="sec-hd">
     <div>
@@ -862,33 +873,15 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 <div class="about-sec">
   <h2 class="about-t">Why PahariPath?</h2>
   <p class="about-d">Himachal Pradesh is far more than Manali, Shimla, and Kasol. PahariPath shows you live crowd data across all 146 destinations, enforces visitor limits at sensitive zones, suggests quiet alternatives, and connects you directly with local homestays. No tourist-speak. No corporate stays. Just honest travel.</p>
-
-  <!-- NGO Impact Widget -->
-  <div id="ngoImpactWidget" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:28px auto;padding:20px 24px;background:rgba(74,124,95,.08);border:1px solid rgba(74,124,95,.15);border-radius:16px;max-width:560px">
-    <div style="width:100%;text-align:center;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--sage);margin-bottom:8px">🌿 Community Impact — powered by travellers like you</div>
-    <div style="flex:1;min-width:90px;text-align:center">
-      <div id="ngoCleanups" style="font-family:var(--fd);font-size:30px;font-weight:600;color:var(--pine)">—</div>
-      <div style="font-size:12px;color:var(--stone);margin-top:2px">Trail Clean-ups</div>
-    </div>
-    <div style="flex:1;min-width:90px;text-align:center">
-      <div id="ngoHours" style="font-family:var(--fd);font-size:30px;font-weight:600;color:var(--pine)">—</div>
-      <div style="font-size:12px;color:var(--stone);margin-top:2px">Volunteer Hours</div>
-    </div>
-    <div style="flex:1;min-width:90px;text-align:center">
-      <div id="ngoKg" style="font-family:var(--fd);font-size:30px;font-weight:600;color:var(--pine)">—</div>
-      <div style="font-size:12px;color:var(--stone);margin-top:2px">Waste Cleared (kg)</div>
-    </div>
-  </div>
-
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
     <button class="nb" onclick="goTo('stays-bg')">Find a Stay</button>
-    <button class="nb ol" onclick="showPartnerForm()">List Your Property</button>
+    <button class="nb ol" onclick="toast('Partner listing — email hello@paharipath.in')">List Your Property</button>
   </div>
 </div>
 <footer>
   <div class="ft-logo" style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0"><polygon points="18,24 25,10 32,24" fill="rgba(255,255,255,0.15)"/><polygon points="14,24 22,8 30,24" fill="rgba(255,255,255,0.25)"/><polygon points="7,25 18,4 29,25" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.2" stroke-linejoin="round"/><polygon points="7,25 18,4 29,25" fill="rgba(255,255,255,0.75)"/><polygon points="18,4 22,12 14,12" fill="#1a3d2b" opacity="0.5"/><path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg><div><div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;line-height:1.1">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span></div><div style="font-family:sans-serif;font-size:9px;letter-spacing:2px;color:#c9a84c;line-height:1;margin-top:2px">HIMACHAL · OFFBEAT</div></div></div>
   <p>Promoting offbeat travel · Supporting local communities · Preserving Pahari culture</p>
-  <p style="margin-top:8px;font-size:11px;opacity:.4">© 2025–2026 PahariPath · Built for Himachal Pradesh · Eco &amp; Responsible Tourism</p>
+  <p style="margin-top:8px;font-size:11px;opacity:.4">© 2025 PahariPath · Built for Himachal Pradesh · Eco &amp; Responsible Tourism</p>
   <!-- Hidden access: type "pahari" anywhere for admin, go to /#host for host login -->
 <div style="margin-top:12px;height:20px" id="secretZone" onclick="handleSecretClick()"></div>
 </footer>
@@ -897,7 +890,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <a href="#" onclick="showPrivacy()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Privacy Policy</a>
   <a href="#" onclick="showTerms()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Terms of Service</a>
   <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
-  <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us · hello@paharipath.in</a></div><!-- /home -->
+  <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us</a></div><!-- /home -->
 
 <!-- ADMIN LOGIN -->
 <!-- HOST LOGIN -->
@@ -1589,10 +1582,8 @@ async function loadZoneCaps(){
 
 function showSkeletons(){
   const sk=()=>`<div class="pc"><div style="height:160px;background:linear-gradient(90deg,#f0f0ee 25%,#e8e8e6 50%,#f0f0ee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:16px 16px 0 0"></div><div style="padding:14px"><div style="height:13px;width:80%;background:linear-gradient(90deg,#f0f0ee 25%,#e8e8e6 50%,#f0f0ee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;margin-bottom:10px"></div><div style="height:11px;width:55%;background:linear-gradient(90deg,#f0f0ee 25%,#e8e8e6 50%,#f0f0ee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px"></div></div></div>`;
-  const csk=()=>`<div style="background:linear-gradient(90deg,#f0f0ee 25%,#e8e8e6 50%,#f0f0ee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:14px;height:90px;"></div>`;
   const pg=document.getElementById('pgrid');if(pg)pg.innerHTML=Array(6).fill(sk()).join('');
   const stg=document.getElementById('stgrid');if(stg)stg.innerHTML=Array(3).fill(sk()).join('');
-  const cg=document.getElementById('cgrid');if(cg)cg.innerHTML=Array(8).fill(csk()).join('');
 }
 async function ppInit(){
   showSkeletons();
@@ -1985,7 +1976,7 @@ function makePopupHTML(p){
     ${nearbyHTML}
     <div class="lf-acts">
       <button class="lf-btn lf-btn-p" onclick="openPD(${p.id});_lmap&&_lmap.closePopup()">Explore →</button>
-      <a href="https://www.google.com/maps/dir/?api=1&destination=${PLACE_COORDS[p.id]?PLACE_COORDS[p.id][0]+','+PLACE_COORDS[p.id][1]:''}" target="_blank" rel="noopener" class="lf-btn" style="background:#4285f4;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center">🧭 Go</a>
+      <button onclick="drawRouteToPlace(${p.id});_lmap&&_lmap.closePopup()" class="lf-btn" style="background:#1a3d2b;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">🗺️ Route</button>
       <button class="lf-btn lf-btn-s" onclick="waSharePlace(${p.id},'${p.name.replace(/'/g,"\\'")}')">📲 Share</button>
     </div>
   </div>`;
@@ -2385,17 +2376,7 @@ function addRecentlyViewed(id){
 }
 function getRecentlyViewed(){try{return JSON.parse(localStorage.getItem('pp_rv')||'[]')}catch(e){return [];}}
 function renderStays(){
-  const grid = document.getElementById('stgrid');
-  if(!STAYS.length){
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 20px;background:#fff;border:1.5px dashed rgba(74,124,95,.2);border-radius:16px">
-      <div style="font-size:36px;margin-bottom:12px">🏡</div>
-      <div style="font-family:var(--fd);font-size:20px;color:var(--pine);margin-bottom:6px">First stays coming soon</div>
-      <p style="font-size:13px;color:var(--stone);line-height:1.7;max-width:340px;margin:0 auto 16px">We're onboarding local homestays in Tirthan, Spiti &amp; Kinnaur. Want to list your property?</p>
-      <button onclick="showPartnerForm()" style="padding:11px 24px;background:var(--pine);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">List Your Property →</button>
-    </div>`;
-    return;
-  }
-  grid.innerHTML=STAYS.map(s=>{
+  document.getElementById('stgrid').innerHTML=STAYS.map(s=>{
     const photos=getStayPhotos(s.id);
     const firstPhoto=photos[0]||'';
     const cnt=photos.length;
@@ -3374,6 +3355,146 @@ function buildVtour(p){
   }
 }
 
+// ═══ MAP ROUTING (OSRM) ═══
+let _routeLayer = null;
+let _userLatLng = null;
+
+async function drawRouteToPin(pin){
+  if(!_lmap) return;
+  const coords = [pin.lat, pin.lng];
+  if(!_userLatLng){
+    try{
+      const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
+      _userLatLng = [pos.coords.latitude, pos.coords.longitude];
+    }catch(e){ toast('Could not get your location'); return; }
+  }
+  if(_routeLayer){ _lmap.removeLayer(_routeLayer); _routeLayer=null; }
+  try{
+    const url=`https://router.project-osrm.org/route/v1/driving/${_userLatLng[1]},${_userLatLng[0]};${pin.lng},${pin.lat}?overview=full&geometries=geojson`;
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data.code==='Ok'&&data.routes?.length){
+      const route=data.routes[0];
+      _routeLayer=L.geoJSON(route.geometry,{style:{color:'#1a3d2b',weight:4,opacity:0.85,dashArray:'8,4'}}).addTo(_lmap);
+      _lmap.fitBounds(_routeLayer.getBounds(),{padding:[40,40]});
+      const distKm=(route.distance/1000).toFixed(1);
+      const timeStr=Math.round(route.duration/60)+'min';
+      showRoutePanel(pin.name,distKm,timeStr,null,coords);
+    }
+  }catch(e){
+    _routeLayer=L.polyline([_userLatLng,coords],{color:'#1a3d2b',weight:3,dashArray:'10,6'}).addTo(_lmap);
+    _lmap.fitBounds(_routeLayer.getBounds(),{padding:[40,40]});
+  }
+}
+
+async function drawRouteToPlace(placeId){
+  const coords = PLACE_COORDS[placeId];
+  if(!coords){ toast('No coordinates for this place'); return; }
+
+  // Get user location
+  if(!_userLatLng){
+    toast('Getting your location…');
+    try{
+      const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
+      _userLatLng = [pos.coords.latitude, pos.coords.longitude];
+    }catch(e){
+      toast('Could not get your location. Enable GPS and try again.');
+      return;
+    }
+  }
+
+  const [toLat,toLng] = coords;
+  const [fromLat,fromLng] = _userLatLng;
+
+  // Remove existing route
+  if(_routeLayer){ _lmap.removeLayer(_routeLayer); _routeLayer=null; }
+
+  toast('🗺️ Calculating route…');
+
+  try{
+    // OSRM public API — free, no key needed
+    const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if(data.code !== 'Ok' || !data.routes?.length){
+      throw new Error('No route found');
+    }
+
+    const route = data.routes[0];
+    const distKm = (route.distance/1000).toFixed(1);
+    const durHr = Math.floor(route.duration/3600);
+    const durMin = Math.round((route.duration%3600)/60);
+    const timeStr = durHr>0 ? `${durHr}h ${durMin}min` : `${durMin} min`;
+
+    // Draw route on our map
+    _routeLayer = L.geoJSON(route.geometry, {
+      style:{color:'#1a3d2b',weight:4,opacity:0.85,dashArray:'8,4'}
+    }).addTo(_lmap);
+
+    // Add start/end markers
+    L.circleMarker(_userLatLng,{radius:8,fillColor:'#4285f4',fillOpacity:1,color:'#fff',weight:2}).addTo(_lmap);
+
+    // Fit map to route
+    _lmap.fitBounds(_routeLayer.getBounds(), {padding:[40,40]});
+
+    // Show route info panel
+    const p = ALL.find(x=>x.id===placeId);
+    showRoutePanel(p?.name||'Destination', distKm, timeStr, placeId, coords);
+
+  }catch(e){
+    console.error('OSRM error:', e);
+    // Fallback — draw straight line
+    _routeLayer = L.polyline([_userLatLng, coords],{
+      color:'#1a3d2b',weight:3,opacity:0.7,dashArray:'10,6'
+    }).addTo(_lmap);
+    _lmap.fitBounds(_routeLayer.getBounds(),{padding:[40,40]});
+    const distKm = haversineKm(_userLatLng[0],_userLatLng[1],coords[0],coords[1]).toFixed(1);
+    const p = ALL.find(x=>x.id===placeId);
+    showRoutePanel(p?.name||'Destination', distKm, '~'+Math.round(distKm/35)+'h est.', placeId, coords, true);
+  }
+}
+
+function showRoutePanel(name, distKm, timeStr, placeId, coords, isFallback=false){
+  let panel = document.getElementById('routePanel');
+  if(!panel){
+    panel = document.createElement('div');
+    panel.id = 'routePanel';
+    panel.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:16px 20px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:1000;min-width:280px;max-width:380px;font-family:DM Sans,sans-serif';
+    document.querySelector('.map-wrap')?.appendChild(panel);
+  }
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="background:#1a3d2b;color:#fff;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;white-space:nowrap">🗺️ Route</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;color:#1a1a1a">${name}</div>
+        <div style="font-size:12px;color:#666;margin-top:2px">${distKm}km · ${timeStr} drive${isFallback?' (straight line — roads may vary)':''}</div>
+      </div>
+      <button onclick="clearRoute()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#999;padding:4px">✕</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="clearRoute()" style="flex:1;padding:9px;background:#f5f5f3;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Clear Route</button>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${coords[0]},${coords[1]}" target="_blank"
+        style="flex:1;padding:9px;background:#4285f4;color:#fff;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px">
+        🧭 Turn-by-turn GPS
+      </a>
+    </div>
+  `;
+}
+
+function clearRoute(){
+  if(_routeLayer){ _lmap.removeLayer(_routeLayer); _routeLayer=null; }
+  const panel = document.getElementById('routePanel');
+  if(panel) panel.style.display='none';
+}
+
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
 // ═══ VIRTUAL TOUR CONTROLS ═══
 let _vtAngle=0, _vtScale=1;
 function vtPan(deg){
@@ -3461,10 +3582,14 @@ function openPOIPopup(pin){
       ${photos.map(p=>`<img src="${p}" style="height:120px;width:160px;object-fit:cover;border-radius:10px;flex-shrink:0" loading="lazy"/>`).join('')}
     </div>`:''}
     <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="_userLatLng=null;_lmap&&_lmap.closePopup();document.getElementById('poiMo').classList.remove('open');document.getElementById('poiMo').style.display='none';setView('home');setTimeout(()=>{document.querySelector('.map-tab')?.click();_lmap&&drawRouteToPin(${JSON.stringify(pin)});},400)"
+        style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#1a3d2b;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;min-width:140px;font-family:var(--fb)">
+        🗺️ Route on Map
+      </button>
       <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.lat},${pin.lng}"
         target="_blank" rel="noopener"
         style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#4285f4;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;min-width:140px">
-        🧭 Google Maps
+        🧭 GPS Nav
       </a>
       <a href="https://maps.apple.com/?daddr=${pin.lat},${pin.lng}"
         target="_blank" rel="noopener"
@@ -4375,8 +4500,6 @@ function adTab(tab,el){
     ${ngoWork.slice().reverse().map(w=>`<tr><td><b>${w.name}</b><br><span style="font-size:10px;color:var(--stone)">${w.phone}</span></td><td style="font-size:12px">${w.typeLabel}</td><td style="font-size:11px">${w.location}</td><td>${w.kg>0?w.kg+'kg':'—'}</td><td>${w.hours}h</td><td style="font-size:13px">${w.badge}</td><td style="color:var(--pine);font-weight:600">+${w.pts}</td><td style="font-size:11px">${w.date}</td></tr>`).join('')}
     </tbody></table></div>` : '<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">No activities logged yet. When volunteers join a clean-up, log their contribution here.</div>'}
     </div>`;
-    // NGO tab done
-  }else if(tab==='media'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Media Manager</h2>
     <div class="adm-panel"><h3>📷 Stay Photos (click a stay to manage)</h3>
     <p style="font-size:13px;color:var(--stone);margin-bottom:14px;line-height:1.7">Upload real photos for each stay. Guests see these in the card gallery and lightbox when browsing. Add comma-separated image URLs or paste direct photo links. Your own photos work best!</p>
@@ -4402,6 +4525,8 @@ function adTab(tab,el){
     <div class="fg"><label>Image URL(s) — comma separated</label><input class="ai" id="mediaImgs" placeholder="https://…, https://…"/></div>
     <div class="fg"><label>YouTube Video URL(s) — comma separated</label><input class="ai" id="mediaVids" placeholder="https://youtube.com/watch?v=…"/></div>
     <button class="ab ab-p" onclick="saveMedia()">Save Media</button></div>
+    <div class="adm-panel"><h3>360° Panorama Upload (Virtual Tour)</h3>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:14px">In production: upload equirectangular panoramas to Supabase Storage. Pannellum.js renders them as immersive 360° tours.</p>
     <div class="adm-panel">
       <h3>Add YouTube Video to Destination</h3>
       <div class="fg"><label>Select Destination</label>
@@ -4420,7 +4545,7 @@ function adTab(tab,el){
       <h3>360° Panoramas</h3>
       <p style="font-size:13px;color:var(--stone)">Upload equirectangular panoramas to Supabase Storage. Pannellum.js renders them as immersive 360° tours.</p>
       <div style="border:2px dashed rgba(74,124,95,.3);border-radius:10px;padding:20px;text-align:center;color:var(--stone);font-size:13px">📷 Panorama upload — connect Supabase Storage bucket to enable</div>
-    </div>`;
+    </div></div>`;
     loadAdminMedia();
   }else if(tab==='itinerary'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">🗺️ Destination Itineraries</h2>
@@ -4879,16 +5004,6 @@ async function loadNgoActivities(){
     if(r.badge&&!window._ngoBadges[r.phone].includes(r.badge))
       window._ngoBadges[r.phone].push(r.badge);
   });
-  // Update public NGO impact widget
-  const activities=window._ngoWork||[];
-  const totalHours=activities.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
-  const totalKg=activities.reduce((s,r)=>s+(parseFloat(r.kg)||0),0);
-  const el1=document.getElementById('ngoCleanups');
-  const el2=document.getElementById('ngoHours');
-  const el3=document.getElementById('ngoKg');
-  if(el1) el1.textContent=activities.length||'0';
-  if(el2) el2.textContent=Math.round(totalHours)||'0';
-  if(el3) el3.textContent=Math.round(totalKg)||'0';
 }
 
 // ═══ ADMIN — BOOKINGS ═══
@@ -5176,16 +5291,6 @@ function showHostRegister(){
 }
 
 async function submitHostRegister(){
-  // Clear previous errors
-  ['hrName','hrProp','hrLoc','hrPhone','hrEmail','hrPass'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.style.borderColor='';el.style.background='';}
-  });
-  function markErr(id,msg){
-    const el=document.getElementById(id);
-    if(el){el.style.borderColor='#e05555';el.style.background='#fff8f8';el.focus();}
-    toast('⚠️ '+msg);
-  }
   const name  = (document.getElementById('hrName')?.value||'').trim();
   const prop  = (document.getElementById('hrProp')?.value||'').trim();
   const loc   = (document.getElementById('hrLoc')?.value||'').trim();
@@ -5194,15 +5299,9 @@ async function submitHostRegister(){
   const pass  = (document.getElementById('hrPass')?.value||'');
   const price = document.getElementById('hrPrice')?.value||'';
   const type  = document.getElementById('hrType')?.value||'Homestay';
-  if(!name){markErr('hrName','Enter your full name');return;}
-  if(!prop){markErr('hrProp','Enter your property name');return;}
-  if(!loc){markErr('hrLoc','Enter your location');return;}
-  if(!phone){markErr('hrPhone','Enter your WhatsApp number');return;}
-  if(!/^[6-9]\d{9}$/.test(phone)){markErr('hrPhone','Enter a valid 10-digit mobile number');return;}
-  if(!email){markErr('hrEmail','Enter your email address');return;}
-  if(!/\S+@\S+\.\S+/.test(email)){markErr('hrEmail','Enter a valid email address');return;}
-  if(!pass){markErr('hrPass','Create a password');return;}
-  if(pass.length<6){markErr('hrPass','Password must be at least 6 characters');return;}
+  if(!name||!prop||!loc||!phone||!email||!pass){toast('Please fill all required fields');return;}
+  if(!/^[6-9]\d{9}$/.test(phone)){toast('Enter valid 10-digit mobile');return;}
+  if(pass.length<6){toast('Password must be at least 6 characters');return;}
   // Create Supabase auth user
   const {data,error} = await _sb.auth.signUp({email, password:pass, options:{data:{name,role:'host'}}});
   if(error){toast('Registration error: '+error.message);return;}
@@ -5286,31 +5385,6 @@ window.addEventListener('DOMContentLoaded', function(){
 window.addEventListener('beforeunload', () => {
   sessionStorage.removeItem('pp_admin_auth');
   adminLoggedIn = false;
-});
-
-// ─── ESCAPE KEY: close any open modal ────────────────────────────────────────
-document.addEventListener('keydown', function(e){
-  if(e.key !== 'Escape') return;
-  const modals = [
-    {id:'privacyMo',   fn:null},
-    {id:'termsMo',     fn:null},
-    {id:'partnerMo',   fn:null},
-    {id:'travellerMo', fn:null},
-    {id:'hostRegMo',   fn:null},
-    {id:'addPinMo',    fn:cancelAddPin},
-    {id:'poiMo',       fn:null},
-    {id:'bookMo',      fn:closeMo},
-  ];
-  for(const m of modals){
-    const el=document.getElementById(m.id);
-    if(el && el.classList.contains('open')){
-      el.classList.remove('open');
-      el.style.display='none';
-      document.body.style.overflow='';
-      if(m.fn) try{m.fn();}catch(ex){}
-      break;
-    }
-  }
 });
 
 // ═══ BOOKING PRICE ENGINE ═══
@@ -5911,7 +5985,7 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
 </div>
 
 <!-- PRIVACY POLICY MODAL -->
-<div id="privacyMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+<div id="privacyMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
   <div class="mo-box" style="max-width:600px;max-height:80vh;overflow-y:auto">
     <button class="mo-x" onclick="document.getElementById('privacyMo').classList.remove('open');document.getElementById('privacyMo').style.display='none'">✕</button>
     <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:16px">Privacy Policy</h2>
@@ -5927,7 +6001,7 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
 </div>
 
 <!-- TERMS OF SERVICE MODAL -->
-<div id="termsMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+<div id="termsMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
   <div class="mo-box" style="max-width:600px;max-height:80vh;overflow-y:auto">
     <button class="mo-x" onclick="document.getElementById('termsMo').classList.remove('open');document.getElementById('termsMo').style.display='none'">✕</button>
     <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:16px">Terms of Service</h2>
@@ -5944,7 +6018,7 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
 </div>
 
 <!-- PARTNER LISTING FORM MODAL -->
-<div id="partnerMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+<div id="partnerMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
   <div class="mo-box" style="max-width:560px">
     <button class="mo-x" onclick="document.getElementById('partnerMo').classList.remove('open');document.getElementById('partnerMo').style.display='none'">✕</button>
     <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:6px">List your property</h2>
