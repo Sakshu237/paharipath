@@ -12,11 +12,18 @@
 <meta property="og:title" content="PahariPath — Discover Real Himachal Pradesh"/>
 <meta property="og:description" content="146+ offbeat HP destinations with live crowd data. Skip the tourist trail. Book local homestays directly."/>
 <meta property="og:image" content="https://paharipath.in/og-image.jpg"/>
-<meta property="og:url" content="https://paharipath.in"/>
+<meta property="og:url" content="https://paharipath.in/"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="PahariPath — Real Himachal Pradesh"/>
 <meta name="twitter:description" content="Live crowd tracking for 146+ HP destinations. Find quiet valleys and book local stays."/>
-<link rel="canonical" href="https://paharipath.in"/>
+<link rel="canonical" href="https://paharipath.in/"/>
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"/>
+<meta name="geo.region" content="IN-HP"/>
+<meta name="geo.placename" content="Himachal Pradesh, India"/>
+<meta name="language" content="en-IN"/>
+<meta property="og:locale" content="en_IN"/>
+<meta property="og:site_name" content="PahariPath"/>
+<meta name="twitter:image" content="https://paharipath.in/og-image.jpg"/>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1a3d2b"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -554,19 +561,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   .fg-row{grid-template-columns:1fr}
 }
 </style>
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js').then(reg=>{
-      console.log('PahariPath SW registered');
-      // Pre-cache HP tiles when user visits map
-      document.addEventListener('mapOpened',()=>{
-        reg.active?.postMessage('PRECACHE_HP_TILES');
-      });
-    }).catch(e=>console.log('SW error:',e));
-  });
-}
-</script>
 </head>
 <body>
 <nav>
@@ -669,6 +663,69 @@ if('serviceWorker' in navigator){
   </div>
 </section>
 <div class="stats-bar" id="sbar"></div>
+<section class="sec" id="crowd">
+  <div class="sec-hd">
+    <div>
+      <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
+      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
+    </div>
+    <div style="text-align:right">
+      <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
+      <div id="utime" style="font-size:11px;color:var(--stone)"></div>
+    </div>
+  </div>
+  <div class="cg" id="cgrid"></div>
+  <div class="show-more"><button class="sm-btn" id="crowd-more-btn" onclick="toggleCrowd()">Show all 146 places ↓</button></div>
+</section>
+<div class="map-wrap" id="mapwrap">
+  <div class="map-card">
+    <div class="map-hd">
+      <div>
+        <div class="map-ttl">Live Destination Map — Himachal Pradesh</div>
+        <p style="font-size:12px;color:var(--stone);margin-top:2px" id="map-provider-note">Click any pin · 146 GPS locations · Live crowd colors</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+        <div class="map-leg">
+          <div class="leg-i"><div class="leg-d" style="background:#3aab66"></div>Quiet</div>
+          <div class="leg-i"><div class="leg-d" style="background:#e8a020"></div>Moderate</div>
+          <div class="leg-i"><div class="leg-d" style="background:#e24a4a"></div>Busy</div>
+        </div>
+        <div class="map-controls">
+          <button class="map-filter-btn act" onclick="mapFilter('all',this)">All 146</button>
+          <button class="map-filter-btn quiet-only" onclick="mapFilter('quiet',this)">🟢 Quiet Only</button>
+          <button class="map-filter-btn" onclick="mapFilter('trek',this)">Trek</button>
+          <button class="map-filter-btn" onclick="mapFilter('spiritual',this)">Spiritual</button>
+          <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
+          <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
+          <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
+        </div>
+      </div>
+    </div>
+    <div class="map-body">
+      <div id="lfmap-wrap" style="position:relative">
+        <div id="lfmap"></div>
+        <div id="map-fallback" class="map-offline" style="display:none">
+          <div class="map-offline-icon">🏔️</div>
+          <div class="map-offline-t">Map needs internet</div>
+          <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:80px;right:12px;z-index:999;display:none;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
+        <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
+          📍 Add a Place
+        </button>
+      </div>
+      <div class="map-sidebar">
+        <div class="ms-head">
+          <div class="ms-title">Destinations <span id="ms-count" style="font-weight:400;color:var(--sage)"></span></div>
+          <input class="ms-search" id="msSearch" placeholder="Filter by name or district…" oninput="filterSidebar(this.value)"/>
+        </div>
+        <div class="ms-list" id="msList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="mpop" style="display:none"></div>
 <div class="plan-sec" id="plansec">
   <div class="plan-in">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:32px">
@@ -735,7 +792,26 @@ if('serviceWorker' in navigator){
       <!-- Main advice -->
       <div id="fcadv" style="margin-bottom:16px"></div>
 
+      <!-- 4-Week Calendar Forecast -->
+      <div id="fcWeekly" style="display:none;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:12px">📅 Best Time to Visit — Next 4 Weeks</div>
+        <div id="fcWeeklyGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+        <div style="margin-top:12px;background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px">Week-by-Week Breakdown</div>
+          <div id="fcWeekDetail"></div>
+        </div>
+      </div>
 
+      <!-- Day picker calendar -->
+      <div id="fcCalendar" style="display:none;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:12px">🗓 Pick Your Travel Week</div>
+        <div id="fcCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center"></div>
+        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#2d8a4e;border-radius:3px"></div>Low crowd</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#b07d2a;border-radius:3px"></div>Moderate</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><div style="width:12px;height:12px;background:#c0392b;border-radius:3px"></div>Busy</div>
+        </div>
+      </div>
 
       <!-- Location context -->
       <div id="fcLocation" style="display:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.7)"></div>
@@ -771,70 +847,6 @@ if('serviceWorker' in navigator){
     <div class="alt-grid" id="altg"></div>
   </div>
 </div>
-
-<section class="sec" id="crowd">
-  <div class="sec-hd">
-    <div>
-      <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
-      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
-    </div>
-    <div style="text-align:right">
-      <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
-      <div id="utime" style="font-size:11px;color:var(--stone)"></div>
-    </div>
-  </div>
-  <div class="cg" id="cgrid"></div>
-  <div class="show-more"><button class="sm-btn" id="crowd-more-btn" onclick="toggleCrowd()">Show all 146 places ↓</button></div>
-</section>
-<div class="map-wrap" id="mapwrap">
-  <div class="map-card">
-    <div class="map-hd">
-      <div>
-        <div class="map-ttl">Live Destination Map — Himachal Pradesh</div>
-        <p style="font-size:12px;color:var(--stone);margin-top:2px" id="map-provider-note">Click any pin · 146 GPS locations · Live crowd colors</p>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-        <div class="map-leg">
-          <div class="leg-i"><div class="leg-d" style="background:#3aab66"></div>Quiet</div>
-          <div class="leg-i"><div class="leg-d" style="background:#e8a020"></div>Moderate</div>
-          <div class="leg-i"><div class="leg-d" style="background:#e24a4a"></div>Busy</div>
-        </div>
-        <div class="map-controls">
-          <button class="map-filter-btn act" onclick="mapFilter('all',this)">All 146</button>
-          <button class="map-filter-btn quiet-only" onclick="mapFilter('quiet',this)">🟢 Quiet Only</button>
-          <button class="map-filter-btn" onclick="mapFilter('trek',this)">Trek</button>
-          <button class="map-filter-btn" onclick="mapFilter('spiritual',this)">Spiritual</button>
-          <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
-          <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
-          <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
-        </div>
-      </div>
-    </div>
-    <div class="map-body">
-      <div id="lfmap-wrap" style="position:relative">
-        <div id="lfmap"></div>
-        <div id="map-fallback" class="map-offline" style="display:none">
-          <div class="map-offline-icon">🏔️</div>
-          <div class="map-offline-t">Map needs internet</div>
-          <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
-        </div>
-      </div>
-      <div style="position:absolute;bottom:80px;right:12px;z-index:999;display:none;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
-        <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
-          📍 Add a Place
-        </button>
-      </div>
-      <div class="map-sidebar">
-        <div class="ms-head">
-          <div class="ms-title">Destinations <span id="ms-count" style="font-weight:400;color:var(--sage)"></span></div>
-          <input class="ms-search" id="msSearch" placeholder="Filter by name or district…" oninput="filterSidebar(this.value)"/>
-        </div>
-        <div class="ms-list" id="msList"></div>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="mpop" style="display:none"></div>
 <section class="sec" id="explore">
   <div class="sec-hd">
     <div>
@@ -881,7 +893,7 @@ if('serviceWorker' in navigator){
 <footer>
   <div class="ft-logo" style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0"><polygon points="18,24 25,10 32,24" fill="rgba(255,255,255,0.15)"/><polygon points="14,24 22,8 30,24" fill="rgba(255,255,255,0.25)"/><polygon points="7,25 18,4 29,25" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.2" stroke-linejoin="round"/><polygon points="7,25 18,4 29,25" fill="rgba(255,255,255,0.75)"/><polygon points="18,4 22,12 14,12" fill="#1a3d2b" opacity="0.5"/><path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg><div><div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;line-height:1.1">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span></div><div style="font-family:sans-serif;font-size:9px;letter-spacing:2px;color:#c9a84c;line-height:1;margin-top:2px">HIMACHAL · OFFBEAT</div></div></div>
   <p>Promoting offbeat travel · Supporting local communities · Preserving Pahari culture</p>
-  <p style="margin-top:8px;font-size:11px;opacity:.4">© 2025 PahariPath · Built for Himachal Pradesh · Eco &amp; Responsible Tourism</p>
+  <p style="margin-top:8px;font-size:11px;opacity:.4">© 2026 PahariPath · Built for Himachal Pradesh · Eco &amp; Responsible Tourism</p>
   <!-- Hidden access: type "pahari" anywhere for admin, go to /#host for host login -->
 <div style="margin-top:12px;height:20px" id="secretZone" onclick="handleSecretClick()"></div>
 </footer>
@@ -941,7 +953,6 @@ if('serviceWorker' in navigator){
       <button class="htab" onclick="hTab('guests',this)">👥 Guests</button>
       <button class="htab" onclick="hTab('listing',this)">🏡 My Listing</button>
       <button class="htab" onclick="hTab('crowd',this)">🚦 Crowd Update</button>
-      <button class="htab" onclick="hTab('itinerary',this)">🗺️ Itinerary</button>
       <button class="htab" onclick="hTab('earnings',this)">💰 Earnings</button>
     </div>
 
@@ -998,7 +1009,6 @@ if('serviceWorker' in navigator){
       <div class="adm-ni" onclick="adTab('feedback',this)">⭐ Host Feedback</div>
       <div class="adm-ni" onclick="adTab('ngo',this)">🤝 NGO / Clean-ups</div>
       <div class="adm-ni" onclick="adTab('media',this)">📷 Media / 360°</div>
-      <div class="adm-ni" onclick="adTab('itinerary',this)">🗺️ Itineraries</div>
       <div class="adm-ni" onclick="adTab('pins',this)">📍 Community Pins</div>
       <div class="adm-ni" onclick="adTab('profiles',this)">🏅 Traveller Profiles</div>
       <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:10px">
@@ -1486,24 +1496,6 @@ function hTab(tab, btn){
     </div>`;
   }
 
-  else if(tab==='itinerary'){
-    const stay=_hostStay;
-    const pid=stay?.placeid||stay?.id||null;
-    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">🗺️ Destination Itinerary</h2>
-    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Customize the day-by-day plan shown to guests when they plan a trip to your destination. Your local knowledge makes it authentic.</p>
-    ${pid?`
-    <div class="h-card">
-      <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:12px">Editing itinerary for: <span style="color:var(--pine)">${ALL.find(p=>p.id===pid)?.name||stay?.name||'Your destination'}</span></div>
-      <input type="hidden" id="itnDestSel" value="${pid}"/>
-      <div id="adminItnDays"></div>
-      <button onclick="addItnDay()" style="background:none;border:1.5px dashed rgba(74,124,95,.3);color:var(--pine);border-radius:10px;padding:10px;font-size:13px;cursor:pointer;width:100%;font-family:var(--fb);margin-bottom:12px">+ Add Day</button>
-      <button onclick="adminSaveItinerary()" style="background:var(--pine);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb);width:100%">Save Itinerary ✓</button>
-    </div>`:'<div class="h-card" style="text-align:center;padding:40px;color:var(--stone)">Your property needs to be linked to a destination first. Contact hello@paharipath.in</div>'}`;
-    if(pid){
-      _itnData[pid]=_itnData[pid]||null;
-      loadAdminItinerary();
-    }
-  }
   else if(tab==='earnings'){
     el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:20px">💰 Earnings</h2>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
@@ -1976,7 +1968,7 @@ function makePopupHTML(p){
     ${nearbyHTML}
     <div class="lf-acts">
       <button class="lf-btn lf-btn-p" onclick="openPD(${p.id});_lmap&&_lmap.closePopup()">Explore →</button>
-      <button onclick="drawRouteToPlace(${p.id});_lmap&&_lmap.closePopup()" class="lf-btn" style="background:#1a3d2b;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">🗺️ Route</button>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${PLACE_COORDS[p.id]?PLACE_COORDS[p.id][0]+','+PLACE_COORDS[p.id][1]:''}" target="_blank" rel="noopener" class="lf-btn" style="background:#4285f4;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center">🧭 Go</a>
       <button class="lf-btn lf-btn-s" onclick="waSharePlace(${p.id},'${p.name.replace(/'/g,"\\'")}')">📲 Share</button>
     </div>
   </div>`;
@@ -2558,13 +2550,6 @@ function selectPlanPlace(id, label){
   document.getElementById('ppPlace').value=id;
   document.getElementById('ppPlaceSearch').value=label;
   document.getElementById('ppPlaceDrop').style.display='none';
-  // Pre-fetch itinerary in background so it's ready when runFC fires
-  if(!window._itnCache) window._itnCache={};
-  if(window._itnCache[id]===undefined){
-    _sb.from('place_itineraries').select('days').eq('place_id',id).maybeSingle().then(({data})=>{
-      window._itnCache[id]=data?.days?.length?data.days:null;
-    }).catch(()=>{ window._itnCache[id]=null; });
-  }
   runFC();
 }
 
@@ -2862,14 +2847,7 @@ function detectLocation(){
   },{timeout:8000});
 }
 
-async function runFC(){
-  // Show instant skeleton for itinerary while data loads
-  const _itinEl=document.getElementById('fcItinerary');
-  const _daysEl=document.getElementById('fcDays');
-  if(_daysEl&&_itinEl){
-    _daysEl.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.4);font-size:13px">⏳ Loading itinerary…</div>';
-    _itinEl.style.display='block';
-  }
+function runFC(){
   const pid=document.getElementById('ppPlace').value;
   let dv=document.getElementById('ppDate').value;
   const nights=parseInt(document.getElementById('ppNights').value)||2;
@@ -2948,88 +2926,37 @@ async function runFC(){
   if(distInfo){locEl.textContent=distInfo;locEl.style.display='block';}
   else locEl.style.display='none';
 
-  // Load custom itinerary from Supabase — cached per place
-  let customItn = null;
-  if(!window._itnCache) window._itnCache={};
-  if(window._itnCache[p.id] !== undefined){
-    customItn = window._itnCache[p.id];
-  } else {
-    try{
-      const {data:itnData} = await _sb.from('place_itineraries').select('days').eq('place_id',p.id).maybeSingle();
-      customItn = itnData?.days?.length ? itnData.days : null;
-      window._itnCache[p.id] = customItn;
-    }catch(e){ window._itnCache[p.id]=null; }
-  }
-
-  // ── PLACE-SPECIFIC ITINERARY BUILDER ──
+  // Day-by-day itinerary — unique per place using famousFor, vibes, altitude, zone
   const vibes=(p.vibes||[]).map(v=>v.toLowerCase());
-  const famous=(p.famousFor||'');
-  const famousL=famous.toLowerCase();
+  const famous=(p.famousFor||'').toLowerCase();
   const zone=(p.zone||'').toLowerCase();
   const isHigh=alt>3000;
-  const isRiver=vibes.includes('river')||vibes.includes('fishing')||famousL.includes('river')||famousL.includes('stream')||famousL.includes('trout');
-  const isTrek=vibes.includes('trek')||vibes.includes('trekking')||famousL.includes('trek')||famousL.includes('pass')||famousL.includes('peak')||famousL.includes('summit');
-  const isSpiritual=vibes.includes('spiritual')||famousL.includes('temple')||famousL.includes('monastery')||famousL.includes('sacred')||famousL.includes('deity')||famousL.includes('shrine');
-  const isAdventure=vibes.includes('adventure')||famousL.includes('paragliding')||famousL.includes('extreme')||famousL.includes('pass');
-  const isVillage=vibes.includes('village')||famousL.includes('village')||famousL.includes('pahari life')||famousL.includes('traditional');
-  const isWildlife=vibes.includes('wildlife')||famousL.includes('wildlife')||famousL.includes('sanctuary')||famousL.includes('bird')||famousL.includes('leopard');
-  const isApple=famousL.includes('apple')||famousL.includes('orchard');
-  const isWine=famousL.includes('wine')||famousL.includes('grape');
-  const isCulture=vibes.includes('culture')||famousL.includes('culture')||famousL.includes('heritage')||famousL.includes('museum')||famousL.includes('fort');
-  const isLake=famousL.includes('lake')||famousL.includes('kund')||famousL.includes('tso');
-  const isSnow=seas==='snow'||(isHigh&&[10,11,0,1,2,3].includes(date.getMonth()));
-  const isCamp=vibes.includes('camping')||famousL.includes('camp');
-  const isBirding=famousL.includes('bird')||famousL.includes('wetland');
+  const isRiver=vibes.some(v=>['river','fishing','water'].includes(v))||famous.includes('river')||famous.includes('stream');
+  const isTrek=vibes.some(v=>['trek','trekking','hiking'].includes(v))||famous.includes('trek');
+  const isSpiritual=vibes.some(v=>['spiritual','temple','religious'].includes(v))||famous.includes('temple')||famous.includes('monastery');
+  const isAdventure=vibes.some(v=>['adventure','paragliding','camping'].includes(v))||famous.includes('paragliding');
+  const isVillage=vibes.some(v=>['village','rural','offbeat'].includes(v))||famous.includes('village')||famous.includes('homestay');
+  const isWildlife=vibes.some(v=>['wildlife','nature','forest'].includes(v))||famous.includes('wildlife')||famous.includes('sanctuary');
+  const isSnow=seas==='snow'||isHigh;
+  const isCulture=vibes.some(v=>['culture','heritage','art'].includes(v))||famous.includes('culture')||famous.includes('museum');
 
-  // Zone-specific food, market, landscape
-  const zoneFood={spiti:'Tibetan Thukpa & Butter Tea',lahaul:'Chilra bread & local cheese',parvati:'Kasoli daal & curd rice',kangra:'Channa Madra & Bhatura',kullu:'Aktori & Siddu',shimla:'Sepu Vadi & apple juice',kinnaur:'Kinnauri dry fruits & wine',default:'Himachali Dham — rice, rajma, bhey, khatta'};
-  const zoneMkt={spiti:'Tibetan handicrafts & prayer flags',lahaul:'Yak wool shawls & dried apricots',parvati:'Silver jewelry & hippie market',kangra:'Kangra tea & Tibetan thangkas',kullu:'Kullu shawls & local honey',shimla:'Woollen caps & apple products',kinnaur:'Kinnauri caps, chulli oil & dry fruits',default:'Pahari pickles, shawls & local honey'};
-  const zoneLandscape={spiti:'high-altitude barren moonscape',lahaul:'glacier-fed green valleys',parvati:'dense pine & cannabis forests',kangra:'terraced tea gardens',kullu:'apple orchards & deodar groves',shimla:'rhododendron & oak forests',kinnaur:'apricot & walnut orchards',default:'deodar cedar forest'};
-  const food=zoneFood[zone]||zoneFood.default;
-  const mkt=zoneMkt[zone]||zoneMkt.default;
-  const landscape=zoneLandscape[zone]||zoneLandscape.default;
-
-  // Build activity pool — deeply tied to THIS place
+  // Build activity pool unique to this place
   const actPool=[];
-
-  // Famous-for specific activities (most unique)
-  if(famous) actPool.push(`🎯 ${famous.split(',')[0].trim()} — the main reason to be here`);
-  if(isTrek) actPool.push(`🥾 Trek to ${famous.split(',')[0]||p.name+' viewpoint'} — start by 7am`);
-  if(isLake) actPool.push(`🏞️ Morning walk to ${famous.includes('lake')?famous.split(',')[0]:'the lake'} — serene before 9am`);
-  if(isSpiritual) actPool.push(`🛕 Dawn visit to ${famousL.includes('monastery')?'the monastery':'the temple'} — catch morning prayers`);
-  if(isRiver) actPool.push(`🎣 Sunrise by the ${p.district.split(' ')[0]} river — fishing or just listening`);
-  if(isAdventure&&famousL.includes('paragliding')) actPool.push(`🪂 Paragliding over ${p.name} — book through host (₹2,500–3,500)`);
-  if(isWildlife) actPool.push(`🦅 Wildlife trail — ${famousL.includes('snow leopard')?'snow leopard & ibex territory':'birdwatching & jungle walk'}`);
-  if(isApple) actPool.push(`🍎 Apple orchard walk — pick fresh from the tree (Aug–Oct season)`);
-  if(isWine) actPool.push(`🍇 Visit local grape farm, try Kinnauri home wine`);
-  if(isBirding) actPool.push(`🦢 Birding trail — ${p.name} is a designated ${famousL.includes('wetland')?'Ramsar wetland':'birding hotspot'}`);
-
-  // Zone-specific activities
-  if(zone==='spiti') actPool.push(`🏔️ Drive to Komic or Langza — spot snow leopard & fossil hunting`);
-  if(zone==='spiti') actPool.push(`🧘 Meditation session at Key Monastery — resident monks welcome visitors`);
-  if(zone==='parvati') actPool.push(`♨️ Kheerganga hot spring hike — 12km trek, worth every step`);
-  if(zone==='parvati') actPool.push(`🌿 Chalal village walk — cross the suspension bridge, meet the community`);
-  if(zone==='kangra') actPool.push(`🫖 Kangra tea estate tour — pick & brew your own cup`);
-  if(zone==='kangra') actPool.push(`🙏 Mcleod Ganj — Dalai Lama temple & Tibetan market`);
-  if(zone==='kullu') actPool.push(`🏄 Beas river rafting — white water run near Kullu town`);
-  if(zone==='kullu'&&isTrek) actPool.push(`🌸 Meadow hike above ${p.name} — rhododendron & wildflower fields in summer`);
-  if(zone==='shimla') actPool.push(`🚂 Toy train section between Shimla–Kandaghat if passing through`);
-  if(zone==='kinnaur') actPool.push(`🌉 Chakki Bridge — photogenic cantilever bridge over Sutlej gorge`);
-  if(zone==='lahaul') actPool.push(`🌊 Chandra river bank walk — turquoise glacial water at your feet`);
-  if(isSnow&&isHigh) actPool.push(`❄️ Snow trek at ${p.altitude} — crampon walk on frozen ground`);
-  if(isCamp) actPool.push(`⛺ Night camping under stars — no light pollution at ${p.altitude||'this altitude'}`);
-
-  // Universal but localised
-  actPool.push(`📸 Golden hour on ${p.name} ridge — shoot from the eastern slope`);
-  actPool.push(`🌅 Sunset view — ask your host for the exact spot locals go to`);
-  actPool.push(`🏘️ Village walk at dawn — when locals are out with cattle & chai`);
-  actPool.push(`☕ Slow morning — sit-out breakfast, let ${p.name} come to you`);
-  actPool.push(`🌲 Half-day nature walk through ${landscape}`);
-  actPool.push(`🛍️ Local market visit — ${mkt}`);
-  actPool.push(`🍽️ ${food} — Himachali soul food`);
-  actPool.push(`💬 Evening with host family — hear stories of the mountains`);
-  actPool.push(`🌙 Stargazing — ${isHigh?'One of India best dark skies':'Minimal light pollution here'}`);
-
+  if(isTrek) actPool.push(`🥾 Trek to ${p.famousFor?.split(',')[0]||'nearby viewpoint'}`);
+  if(isRiver) actPool.push(`🎣 Morning by the ${zone==='tirthan'?'Tirthan':zone==='parvati'?'Parvati':'local'} river`);
+  if(isSpiritual) actPool.push(`🛕 Visit ${famous.includes('monastery')?'ancient monastery':'local temple'} at dawn`);
+  if(isAdventure) actPool.push(`🪂 ${famous.includes('paragliding')?'Paragliding session (book via host)':'Adventure activity'}`);
+  if(isVillage) actPool.push(`🏘️ Walk through nearby Pahari village, meet locals`);
+  if(isWildlife) actPool.push(`🦅 Wildlife spotting — ${famous.includes('snow leopard')?'snow leopard territory':'bird watching'}`);
+  if(isSnow) actPool.push(`❄️ Snow walk / snowball fight at ${p.altitude||'high altitude'}`);
+  if(isCulture) actPool.push(`🎭 Explore local ${famous.includes('museum')?'museum':'cultural heritage site'}`);
+  if(isHigh) actPool.push(`⛰️ Acclimatisation walk — take it slow above ${p.altitude||'3000m'}`);
+  actPool.push(`📸 Golden hour photography at ${p.name} viewpoint`);
+  actPool.push(`☕ Breakfast at local café, try Siddu & Dham`);
+  actPool.push(`🌲 Nature walk through ${zone==='spiti'?'barren moonscape':zone==='lahaul'?'high-altitude meadows':'deodar forest'}`);
+  actPool.push(`🛍️ Local market — ${zone==='spiti'?'Tibetan handicrafts':zone==='kullu'?'Kullu shawls':'Pahari souvenirs'}`);
+  actPool.push(`🌅 Sunset point — ask host for the secret local spot`);
+  actPool.push(`🍽️ Himachali Dham dinner — ${zone==='spiti'?'Tibetan Thukpa':'traditional rice, rajma, bhey'}`);
 
   const dayPlans=[];
   for(let i=0;i<nights;i++){
@@ -3051,37 +2978,15 @@ async function runFC(){
         `🚗 Return journey — drive safe`,
       ]};
     } else {
-      // Each middle day gets a UNIQUE set of activities — no repeats across days
-      const used=new Set();
-      // Assign activities round-robin so each day gets different ones
-      const daySpecific=actPool.filter((a,idx)=>{
-        // Distribute: day 1 gets idx 0,3,6... day 2 gets idx 1,4,7... etc
-        return (idx % Math.max(nights-2,1)) === ((i-1) % Math.max(nights-2,1));
-      });
-      // Fill from pool if not enough specific ones
-      const allAvail=[...daySpecific, ...actPool.filter(a=>!daySpecific.includes(a))];
-      const chosen=[];
-      for(const a of allAvail){
-        if(chosen.length>=4) break;
-        if(!used.has(a)){ chosen.push(a); used.add(a); }
-      }
-      // Give each day a unique title based on what's in it
-      const dayThemes=['🏞️ Into the Wild','🏘️ Local Life','⛰️ Higher Ground','🌊 Waterside','🛕 Sacred Trails','🍽️ Culture & Food','📸 Golden Shots'];
-      plan={title:`Day ${i+1} — ${dayThemes[(i-1)%dayThemes.length]}`,items:chosen.slice(0,4)};
+      const dayActs=actPool.filter((_,idx)=>idx%nights===i%actPool.length).slice(0,2);
+      const fallback=actPool.slice(i*2,i*2+2);
+      const chosen=[...(dayActs.length>=2?dayActs:fallback),...actPool.slice(-2)].slice(0,4);
+      plan={title:`Day ${i+1} — Explore`,items:[...new Set(chosen)].slice(0,4)};
     }
     dayPlans.push({dayName,plan});
   }
   const itinEl=document.getElementById('fcItinerary');
-  // Use custom itinerary if available, else auto-generated
-  const finalDays = customItn
-    ? customItn.slice(0,nights).map((day,i)=>{
-        const dayDate=new Date(date);dayDate.setDate(date.getDate()+i);
-        const dayName=dayDate.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'});
-        return {dayName, plan:{title:day.title, items:day.items}};
-      })
-    : dayPlans;
-
-  document.getElementById('fcDays').innerHTML=finalDays.map((d,i)=>`
+  document.getElementById('fcDays').innerHTML=dayPlans.map((d,i)=>`
     <div style="display:flex;gap:14px;margin-bottom:14px">
       <div style="flex-shrink:0;width:32px;height:32px;background:rgba(255,255,255,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;margin-top:2px">D${i+1}</div>
       <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px">
@@ -3112,6 +3017,9 @@ async function runFC(){
     ctaEl.style.display='flex';
   } else ctaEl.style.display='none';
 
+  // ── Weekly forecast ──
+  renderWeeklyForecast(p, date);
+
   document.getElementById('planRes').classList.add('show');
   document.getElementById('plansec').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -3119,6 +3027,7 @@ async function runFC(){
 
 // ═══ PLACE DETAIL ═══
 function openPD(id){addRecentlyViewed(id);
+  (function(){var p=ALL.find(function(x){return x.id===id;});if(p&&window.pahariSEO){window.pahariSEO.open({slug:p.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,''),name:p.name,district:p.district,description:p.desc,vibes:p.vibes||[],lat:(typeof PLACE_COORDS!=='undefined'&&PLACE_COORDS[p.id])?PLACE_COORDS[p.id][0]:null,lng:(typeof PLACE_COORDS!=='undefined'&&PLACE_COORDS[p.id])?PLACE_COORDS[p.id][1]:null});}})();
   const p=ALL.find(x=>x.id===id);if(!p)return;
   window._curPD=p;
   const c=getCrowd(p.crowd,p.zone);
@@ -3193,6 +3102,7 @@ function closePD() {
   const el = document.getElementById('pd');
   if (el) { el.style.display = 'none'; el.classList.remove('open'); }
   document.body.style.overflow = '';
+  if(window.pahariSEO) window.pahariSEO.close();
 }
 function pdTab(btn,t){
   document.querySelectorAll('.pd-tab').forEach(b=>b.classList.remove('act'));btn.classList.add('act');
@@ -3355,146 +3265,6 @@ function buildVtour(p){
   }
 }
 
-// ═══ MAP ROUTING (OSRM) ═══
-let _routeLayer = null;
-let _userLatLng = null;
-
-async function drawRouteToPin(pin){
-  if(!_lmap) return;
-  const coords = [pin.lat, pin.lng];
-  if(!_userLatLng){
-    try{
-      const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
-      _userLatLng = [pos.coords.latitude, pos.coords.longitude];
-    }catch(e){ toast('Could not get your location'); return; }
-  }
-  if(_routeLayer){ _lmap.removeLayer(_routeLayer); _routeLayer=null; }
-  try{
-    const url=`https://router.project-osrm.org/route/v1/driving/${_userLatLng[1]},${_userLatLng[0]};${pin.lng},${pin.lat}?overview=full&geometries=geojson`;
-    const res=await fetch(url);
-    const data=await res.json();
-    if(data.code==='Ok'&&data.routes?.length){
-      const route=data.routes[0];
-      _routeLayer=L.geoJSON(route.geometry,{style:{color:'#1a3d2b',weight:4,opacity:0.85,dashArray:'8,4'}}).addTo(_lmap);
-      _lmap.fitBounds(_routeLayer.getBounds(),{padding:[40,40]});
-      const distKm=(route.distance/1000).toFixed(1);
-      const timeStr=Math.round(route.duration/60)+'min';
-      showRoutePanel(pin.name,distKm,timeStr,null,coords);
-    }
-  }catch(e){
-    _routeLayer=L.polyline([_userLatLng,coords],{color:'#1a3d2b',weight:3,dashArray:'10,6'}).addTo(_lmap);
-    _lmap.fitBounds(_routeLayer.getBounds(),{padding:[40,40]});
-  }
-}
-
-async function drawRouteToPlace(placeId){
-  const coords = PLACE_COORDS[placeId];
-  if(!coords){ toast('No coordinates for this place'); return; }
-
-  // Get user location
-  if(!_userLatLng){
-    toast('Getting your location…');
-    try{
-      const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
-      _userLatLng = [pos.coords.latitude, pos.coords.longitude];
-    }catch(e){
-      toast('Could not get your location. Enable GPS and try again.');
-      return;
-    }
-  }
-
-  const [toLat,toLng] = coords;
-  const [fromLat,fromLng] = _userLatLng;
-
-  // Remove existing route
-  if(_routeLayer){ _lmap.removeLayer(_routeLayer); _routeLayer=null; }
-
-  toast('🗺️ Calculating route…');
-
-  try{
-    // OSRM public API — free, no key needed
-    const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if(data.code !== 'Ok' || !data.routes?.length){
-      throw new Error('No route found');
-    }
-
-    const route = data.routes[0];
-    const distKm = (route.distance/1000).toFixed(1);
-    const durHr = Math.floor(route.duration/3600);
-    const durMin = Math.round((route.duration%3600)/60);
-    const timeStr = durHr>0 ? `${durHr}h ${durMin}min` : `${durMin} min`;
-
-    // Draw route on our map
-    _routeLayer = L.geoJSON(route.geometry, {
-      style:{color:'#1a3d2b',weight:4,opacity:0.85,dashArray:'8,4'}
-    }).addTo(_lmap);
-
-    // Add start/end markers
-    L.circleMarker(_userLatLng,{radius:8,fillColor:'#4285f4',fillOpacity:1,color:'#fff',weight:2}).addTo(_lmap);
-
-    // Fit map to route
-    _lmap.fitBounds(_routeLayer.getBounds(), {padding:[40,40]});
-
-    // Show route info panel
-    const p = ALL.find(x=>x.id===placeId);
-    showRoutePanel(p?.name||'Destination', distKm, timeStr, placeId, coords);
-
-  }catch(e){
-    console.error('OSRM error:', e);
-    // Fallback — draw straight line
-    _routeLayer = L.polyline([_userLatLng, coords],{
-      color:'#1a3d2b',weight:3,opacity:0.7,dashArray:'10,6'
-    }).addTo(_lmap);
-    _lmap.fitBounds(_routeLayer.getBounds(),{padding:[40,40]});
-    const distKm = haversineKm(_userLatLng[0],_userLatLng[1],coords[0],coords[1]).toFixed(1);
-    const p = ALL.find(x=>x.id===placeId);
-    showRoutePanel(p?.name||'Destination', distKm, '~'+Math.round(distKm/35)+'h est.', placeId, coords, true);
-  }
-}
-
-function showRoutePanel(name, distKm, timeStr, placeId, coords, isFallback=false){
-  let panel = document.getElementById('routePanel');
-  if(!panel){
-    panel = document.createElement('div');
-    panel.id = 'routePanel';
-    panel.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:16px 20px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:1000;min-width:280px;max-width:380px;font-family:DM Sans,sans-serif';
-    document.querySelector('.map-wrap')?.appendChild(panel);
-  }
-  panel.style.display = 'block';
-  panel.innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-      <div style="background:#1a3d2b;color:#fff;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;white-space:nowrap">🗺️ Route</div>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:600;color:#1a1a1a">${name}</div>
-        <div style="font-size:12px;color:#666;margin-top:2px">${distKm}km · ${timeStr} drive${isFallback?' (straight line — roads may vary)':''}</div>
-      </div>
-      <button onclick="clearRoute()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#999;padding:4px">✕</button>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button onclick="clearRoute()" style="flex:1;padding:9px;background:#f5f5f3;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Clear Route</button>
-      <a href="https://www.google.com/maps/dir/?api=1&destination=${coords[0]},${coords[1]}" target="_blank"
-        style="flex:1;padding:9px;background:#4285f4;color:#fff;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px">
-        🧭 Turn-by-turn GPS
-      </a>
-    </div>
-  `;
-}
-
-function clearRoute(){
-  if(_routeLayer){ _lmap.removeLayer(_routeLayer); _routeLayer=null; }
-  const panel = document.getElementById('routePanel');
-  if(panel) panel.style.display='none';
-}
-
-function haversineKm(lat1,lng1,lat2,lng2){
-  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
 // ═══ VIRTUAL TOUR CONTROLS ═══
 let _vtAngle=0, _vtScale=1;
 function vtPan(deg){
@@ -3582,14 +3352,10 @@ function openPOIPopup(pin){
       ${photos.map(p=>`<img src="${p}" style="height:120px;width:160px;object-fit:cover;border-radius:10px;flex-shrink:0" loading="lazy"/>`).join('')}
     </div>`:''}
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button onclick="_userLatLng=null;_lmap&&_lmap.closePopup();document.getElementById('poiMo').classList.remove('open');document.getElementById('poiMo').style.display='none';setView('home');setTimeout(()=>{document.querySelector('.map-tab')?.click();_lmap&&drawRouteToPin(${JSON.stringify(pin)});},400)"
-        style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#1a3d2b;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;min-width:140px;font-family:var(--fb)">
-        🗺️ Route on Map
-      </button>
       <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.lat},${pin.lng}"
         target="_blank" rel="noopener"
         style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#4285f4;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;min-width:140px">
-        🧭 GPS Nav
+        🧭 Google Maps
       </a>
       <a href="https://maps.apple.com/?daddr=${pin.lat},${pin.lng}"
         target="_blank" rel="noopener"
@@ -3654,38 +3420,18 @@ async function submitCommunityPin(){
 function buildHeatmap(p){
   const now=new Date(),nm=now.getMonth(),nd=now.getDay(),todayIdx=nd===0?6:nd-1;
   const dMults=[1,.95,.95,.97,1.15,1.5,1.3];
-  const mM_map={good:1,warn:1.18,rain:.72,snow:.42,dry:.88};
-
-  // Label by crowd level, not raw percentage — clearer for users
-  function crowdLabel(v){
-    if(v<25) return {label:'Very Low',short:'Low',color:'#1e7a45'};
-    if(v<45) return {label:'Low',short:'Low',color:'#3aab66'};
-    if(v<65) return {label:'Moderate',short:'Mod',color:'#e8a020'};
-    if(v<80) return {label:'High',short:'High',color:'#e05020'};
-    return {label:'Very Busy',short:'Busy',color:'#c0392b'};
-  }
-
   let html='<div></div>'+DN.map(d=>`<div class="hm-day">${d}</div>`).join('');
   for(let mi=0;mi<3;mi++){
     const mIdx=(nm+mi)%12;
     const cond=(ZS[p.zone||'kullu']||ZS.kullu)[mIdx];
-    const mM=mM_map[cond]||1;
+  const mM={good:1,warn:1.18,rain:.72,snow:.42,dry:.88}[cond]||1;
     html+=`<div class="hm-lbl">${MN[mIdx]}</div>`;
     dMults.forEach((dm,di)=>{
       const seed=((p.id*13)+(mIdx*7)+di*3)%9;
       const jitter=seed-4;
       const v=Math.min(97,Math.round(p.crowd*dm*mM+jitter));
-      const cl=crowdLabel(v);
       const isToday=mi===0&&di===todayIdx;
-      const isBest=v===Math.min(...dMults.map((dm2,di2)=>{
-        const s=((p.id*13)+(mIdx*7)+di2*3)%9;
-        return Math.min(97,Math.round(p.crowd*dm2*mM+(s-4)));
-      }));
-      html+=`<div class="hm-cell" 
-        title="${DN[di]}, ${MN[mIdx]}: ${cl.label} crowd (~${v}%)" 
-        style="background:${hmColor(v)};${isToday?'outline:2.5px solid var(--ink);outline-offset:1px;':''}${isBest?'border-bottom:2px solid #fff;':''}">
-        <span style="font-size:9px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)">${cl.short}</span>
-      </div>`;
+      html+=`<div class="hm-cell" title="${DN[di]}, ${MN[mIdx]}: ~${v}% crowd" style="background:${hmColor(v)};${isToday?'outline:2.5px solid var(--ink);outline-offset:1px;':''}">${v}%</div>`;
     });
   }
   document.getElementById('pdhm').innerHTML=html;
@@ -4547,26 +4293,6 @@ function adTab(tab,el){
       <div style="border:2px dashed rgba(74,124,95,.3);border-radius:10px;padding:20px;text-align:center;color:var(--stone);font-size:13px">📷 Panorama upload — connect Supabase Storage bucket to enable</div>
     </div></div>`;
     loadAdminMedia();
-  }else if(tab==='itinerary'){
-    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">🗺️ Destination Itineraries</h2>
-    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Edit the auto-generated day-by-day itinerary for any destination. Your custom itinerary overrides the auto-generated one.</p>
-    <div class="adm-panel">
-      <h3>Select Destination</h3>
-      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
-        <div style="flex:1;min-width:200px">
-          <select class="ai" id="itnDestSel" onchange="loadAdminItinerary()">
-            <option value="">— Choose destination —</option>
-            ${ALL.map(p=>`<option value="${p.id}">${p.name} — ${p.district}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-      <div id="adminItnEditor" style="display:none">
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">Day-by-Day Activities</div>
-        <div id="adminItnDays"></div>
-        <button onclick="adminSaveItinerary()" style="margin-top:12px;background:var(--pine);color:#fff;border:none;padding:11px 24px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">Save Itinerary ✓</button>
-      </div>
-    </div>`;
-    loadAdminItinerary();
   }else if(tab==='pins'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">📍 Community Pins</h2>
     <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Review and approve community-submitted pins. Approved pins appear on the map for all users.</p>
@@ -4834,92 +4560,6 @@ async function submitHostFeedback(){
 async function loadHostFeedbacks(){
   const {data}=await _sb.from('host_feedbacks').select('*').order('created_at',{ascending:false});
   window._hostFeedbacks=data||[];
-}
-
-// ═══ ITINERARY EDITOR ═══
-let _itnData = {}; // place_id → {days:[{title,items:[]}]}
-
-async function loadAdminItinerary(){
-  const pid = parseInt(document.getElementById('itnDestSel')?.value||'0');
-  const editor = document.getElementById('adminItnEditor');
-  const daysEl = document.getElementById('adminItnDays');
-  if(!pid||!editor||!daysEl){if(editor)editor.style.display='none';return;}
-  editor.style.display='block';
-  // Load from Supabase if exists
-  const {data} = await _sb.from('place_itineraries').select('*').eq('place_id',pid).maybeSingle();
-  const days = data?.days || [
-    {title:'Day 1 — Arrival',items:['Arrive and check in','Evening walk','Local dinner']},
-    {title:'Day 2 — Explore',items:['Morning hike','Visit local attractions','Photography']},
-    {title:'Day 3 — Departure',items:['Breakfast','Local market','Return journey']},
-  ];
-  _itnData[pid] = {days};
-  renderItnEditor(days, pid);
-}
-
-function renderItnEditor(days, pid){
-  const daysEl = document.getElementById('adminItnDays');
-  if(!daysEl)return;
-  daysEl.innerHTML = days.map((day,di)=>`
-    <div style="background:#f8faf8;border:1px solid rgba(74,124,95,.12);border-radius:12px;padding:16px;margin-bottom:12px">
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
-        <div style="background:var(--pine);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700">Day ${di+1}</div>
-        <input class="ai" value="${day.title}" id="itn_title_${di}" style="flex:1;font-weight:600" placeholder="Day title"/>
-        <button onclick="removeItnDay(${di})" style="background:#fee;border:1px solid #fcc;color:#c0392b;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Remove</button>
-      </div>
-      <div id="itn_items_${di}">
-        ${day.items.map((item,ii)=>`
-        <div style="display:flex;gap:8px;margin-bottom:6px" id="itn_item_${di}_${ii}">
-          <input class="ai" value="${item}" id="itn_item_val_${di}_${ii}" style="flex:1;font-size:13px" placeholder="Activity"/>
-          <button onclick="removeItnItem(${di},${ii})" style="background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;color:#999">✕</button>
-        </div>`).join('')}
-      </div>
-      <button onclick="addItnItem(${di})" style="background:none;border:1.5px dashed rgba(74,124,95,.3);color:var(--pine);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;width:100%;margin-top:4px;font-family:var(--fb)">+ Add Activity</button>
-    </div>
-  `).join('') + `<button onclick="addItnDay()" style="background:none;border:1.5px dashed rgba(74,124,95,.3);color:var(--pine);border-radius:10px;padding:10px;font-size:13px;cursor:pointer;width:100%;font-family:var(--fb)">+ Add Day</button>`;
-}
-
-function addItnDay(){
-  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
-  if(!pid)return;
-  _itnData[pid].days.push({title:`Day ${_itnData[pid].days.length+1} — Explore`,items:['Morning activity','Afternoon exploration','Evening rest']});
-  renderItnEditor(_itnData[pid].days, pid);
-}
-
-function removeItnDay(di){
-  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
-  _itnData[pid].days.splice(di,1);
-  renderItnEditor(_itnData[pid].days,pid);
-}
-
-function addItnItem(di){
-  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
-  _itnData[pid].days[di].items.push('New activity');
-  renderItnEditor(_itnData[pid].days,pid);
-}
-
-function removeItnItem(di,ii){
-  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
-  _itnData[pid].days[di].items.splice(ii,1);
-  renderItnEditor(_itnData[pid].days,pid);
-}
-
-function collectItnData(pid){
-  const days=(_itnData[pid]?.days||[]).map((day,di)=>{
-    const title=document.getElementById(`itn_title_${di}`)?.value||day.title;
-    const items=(day.items||[]).map((_,ii)=>document.getElementById(`itn_item_val_${di}_${ii}`)?.value||'').filter(Boolean);
-    return {title,items};
-  });
-  return days;
-}
-
-async function adminSaveItinerary(){
-  const pid=parseInt(document.getElementById('itnDestSel')?.value||'0');
-  if(!pid){toast('Select a destination');return;}
-  const days=collectItnData(pid);
-  const {error}=await _sb.from('place_itineraries').upsert({place_id:pid,days},{onConflict:'place_id'});
-  if(error){toast('Error: '+error.message);return;}
-  _itnData[pid]={days};
-  toast('✓ Itinerary saved — shows in Plan My Journey for this destination');
 }
 
 async function adminApprovePin(id){
@@ -6078,6 +5718,80 @@ async function submitPartnerForm(){
     document.getElementById('partnerMo').style.display='none';
   }
 }
+</script>
+
+<!-- PahariPath SEO: history-API routing + JSON-LD structured data + dynamic meta -->
+<script>
+(function(){
+  'use strict';
+  function setMeta(name,content){
+    var el=document.querySelector('meta[name="'+name+'"]')||document.querySelector('meta[property="'+name+'"]');
+    if(!el){el=document.createElement('meta');el.setAttribute(name.startsWith('og:')||name.startsWith('twitter:')?'property':'name',name);document.head.appendChild(el);}
+    el.setAttribute('content',content);
+  }
+  function setCanonical(url){
+    var el=document.querySelector('link[rel="canonical"]');
+    if(!el){el=document.createElement('link');el.setAttribute('rel','canonical');document.head.appendChild(el);}
+    el.setAttribute('href',url);
+  }
+  function setJsonLd(data){
+    var el=document.getElementById('paharipath-jsonld');
+    if(!el){el=document.createElement('script');el.id='paharipath-jsonld';el.type='application/ld+json';document.head.appendChild(el);}
+    el.textContent=JSON.stringify(data);
+  }
+  var HOME_TITLE='PahariPath — Discover Real Himachal Pradesh';
+  var HOME_DESC='Discover 146+ offbeat destinations in Himachal Pradesh with live crowd tracking. Find peaceful valleys, quiet villages, and real Pahadi experiences. Book directly with local hosts.';
+  var HOME_URL='https://paharipath.in/';
+  var HOME_JSONLD={"@context":"https://schema.org","@graph":[
+    {"@type":"WebSite","@id":"https://paharipath.in/#website","url":"https://paharipath.in/","name":"PahariPath","description":HOME_DESC,"inLanguage":"en-IN","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://paharipath.in/?q={search_term_string}"},"query-input":"required name=search_term_string"}},
+    {"@type":"Organization","@id":"https://paharipath.in/#organization","name":"PahariPath","url":"https://paharipath.in/","logo":"https://paharipath.in/icon-192.png","contactPoint":{"@type":"ContactPoint","email":"hello@paharipath.in","contactType":"customer support"}},
+    {"@type":"TravelAgency","@id":"https://paharipath.in/#travelagency","name":"PahariPath","description":"Offbeat travel discovery platform for Himachal Pradesh with live crowd tracking and direct local homestay bookings.","url":"https://paharipath.in/","areaServed":{"@type":"State","name":"Himachal Pradesh","sameAs":"https://en.wikipedia.org/wiki/Himachal_Pradesh"}}
+  ]};
+  function openDestination(dest){
+    var slug=dest.slug||(dest.name||'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    var destUrl='https://paharipath.in/destination/'+slug;
+    var title=dest.name+' Travel Guide — Himachal Pradesh | PahariPath';
+    var desc=dest.description?dest.description.slice(0,155):('Explore '+dest.name+' in '+(dest.district||'Himachal Pradesh')+'. Live crowd tracking, local homestays on PahariPath.');
+    history.pushState({destination:slug},title,'/destination/'+slug);
+    document.title=title;
+    setMeta('description',desc);
+    setMeta('og:title',dest.name+' — Offbeat Himachal | PahariPath');
+    setMeta('og:description',desc);
+    setMeta('og:url',destUrl);
+    setMeta('og:type','article');
+    setMeta('twitter:title',dest.name+' — PahariPath');
+    setMeta('twitter:description',desc);
+    setCanonical(destUrl);
+    var jld={"@context":"https://schema.org","@graph":[
+      {"@type":"TouristAttraction","@id":destUrl+"#place","name":dest.name,"description":desc,"url":destUrl,"inLanguage":"en-IN","touristType":dest.vibes||[],"containedInPlace":{"@type":"State","name":"Himachal Pradesh","sameAs":"https://en.wikipedia.org/wiki/Himachal_Pradesh"}},
+      {"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://paharipath.in/"},{"@type":"ListItem","position":2,"name":dest.district||"Himachal Pradesh","item":"https://paharipath.in/#"+(dest.district||'').toLowerCase().replace(/\s+/g,'-')},{"@type":"ListItem","position":3,"name":dest.name,"item":destUrl}]}
+    ]};
+    if(dest.lat&&dest.lng)jld['@graph'][0].geo={"@type":"GeoCoordinates","latitude":dest.lat,"longitude":dest.lng};
+    setJsonLd(jld);
+  }
+  function closeDestination(){
+    history.pushState({},HOME_TITLE,'/');
+    document.title=HOME_TITLE;
+    setMeta('description',HOME_DESC);
+    setMeta('og:title',HOME_TITLE);
+    setMeta('og:description',HOME_DESC);
+    setMeta('og:url',HOME_URL);
+    setMeta('og:type','website');
+    setCanonical(HOME_URL);
+    setJsonLd(HOME_JSONLD);
+  }
+  window.addEventListener('popstate',function(){
+    if(window.location.pathname==='/'||window.location.pathname===''){
+      document.title=HOME_TITLE;
+      setMeta('description',HOME_DESC);
+      setMeta('og:url',HOME_URL);
+      setCanonical(HOME_URL);
+      setJsonLd(HOME_JSONLD);
+    }
+  });
+  setJsonLd(HOME_JSONLD);
+  window.pahariSEO={open:openDestination,close:closeDestination};
+})();
 </script>
 </body>
 </html>
