@@ -3210,7 +3210,6 @@ function openPD(id){addRecentlyViewed(id);
   document.querySelectorAll('.pd-tab').forEach(t=>t.classList.remove('act'));
   document.querySelector('.pd-tab').classList.add('act');
   document.getElementById('pdPhotoSec').style.display='block';
-  document.getElementById('pdVtourSec').style.display='none';
   document.getElementById('pdVideoSec').style.display='none';
   const el=document.getElementById('pd');
   el.classList.add('open');el.style.display='block';el.scrollTop=0;document.body.style.overflow='hidden';
