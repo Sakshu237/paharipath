@@ -144,7 +144,7 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .sm-btn:hover{background:var(--pine);color:#fff;border-color:var(--pine)}
 /* MAP */
 .map-wrap{padding:0 40px 48px;max-width:1240px;margin:0 auto}
-.map-card{background:#fff;border-radius:18px;border:1px solid rgba(74,124,95,.1);overflow:hidden;box-shadow:var(--shadow)}
+.map-card{background:#fff;border-radius:18px;border:1px solid rgba(74,124,95,.1);overflow:hidden;box-shadow:var(--shadow);position:relative}
 .map-hd{padding:16px 20px;border-bottom:1px solid rgba(74,124,95,.1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .map-ttl{font-family:var(--fd);font-size:20px;color:var(--pine)}
 .map-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -828,11 +828,11 @@ input[type=range]{flex:1;accent-color:var(--pine)}
           <div class="map-offline-t">Map needs internet</div>
           <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
         </div>
-      </div>
-      <div style="position:absolute;bottom:80px;right:12px;z-index:999;display:flex;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
-        <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
-          📍 Add a Place
-        </button>
+        <div style="position:absolute;bottom:16px;right:12px;z-index:999;display:flex;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
+          <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
+            📍 Add a Place
+          </button>
+        </div>
       </div>
       <div class="map-sidebar">
         <div class="ms-head">
