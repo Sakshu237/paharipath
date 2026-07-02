@@ -32,12 +32,15 @@
 <meta name="apple-mobile-web-app-title" content="PahariPath"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer data-domain="paharipath.in" src="https://plausible.io/js/script.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://checkout.razorpay.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'"/>
+<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/></noscript>
+<script defer data-domain="paharipath.in" src="https://plausible.io/js/script.js"></script>
 <style>
 :root{
   --pine:#1a3d2b;--moss:#2d5a40;--sage:#4a7c5f;--mist:#e8ede9;
@@ -644,6 +647,100 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   </div>
 </section>
 <div class="stats-bar" id="sbar"></div>
+<section class="sec" id="crowd">
+  <div class="sec-hd">
+    <div>
+      <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
+      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
+    </div>
+    <div style="text-align:right">
+      <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
+      <div id="utime" style="font-size:11px;color:var(--stone)"></div>
+    </div>
+  </div>
+  <div class="cg" id="cgrid"></div>
+  <div class="show-more"><button class="sm-btn" id="crowd-more-btn" onclick="toggleCrowd()">Show all 146 places ↓</button></div>
+</section>
+<section class="sec" id="explore">
+  <div class="sec-hd">
+    <div>
+      <h2 class="sec-t">Explore <span>Himachal</span></h2>
+      <p style="font-size:13px;color:var(--stone);margin-top:5px" id="plcount"></p>
+    </div>
+    <p class="sec-note">Sorted least crowded first. Click for virtual tour, heatmap &amp; bookings.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px" id="plFilterRow">
+    <button class="pf-btn act" onclick="plFilter('all',this)">All Places</button>
+    <button class="pf-btn" onclick="plFilter('quiet',this)">🟢 Quiet Now</button>
+    <button class="pf-btn" onclick="plFilter('trek',this)">🥾 Trek</button>
+    <button class="pf-btn" onclick="plFilter('offbeat',this)">🌿 Offbeat</button>
+    <button class="pf-btn" onclick="plFilter('spiritual',this)">🛕 Spiritual</button>
+    <button class="pf-btn" onclick="plFilter('river',this)">🌊 River</button>
+    <button class="pf-btn" onclick="plFilter('snow',this)">❄️ Snow</button>
+    <button class="pf-btn" onclick="plFilter('village',this)">🏘️ Village</button>
+    <button class="pf-btn" onclick="plFilter('hasstays',this)">🏡 Has Stays</button>
+    <button class="pf-btn" onclick="plFilter('eco',this)">♻️ Eco</button>
+  </div>
+  <div class="pg-grid" id="pgrid"></div>
+  <div class="show-more"><button class="sm-btn" id="pl-more-btn" onclick="togglePlaces()">Show all places ↓</button></div>
+</section>
+<div class="alt-band">
+  <div class="alt-in">
+    <div class="alt-t">Same vibe. <em style="font-style:italic">Fewer people.</em></div>
+    <p class="alt-sub">Every overcrowded hotspot has a quieter twin that's just as stunning</p>
+    <div class="alt-grid" id="altg"></div>
+  </div>
+</div>
+
+<div class="map-wrap" id="mapwrap">
+  <div class="map-card">
+    <div class="map-hd">
+      <div>
+        <div class="map-ttl">Live Destination Map — Himachal Pradesh</div>
+        <p style="font-size:12px;color:var(--stone);margin-top:2px" id="map-provider-note">Click any pin · 146 GPS locations · Live crowd colors</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+        <div class="map-leg">
+          <div class="leg-i"><div class="leg-d" style="background:#3aab66"></div>Quiet</div>
+          <div class="leg-i"><div class="leg-d" style="background:#e8a020"></div>Moderate</div>
+          <div class="leg-i"><div class="leg-d" style="background:#e24a4a"></div>Busy</div>
+        </div>
+        <div class="map-controls">
+          <button class="map-filter-btn act" onclick="mapFilter('all',this)">All 146</button>
+          <button class="map-filter-btn quiet-only" onclick="mapFilter('quiet',this)">🟢 Quiet Only</button>
+          <button class="map-filter-btn" onclick="mapFilter('trek',this)">Trek</button>
+          <button class="map-filter-btn" onclick="mapFilter('spiritual',this)">Spiritual</button>
+          <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
+          <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
+          <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
+        </div>
+      </div>
+    </div>
+    <div class="map-body">
+      <div id="lfmap-wrap" style="position:relative">
+        <div id="lfmap"></div>
+        <div id="map-fallback" class="map-offline" style="display:none">
+          <div class="map-offline-icon">🏔️</div>
+          <div class="map-offline-t">Map needs internet</div>
+          <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
+        </div>
+        <div style="position:absolute;bottom:16px;right:12px;z-index:999;display:flex;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
+          <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
+            📍 Add a Place
+          </button>
+        </div>
+      </div>
+      <div class="map-sidebar">
+        <div class="ms-head">
+          <div class="ms-title">Destinations <span id="ms-count" style="font-weight:400;color:var(--sage)"></span></div>
+          <input class="ms-search" id="msSearch" placeholder="Filter by name or district…" oninput="filterSidebar(this.value)"/>
+        </div>
+        <div class="ms-list" id="msList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="mpop" style="display:none"></div>
 <div class="plan-sec" id="plansec">
   <div class="plan-in">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:32px">
@@ -739,51 +836,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     </div>
   </div>
 </div>
-<section class="sec" id="crowd">
-  <div class="sec-hd">
-    <div>
-      <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
-      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
-    </div>
-    <div style="text-align:right">
-      <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
-      <div id="utime" style="font-size:11px;color:var(--stone)"></div>
-    </div>
-  </div>
-  <div class="cg" id="cgrid"></div>
-  <div class="show-more"><button class="sm-btn" id="crowd-more-btn" onclick="toggleCrowd()">Show all 146 places ↓</button></div>
-</section>
-<section class="sec" id="explore">
-  <div class="sec-hd">
-    <div>
-      <h2 class="sec-t">Explore <span>Himachal</span></h2>
-      <p style="font-size:13px;color:var(--stone);margin-top:5px" id="plcount"></p>
-    </div>
-    <p class="sec-note">Sorted least crowded first. Click for virtual tour, heatmap &amp; bookings.</p>
-  </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px" id="plFilterRow">
-    <button class="pf-btn act" onclick="plFilter('all',this)">All Places</button>
-    <button class="pf-btn" onclick="plFilter('quiet',this)">🟢 Quiet Now</button>
-    <button class="pf-btn" onclick="plFilter('trek',this)">🥾 Trek</button>
-    <button class="pf-btn" onclick="plFilter('offbeat',this)">🌿 Offbeat</button>
-    <button class="pf-btn" onclick="plFilter('spiritual',this)">🛕 Spiritual</button>
-    <button class="pf-btn" onclick="plFilter('river',this)">🌊 River</button>
-    <button class="pf-btn" onclick="plFilter('snow',this)">❄️ Snow</button>
-    <button class="pf-btn" onclick="plFilter('village',this)">🏘️ Village</button>
-    <button class="pf-btn" onclick="plFilter('hasstays',this)">🏡 Has Stays</button>
-    <button class="pf-btn" onclick="plFilter('eco',this)">♻️ Eco</button>
-  </div>
-  <div class="pg-grid" id="pgrid"></div>
-  <div class="show-more"><button class="sm-btn" id="pl-more-btn" onclick="togglePlaces()">Show all places ↓</button></div>
-</section>
-<div class="alt-band">
-  <div class="alt-in">
-    <div class="alt-t">Same vibe. <em style="font-style:italic">Fewer people.</em></div>
-    <p class="alt-sub">Every overcrowded hotspot has a quieter twin that's just as stunning</p>
-    <div class="alt-grid" id="altg"></div>
-  </div>
-</div>
-
 <div class="stays-bg" id="stays-bg">
   <div class="stays-in">
     <div class="sec-hd">
@@ -796,55 +848,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <div class="sg" id="stgrid"></div>
   </div>
 </div>
-<div class="map-wrap" id="mapwrap">
-  <div class="map-card">
-    <div class="map-hd">
-      <div>
-        <div class="map-ttl">Live Destination Map — Himachal Pradesh</div>
-        <p style="font-size:12px;color:var(--stone);margin-top:2px" id="map-provider-note">Click any pin · 146 GPS locations · Live crowd colors</p>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-        <div class="map-leg">
-          <div class="leg-i"><div class="leg-d" style="background:#3aab66"></div>Quiet</div>
-          <div class="leg-i"><div class="leg-d" style="background:#e8a020"></div>Moderate</div>
-          <div class="leg-i"><div class="leg-d" style="background:#e24a4a"></div>Busy</div>
-        </div>
-        <div class="map-controls">
-          <button class="map-filter-btn act" onclick="mapFilter('all',this)">All 146</button>
-          <button class="map-filter-btn quiet-only" onclick="mapFilter('quiet',this)">🟢 Quiet Only</button>
-          <button class="map-filter-btn" onclick="mapFilter('trek',this)">Trek</button>
-          <button class="map-filter-btn" onclick="mapFilter('spiritual',this)">Spiritual</button>
-          <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
-          <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
-          <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
-        </div>
-      </div>
-    </div>
-    <div class="map-body">
-      <div id="lfmap-wrap" style="position:relative">
-        <div id="lfmap"></div>
-        <div id="map-fallback" class="map-offline" style="display:none">
-          <div class="map-offline-icon">🏔️</div>
-          <div class="map-offline-t">Map needs internet</div>
-          <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
-        </div>
-        <div style="position:absolute;bottom:16px;right:12px;z-index:999;display:flex;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
-          <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
-            📍 Add a Place
-          </button>
-        </div>
-      </div>
-      <div class="map-sidebar">
-        <div class="ms-head">
-          <div class="ms-title">Destinations <span id="ms-count" style="font-weight:400;color:var(--sage)"></span></div>
-          <input class="ms-search" id="msSearch" placeholder="Filter by name or district…" oninput="filterSidebar(this.value)"/>
-        </div>
-        <div class="ms-list" id="msList"></div>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="mpop" style="display:none"></div>
   <div class="about-sec">
   <h2 class="about-t">Why PahariPath?</h2>
   <p class="about-d">Himachal Pradesh is far more than Manali, Shimla, and Kasol. PahariPath shows you live crowd data across all 146 destinations, enforces visitor limits at sensitive zones, suggests quiet alternatives, and connects you directly with local homestays. No tourist-speak. No corporate stays. Just honest travel.</p>
@@ -1095,6 +1098,9 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <button class="slx-nav slx-next" onclick="lxNav(1)">›</button>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 /* ════════════════════════════════════════════════════════════════
    MAP PROVIDER CONFIG — India-compliant map (Mappls / MapmyIndia)
@@ -1311,6 +1317,11 @@ async function doHostLogout(){
 function hTab(tab, btn){
   document.querySelectorAll('.htab').forEach(b=>b.classList.remove('act'));
   if(btn) btn.classList.add('act');
+  // Prevent duplicate-id collisions with the Admin panel (which shares some
+  // element ids like itnDestSel, fbGuestName, etc.) by ensuring the Admin
+  // panel's container is empty whenever the Host panel is rendering.
+  const adEl0 = document.getElementById('adMain');
+  if (adEl0) adEl0.innerHTML = '';
   const el = document.getElementById('hostContent');
 
   if(tab==='overview'){
@@ -1781,7 +1792,7 @@ async function loadAdminMedia(){
     html+=`<div style="font-size:12px;font-weight:700;color:var(--stone);margin-bottom:8px;text-transform:uppercase">📷 Saved Photos (${images.length})</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px">
       ${images.map((img,i)=>`<div style="position:relative;border-radius:8px;overflow:hidden">
-        <img src="${img}" style="width:100%;height:80px;object-fit:cover;display:block" loading="lazy" onerror="this.style.opacity=0.3"/>
+        <img src="${img}" alt="Destination photo ${i+1}" style="width:100%;height:80px;object-fit:cover;display:block" loading="lazy" onerror="this.style.opacity=0.3"/>
         <button onclick="adminDeleteMedia(${pid},${i},'images')" style="position:absolute;top:4px;right:4px;background:rgba(192,57,43,.9);color:#fff;border:none;border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer">✕</button>
       </div>`).join('')}
     </div>`;
@@ -2480,7 +2491,7 @@ function openStayDetail(id){
             ${s.eco?'<div class="eco-fl" style="top:14px;left:14px;font-size:11px;padding:4px 10px">🌱 Eco Stay</div>':''}
           </div>
           ${photos.length>1?`<div style="display:flex;gap:4px;padding:6px;background:#f5f5f3;overflow-x:auto">
-            ${photos.slice(0,6).map((p,i)=>`<img src="${p}" onclick="openStayPhotos(${id},${i})" style="height:56px;width:78px;object-fit:cover;border-radius:5px;flex-shrink:0;cursor:pointer;opacity:${i===0?1:.75};transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=${i===0?1:.75}"/>`).join('')}
+            ${photos.slice(0,6).map((p,i)=>`<img src="${p}" alt="Stay photo ${i+1}" onclick="openStayPhotos(${id},${i})" style="height:56px;width:78px;object-fit:cover;border-radius:5px;flex-shrink:0;cursor:pointer;opacity:${i===0?1:.75};transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=${i===0?1:.75}"/>`).join('')}
             ${photos.length>6?`<div onclick="openStayPhotos(${id},6)" style="height:56px;width:78px;border-radius:5px;flex-shrink:0;background:#1a3d2b;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;cursor:pointer">+${photos.length-6}</div>`:''}
           </div>`:''}
         `
@@ -2699,164 +2710,6 @@ function fltr(btn,f){
   document.querySelectorAll('.fb').forEach(b=>b.classList.remove('act'));btn.classList.add('act');
   plShowAll=false;renderPlaces(f);
   setTimeout(()=>document.getElementById('explore').scrollIntoView({behavior:'smooth'}),100);
-}
-
-// ═══ FORECAST ═══
-function renderWeeklyForecast(p, selectedDate){
-  const weeklyEl = document.getElementById('fcWeekly');
-  const calEl = document.getElementById('fcCalendar');
-  const gridEl = document.getElementById('fcWeeklyGrid');
-  const detailEl = document.getElementById('fcWeekDetail');
-  const calGridEl = document.getElementById('fcCalGrid');
-  if(!weeklyEl||!gridEl) return;
-
-  const ZS_MAP = (typeof ZS !== 'undefined') ? ZS : {};
-  const seas_arr = ZS_MAP[p.zone||'kullu'] || ZS_MAP.kullu || [];
-
-  // Day multipliers (Mon-Sun)
-  const dM = [1.3, 1, 0.95, 0.95, 0.97, 1.15, 1.5];
-  const mM = {good:1, warn:1.3, rain:0.7, snow:0.3, dry:0.9};
-
-  function crowdForDate(d){
-    const mo = d.getMonth();
-    const dy = d.getDay();
-    const seas = seas_arr[mo] || 'good';
-    return Math.min(98, Math.round(p.crowd * dM[dy] * (mM[seas]||1)));
-  }
-
-  function crowdColor(c){ return c<40?'#2d8a4e':c<70?'#b07d2a':'#c0392b'; }
-  function crowdLabel(c){ return c<40?'Low':c<70?'Moderate':'Busy'; }
-  function crowdEmoji(c){ return c<40?'🟢':c<70?'🟡':'🔴'; }
-
-  // Generate 4 weeks from today
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const weeks = [];
-
-  for(let w=0; w<4; w++){
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() + (w*7));
-    const days = [];
-    let weekTotal = 0;
-    for(let d=0; d<7; d++){
-      const day = new Date(weekStart);
-      day.setDate(weekStart.getDate() + d);
-      const c = crowdForDate(day);
-      weekTotal += c;
-      days.push({date:day, crowd:c});
-    }
-    const avgCrowd = Math.round(weekTotal/7);
-    weeks.push({weekStart, days, avgCrowd});
-  }
-
-  // Best week
-  const bestWeek = weeks.reduce((a,b)=>a.avgCrowd<b.avgCrowd?a:b);
-
-  // ── 4-week summary cards ──
-  gridEl.innerHTML = weeks.map((w,i)=>{
-    const label = i===0?'This Week':i===1?'Next Week':`Week ${i+1}`;
-    const dateRange = `${w.weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} – ${new Date(w.weekStart.getTime()+6*86400000).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`;
-    const isBest = w===bestWeek;
-    const isSelected = selectedDate >= w.days[0].date && selectedDate <= w.days[6].date;
-    return `<div onclick="selectForecastWeek(${i})" style="
-      background:${isSelected?'rgba(255,255,255,.18)':isBest?'rgba(58,171,102,.2)':'rgba(255,255,255,.06)'};
-      border:1.5px solid ${isSelected?'rgba(255,255,255,.5)':isBest?'rgba(58,171,102,.5)':'rgba(255,255,255,.1)'};
-      border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;transition:all .2s
-    ">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px">${label}</div>
-      <div style="font-size:22px;margin-bottom:4px">${crowdEmoji(w.avgCrowd)}</div>
-      <div style="font-size:18px;font-weight:700;color:#fff">${w.avgCrowd}%</div>
-      <div style="font-size:10px;color:${crowdColor(w.avgCrowd)};font-weight:600;margin-top:2px">${crowdLabel(w.avgCrowd)}</div>
-      <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:4px">${dateRange}</div>
-      ${isBest?'<div style="font-size:9px;background:rgba(58,171,102,.3);color:#7fd4a0;border-radius:20px;padding:2px 7px;margin-top:5px;font-weight:600">✓ BEST WEEK</div>':''}
-    </div>`;
-  }).join('');
-
-  // ── Week detail breakdown ──
-  detailEl.innerHTML = weeks.map((w,i)=>{
-    const label = i===0?'This Week':i===1?'Next Week':`Week ${i+1} (${w.weekStart.toLocaleDateString('en-IN',{month:'long'})})`;
-    const dateRange = `${w.weekStart.toLocaleDateString('en-IN',{day:'numeric',month:'short'})} – ${new Date(w.weekStart.getTime()+6*86400000).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`;
-    const isBest = w===bestWeek;
-    // Best day in week
-    const bestDay = w.days.reduce((a,b)=>a.crowd<b.crowd?a:b);
-    const worstDay = w.days.reduce((a,b)=>a.crowd>b.crowd?a:b);
-    const seas = seas_arr[w.weekStart.getMonth()]||'good';
-    const weatherMap = {good:'☀️ Clear',warn:'🌤 Warm',rain:'🌧 Monsoon',snow:'❄️ Snow',dry:'🌥 Cool'};
-
-    return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px">
-        <div style="font-size:13px;font-weight:600;color:#fff">${label} <span style="font-size:11px;color:rgba(255,255,255,.4)">${dateRange}</span></div>
-        <div style="display:flex;gap:6px;align-items:center">
-          ${isBest?'<span style="font-size:10px;background:rgba(58,171,102,.3);color:#7fd4a0;border-radius:20px;padding:2px 8px;font-weight:700">BEST</span>':''}
-          <span style="font-size:12px;font-weight:700;color:${crowdColor(w.avgCrowd)}">${crowdEmoji(w.avgCrowd)} ${w.avgCrowd}% avg</span>
-        </div>
-      </div>
-      <div style="display:flex;gap:3px;margin-bottom:6px">
-        ${w.days.map(d=>{
-          const isToday=d.date.toDateString()===today.toDateString();
-          const isSel=d.date.toDateString()===selectedDate.toDateString();
-          return `<div style="flex:1;text-align:center">
-            <div style="font-size:9px;color:rgba(255,255,255,.4)">${['S','M','T','W','T','F','S'][d.date.getDay()]}</div>
-            <div style="height:32px;background:${crowdColor(d.crowd)};border-radius:4px;margin:3px 0;opacity:${0.4+d.crowd/150};${isSel?'outline:2px solid #fff;':''}" title="${d.crowd}%"></div>
-            <div style="font-size:9px;color:rgba(255,255,255,.5)">${d.date.getDate()}</div>
-          </div>`;
-        }).join('')}
-      </div>
-      <div style="display:flex;gap:12px;font-size:11px;color:rgba(255,255,255,.5);flex-wrap:wrap">
-        <span>🌤 ${weatherMap[seas]||'Clear'}</span>
-        <span>✅ Best day: ${bestDay.date.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})} (${bestDay.crowd}%)</span>
-        <span>⚠️ Avoid: ${worstDay.date.toLocaleDateString('en-IN',{weekday:'short'})} (${worstDay.crowd}%)</span>
-      </div>
-    </div>`;
-  }).join('');
-
-  // ── 30-day calendar grid ──
-  const days7 = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let calHTML = days7.map(d=>`<div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.35);padding:4px 0">${d}</div>`).join('');
-
-  // Fill blank days before month start
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  for(let i=0;i<monthStart.getDay();i++) calHTML+=`<div></div>`;
-
-  // 30 days from today
-  for(let d=0;d<30;d++){
-    const day = new Date(today);
-    day.setDate(today.getDate()+d);
-    const c = crowdForDate(day);
-    const isToday = d===0;
-    const isSel = day.toDateString()===selectedDate.toDateString();
-    calHTML+=`<div onclick="selectCalDay(${day.getTime()})" style="
-      background:${isSel?'#fff':crowdColor(c)};
-      color:${isSel?'var(--pine)':'#fff'};
-      border-radius:6px;padding:5px 2px;font-size:11px;font-weight:${isToday||isSel?'700':'400'};
-      opacity:${0.35+c/140};cursor:pointer;text-align:center;
-      border:${isToday?'1.5px solid #fff':'1px solid transparent'};
-      transition:all .15s
-    " title="${day.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})} · ${c}% crowd">
-      ${day.getDate()}
-    </div>`;
-  }
-  calGridEl.innerHTML = calHTML;
-
-  weeklyEl.style.display='block';
-  calEl.style.display='block';
-}
-
-function selectForecastWeek(weekIdx){
-  const today = new Date();
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() + (weekIdx*7));
-  // Set to Monday of that week
-  const mon = new Date(weekStart);
-  mon.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-  document.getElementById('ppDate').value = mon.toISOString().split('T')[0];
-  runFC();
-}
-
-function selectCalDay(timestamp){
-  const d = new Date(timestamp);
-  document.getElementById('ppDate').value = d.toISOString().split('T')[0];
-  runFC();
 }
 
 function detectLocation(){
@@ -3440,7 +3293,7 @@ function showRoutePanel(name, distKm, timeStr, placeId, coords, isFallback=false
     panel = document.createElement('div');
     panel.id = 'routePanel';
     panel.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:16px;padding:16px 20px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:1000;min-width:280px;max-width:380px;font-family:DM Sans,sans-serif';
-    document.querySelector('.map-wrap')?.appendChild(panel);
+    document.querySelector('.map-card')?.appendChild(panel);
   }
   panel.style.display = 'block';
   panel.innerHTML = `
@@ -3538,7 +3391,7 @@ function openPOIPopup(pin){
     </div>
     ${pin.description?`<p style="font-size:13px;color:var(--stone);line-height:1.7;margin-bottom:14px">${pin.description}</p>`:''}
     ${photos.length?`<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px">
-      ${photos.map(p=>`<img src="${p}" style="height:120px;width:160px;object-fit:cover;border-radius:10px;flex-shrink:0" loading="lazy"/>`).join('')}
+      ${photos.map((p,i)=>`<img src="${p}" alt="Community pin photo ${i+1}" style="height:120px;width:160px;object-fit:cover;border-radius:10px;flex-shrink:0" loading="lazy"/>`).join('')}
     </div>`:''}
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button onclick="_userLatLng=null;_lmap&&_lmap.closePopup();document.getElementById('poiMo').classList.remove('open');document.getElementById('poiMo').style.display='none';setView('home');setTimeout(()=>{document.querySelector('.map-tab')?.click();_lmap&&drawRouteToPin(${JSON.stringify(pin)});},400)"
@@ -4331,6 +4184,9 @@ function processPermit(name) {
 // ═══ ADMIN ═══
 function adTab(tab,el){
   document.querySelectorAll('.adm-ni').forEach(i=>i.classList.remove('act'));el.classList.add('act');
+  // Prevent duplicate-id collisions with the Host panel (see hTab for the mirror of this).
+  const hEl0 = document.getElementById('hostContent');
+  if (hEl0) hEl0.innerHTML = '';
   const m=document.getElementById('adMain');
   if(tab==='dash'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Dashboard</h2>
@@ -4695,7 +4551,7 @@ function previewStayPhotos(){
   const photos=getStayPhotos(id);
   if(!photos.length){el.innerHTML='<div style="font-size:12px;color:var(--stone);padding:8px 0">No photos yet for this stay — add some below!</div>';return;}
   el.innerHTML=`<div style="font-size:11px;font-weight:600;color:var(--stone);margin-bottom:6px">${photos.length} current photo${photos.length!==1?'s':''}:</div>
-    <div class="sp-admin-grid">${photos.map((src,i)=>`<div style="position:relative"><img class="sp-thumb" src="${src}" onerror="this.parentNode.style.display='none'"/>
+    <div class="sp-admin-grid">${photos.map((src,i)=>`<div style="position:relative"><img class="sp-thumb" src="${src}" alt="Stay photo ${i+1}" onerror="this.parentNode.style.display='none'"/>
       <button onclick="removeStayPhoto(${id},${i})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.65);border:none;color:#fff;font-size:10px;border-radius:4px;padding:1px 4px;cursor:pointer">✕</button></div>`).join('')}</div>`;
 }
 function saveStayPhotos(replace){
