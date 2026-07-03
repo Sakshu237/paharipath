@@ -1,0 +1,2943 @@
+[
+  {
+    "id": 1,
+    "name": "Pangi Valley",
+    "district": "Chamba",
+    "desc": "Extreme isolation — tribal area cut off 8 months by snow. No phone signal, no tourists, pure wilderness on the Chenab river.",
+    "emoji": "🏔️",
+    "crowd": 5,
+    "vibes": [
+      "offbeat",
+      "adventure"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Jun–Sep",
+    "altitude": "2700m",
+    "famousFor": "Most remote valley in HP",
+    "zone": "chamba",
+    "mx": 317,
+    "my": 17,
+    "slug": "pangi-valley"
+  },
+  {
+    "id": 2,
+    "name": "Pooh",
+    "district": "Kinnaur",
+    "desc": "Remote village on the China border. Kinnauri tribal life, ancient temples, almost zero tourism infrastructure.",
+    "emoji": "🏔️",
+    "crowd": 6,
+    "vibes": [
+      "offbeat",
+      "adventure"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "May–Oct",
+    "altitude": "2840m",
+    "famousFor": "Remote village near China border",
+    "zone": "kinnaur",
+    "mx": 770,
+    "my": 352,
+    "slug": "pooh"
+  },
+  {
+    "id": 3,
+    "name": "Rasol",
+    "district": "Kullu",
+    "desc": "One of the most remote villages in Parvati Valley, reached only by challenging trek. Absolute silence and pine forests.",
+    "emoji": "⛰️",
+    "crowd": 9,
+    "vibes": [
+      "offbeat",
+      "trek"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "2900m",
+    "famousFor": "Remote village, trek from Kasol",
+    "zone": "parvati",
+    "mx": 378,
+    "my": 219,
+    "slug": "rasol"
+  },
+  {
+    "id": 4,
+    "name": "Karsog Valley",
+    "district": "Mandi",
+    "desc": "Apple orchards, Mamleshwar Mahadev temple, and zero tourist chaos. One of Mandi's best-kept secrets.",
+    "emoji": "🍎",
+    "crowd": 9,
+    "vibes": [
+      "offbeat",
+      "nature",
+      "culture"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1400m",
+    "famousFor": "Apple orchards, Mamleshwar temple",
+    "zone": "mandi",
+    "mx": 350,
+    "my": 269,
+    "slug": "karsog-valley"
+  },
+  {
+    "id": 5,
+    "name": "Pundrik Rishi Lake",
+    "district": "Kullu",
+    "desc": "Sacred high altitude lake in Sainj Valley. Barely visited. Pure nature and spiritual energy.",
+    "emoji": "🌊",
+    "crowd": 6,
+    "vibes": [
+      "spiritual",
+      "trek",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "3100m",
+    "famousFor": "Sacred mountain lake",
+    "zone": "tirthan",
+    "mx": 473,
+    "my": 270,
+    "slug": "pundrik-rishi-lake"
+  },
+  {
+    "id": 6,
+    "name": "Haripurdhar",
+    "district": "Sirmaur",
+    "desc": "Remote ridge in Sirmaur covered in deodar forests with views over Renuka Lake. You may have the entire ridge to yourself.",
+    "emoji": "🌲",
+    "crowd": 7,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Apr–Jun, Sep–Nov",
+    "altitude": "2100m",
+    "famousFor": "Remote ridge, deodar forests",
+    "zone": "sirmaur",
+    "mx": 528,
+    "my": 441,
+    "slug": "haripurdhar"
+  },
+  {
+    "id": 7,
+    "name": "Thachi Valley",
+    "district": "Mandi",
+    "desc": "Remote apple orchard valley in deep Mandi. Traditional Pahari villages, no paved roads for stretches.",
+    "emoji": "🌲",
+    "crowd": 8,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "1800m",
+    "famousFor": "Remote apple valley, Pahari life",
+    "zone": "mandi",
+    "mx": 325,
+    "my": 276,
+    "slug": "thachi-valley"
+  },
+  {
+    "id": 8,
+    "name": "Sach Pass",
+    "district": "Chamba",
+    "desc": "One of India's most dangerous passes at 4390m. Snow in July. Spine-tingling switchbacks with no margin for error.",
+    "emoji": "⛰️",
+    "crowd": 8,
+    "vibes": [
+      "adventure",
+      "offbeat"
+    ],
+    "color": "#e0dce8",
+    "bestTime": "Jul–Sep",
+    "altitude": "4390m",
+    "famousFor": "Extreme high pass, gateway to Pangi",
+    "zone": "chamba",
+    "mx": 238,
+    "my": 53,
+    "slug": "sach-pass"
+  },
+  {
+    "id": 9,
+    "name": "Churdhar Peak",
+    "district": "Sirmaur",
+    "desc": "Highest peak in the outer Himalayas at 3647m with an ancient Shirgul Maharaj temple at the very summit.",
+    "emoji": "🗻",
+    "crowd": 9,
+    "vibes": [
+      "adventure",
+      "spiritual",
+      "offbeat"
+    ],
+    "color": "#e0dce8",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "3647m",
+    "famousFor": "Highest outer Himalayan peak, summit temple",
+    "zone": "sirmaur",
+    "mx": 490,
+    "my": 426,
+    "slug": "churdhar-peak"
+  },
+  {
+    "id": 10,
+    "name": "Ribba",
+    "district": "Kinnaur",
+    "desc": "Kinnauri village famous for grape wine made from valley vineyards. Traditional culture, completely off the tourist circuit.",
+    "emoji": "🍇",
+    "crowd": 8,
+    "vibes": [
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Aug–Oct",
+    "altitude": "2700m",
+    "famousFor": "Kinnauri grape wine, traditional culture",
+    "zone": "kinnaur",
+    "mx": 803,
+    "my": 290,
+    "slug": "ribba"
+  },
+  {
+    "id": 11,
+    "name": "Kalga",
+    "district": "Kullu",
+    "desc": "Above Pulga in Parvati Valley — the absolute quietest village here. Just forest, mountains, and birdsong.",
+    "emoji": "🌿",
+    "crowd": 10,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "2500m",
+    "famousFor": "Silence, forest, remote Parvati",
+    "zone": "parvati",
+    "mx": 424,
+    "my": 272,
+    "slug": "kalga"
+  },
+  {
+    "id": 12,
+    "name": "Bhaba Valley",
+    "district": "Kinnaur",
+    "desc": "The greenest valley in Kinnaur. Starting point for the Bhaba Pass trek connecting to Pin Valley in Spiti.",
+    "emoji": "🌿",
+    "crowd": 10,
+    "vibes": [
+      "trek",
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Jun–Sep",
+    "altitude": "2700m",
+    "famousFor": "Green valley, Bhaba Pass trek to Pin",
+    "zone": "kinnaur",
+    "mx": 717,
+    "my": 282,
+    "slug": "bhaba-valley"
+  },
+  {
+    "id": 13,
+    "name": "Khab",
+    "district": "Kinnaur",
+    "desc": "Dramatic confluence where the Spiti meets the Sutlej. The landscape changes completely here — green to barren.",
+    "emoji": "🌊",
+    "crowd": 10,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "May–Oct",
+    "altitude": "2000m",
+    "famousFor": "Spiti-Sutlej river confluence",
+    "zone": "kinnaur",
+    "mx": 778,
+    "my": 325,
+    "slug": "khab"
+  },
+  {
+    "id": 14,
+    "name": "Komic",
+    "district": "Lahaul & Spiti",
+    "desc": "Claimed to be the highest motorable village in Asia at 4587m. Ancient monastery, handful of families, alien landscape.",
+    "emoji": "🏡",
+    "crowd": 14,
+    "vibes": [
+      "offbeat",
+      "spiritual"
+    ],
+    "color": "#e0dce8",
+    "bestTime": "Jun–Sep",
+    "altitude": "4587m",
+    "famousFor": "Highest motorable village in Asia",
+    "zone": "spiti",
+    "mx": 688,
+    "my": 142,
+    "slug": "komic"
+  },
+  {
+    "id": 15,
+    "name": "Shangarh",
+    "district": "Kullu",
+    "desc": "A vast ancient meadow in Sainj Valley with a Shangchul Mahadev temple at its edge. Himalayan views in every direction.",
+    "emoji": "🌾",
+    "crowd": 16,
+    "vibes": [
+      "offbeat",
+      "nature",
+      "culture"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2200m",
+    "famousFor": "Ancient meadow, Shangchul temple",
+    "zone": "tirthan",
+    "mx": 405,
+    "my": 228,
+    "slug": "shangarh"
+  },
+  {
+    "id": 16,
+    "name": "Gushaini",
+    "district": "Kullu",
+    "desc": "Main entry to the Great Himalayan National Park on the Tirthan river. Peaceful base with excellent fishing.",
+    "emoji": "🏡",
+    "crowd": 12,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1500m",
+    "famousFor": "GHNP entry point, Tirthan river",
+    "zone": "tirthan",
+    "mx": 411,
+    "my": 253,
+    "slug": "gushaini"
+  },
+  {
+    "id": 17,
+    "name": "Janjheli",
+    "district": "Mandi",
+    "desc": "Lush offbeat hill station at 2150m in Mandi. Green meadows, Shikari Devi base, barely any tourists on weekdays.",
+    "emoji": "🌿",
+    "crowd": 11,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2150m",
+    "famousFor": "Lush meadows, Shikari Devi base",
+    "zone": "mandi",
+    "mx": 405,
+    "my": 247,
+    "slug": "janjheli"
+  },
+  {
+    "id": 18,
+    "name": "Shikari Devi",
+    "district": "Mandi",
+    "desc": "A roofless temple at 3360m. The roof collapses every time one is built, according to locals. Alpine forest surrounds it.",
+    "emoji": "⛰️",
+    "crowd": 14,
+    "vibes": [
+      "spiritual",
+      "adventure",
+      "offbeat"
+    ],
+    "color": "#e8e0d4",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "3360m",
+    "famousFor": "Roofless ancient temple, alpine forest",
+    "zone": "mandi",
+    "mx": 379,
+    "my": 239,
+    "slug": "shikari-devi"
+  },
+  {
+    "id": 19,
+    "name": "Rakcham",
+    "district": "Kinnaur",
+    "desc": "Quiet village between Sangla and Chitkul. Birch forests, apple orchards. Most people drive through — stop here.",
+    "emoji": "🌲",
+    "crowd": 10,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "May–Oct",
+    "altitude": "3100m",
+    "famousFor": "Birch forests, apple orchards",
+    "zone": "kinnaur",
+    "mx": 758,
+    "my": 327,
+    "slug": "rakcham"
+  },
+  {
+    "id": 20,
+    "name": "Kamrunag",
+    "district": "Mandi",
+    "desc": "Remote deity lake at 3334m where devotees have thrown coins for centuries. Annual June fair is atmospheric.",
+    "emoji": "🌊",
+    "crowd": 16,
+    "vibes": [
+      "spiritual",
+      "trek",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jun, Sep",
+    "altitude": "3334m",
+    "famousFor": "Sacred deity lake, annual fair",
+    "zone": "mandi",
+    "mx": 399,
+    "my": 335,
+    "slug": "kamrunag"
+  },
+  {
+    "id": 21,
+    "name": "Grahan",
+    "district": "Kullu",
+    "desc": "Very remote village reached by a 9km trek through dense forest from Kasol. One of the most beautiful undiscovered villages.",
+    "emoji": "🌲",
+    "crowd": 11,
+    "vibes": [
+      "offbeat",
+      "trek",
+      "nature"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "2800m",
+    "famousFor": "Remote village, dense forest trek",
+    "zone": "parvati",
+    "mx": 409,
+    "my": 195,
+    "slug": "grahan"
+  },
+  {
+    "id": 22,
+    "name": "Chehni Kothi",
+    "district": "Kullu",
+    "desc": "One of HP's tallest traditional wooden towers, 1500 years old. Stunning Kath-Kuni architecture in Banjar Valley.",
+    "emoji": "🗼",
+    "crowd": 12,
+    "vibes": [
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Apr–Jun, Sep–Nov",
+    "altitude": "2200m",
+    "famousFor": "1500-year-old wooden tower",
+    "zone": "tirthan",
+    "mx": 482,
+    "my": 232,
+    "slug": "chehni-kothi"
+  },
+  {
+    "id": 23,
+    "name": "Pulga",
+    "district": "Kullu",
+    "desc": "Fairy-tale pine forest village in Parvati Valley. Most stop at Kasol and Tosh — Pulga rewards those who go further.",
+    "emoji": "🌲",
+    "crowd": 14,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "2400m",
+    "famousFor": "Pine forests, remote Parvati village",
+    "zone": "parvati",
+    "mx": 422,
+    "my": 248,
+    "slug": "pulga"
+  },
+  {
+    "id": 24,
+    "name": "Kareri Lake",
+    "district": "Kangra",
+    "desc": "Hidden alpine glacial lake at 2934m above Dharamshala. Less crowded than Triund, equally stunning.",
+    "emoji": "🏔️",
+    "crowd": 18,
+    "vibes": [
+      "trek",
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "2934m",
+    "famousFor": "Hidden alpine lake, Triund alternative",
+    "zone": "kangra",
+    "mx": 237,
+    "my": 218,
+    "slug": "kareri-lake"
+  },
+  {
+    "id": 25,
+    "name": "Andretta",
+    "district": "Kangra",
+    "desc": "Small artist village in Kangra with one of HP's most important galleries — Sobha Singh's. Pottery, heritage, zero tourists.",
+    "emoji": "🎨",
+    "crowd": 15,
+    "vibes": [
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Mar",
+    "altitude": "900m",
+    "famousFor": "Artist village, Sobha Singh gallery",
+    "zone": "kangra",
+    "mx": 150,
+    "my": 175,
+    "slug": "andretta"
+  },
+  {
+    "id": 26,
+    "name": "Narkanda",
+    "district": "Shimla",
+    "desc": "Apple belt town at 2708m where Hatu Peak towers above. Skiing in winter, misty orchards in summer. Underrated near Shimla.",
+    "emoji": "🍎",
+    "crowd": 32,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jan–Feb (snow), May–Jun, Sep–Oct",
+    "altitude": "2708m",
+    "famousFor": "Apple orchards, Hatu Peak, skiing",
+    "zone": "shimla",
+    "mx": 443,
+    "my": 416,
+    "slug": "narkanda"
+  },
+  {
+    "id": 27,
+    "name": "Hatu Peak",
+    "district": "Shimla",
+    "desc": "Highest peak accessible from Shimla region at 3400m. Hatu Mata temple at the top. 360° Himalayan panorama.",
+    "emoji": "🗻",
+    "crowd": 18,
+    "vibes": [
+      "trek",
+      "nature",
+      "offbeat"
+    ],
+    "color": "#e0dce8",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "3400m",
+    "famousFor": "Highest peak near Shimla, 360° views",
+    "zone": "shimla",
+    "mx": 375,
+    "my": 394,
+    "slug": "hatu-peak"
+  },
+  {
+    "id": 28,
+    "name": "Tosh",
+    "district": "Kullu",
+    "desc": "Scenic village at the far end of a Parvati side valley at 2400m. Wooden guesthouses, apple trees, snowfields above.",
+    "emoji": "🌿",
+    "crowd": 28,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "2400m",
+    "famousFor": "Remote Parvati village, peace",
+    "zone": "parvati",
+    "mx": 476,
+    "my": 214,
+    "slug": "tosh"
+  },
+  {
+    "id": 29,
+    "name": "Sethan",
+    "district": "Kullu",
+    "desc": "Hidden village near Manali with deep snow in winter. No tourist buses. 20 minutes from Manali, worlds apart in feel.",
+    "emoji": "❄️",
+    "crowd": 20,
+    "vibes": [
+      "offbeat",
+      "adventure",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Dec–Feb (snow), Jun–Sep",
+    "altitude": "2700m",
+    "famousFor": "Hidden snow village near Manali",
+    "zone": "kullu",
+    "mx": 410,
+    "my": 169,
+    "slug": "sethan"
+  },
+  {
+    "id": 30,
+    "name": "Sereolesar Lake",
+    "district": "Kullu",
+    "desc": "Crystal-clear lake reached by trekking from Jalori Pass. Budhi Nagin temple on the shore. A genuine hidden gem.",
+    "emoji": "🌊",
+    "crowd": 14,
+    "vibes": [
+      "trek",
+      "nature",
+      "spiritual"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "3100m",
+    "famousFor": "Crystal lake, Budhi Nagin temple",
+    "zone": "tirthan",
+    "mx": 409,
+    "my": 191,
+    "slug": "sereolesar-lake"
+  },
+  {
+    "id": 31,
+    "name": "Jibhi",
+    "district": "Kullu",
+    "desc": "A tiny Banjar valley village that Kasol used to be before Instagram. Wooden Pahari houses, waterfall, pine forest.",
+    "emoji": "🌲",
+    "crowd": 28,
+    "vibes": [
+      "offbeat",
+      "nature",
+      "culture"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1680m",
+    "famousFor": "Wooden architecture, forest walks",
+    "zone": "tirthan",
+    "mx": 423,
+    "my": 303,
+    "slug": "jibhi"
+  },
+  {
+    "id": 32,
+    "name": "Shoja",
+    "district": "Kullu",
+    "desc": "Quiet hilltop village with Jalori Pass views and apple orchards. Perfect for two nights of doing absolutely nothing.",
+    "emoji": "🍎",
+    "crowd": 18,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2300m",
+    "famousFor": "Jalori Pass views, apple orchards",
+    "zone": "tirthan",
+    "mx": 441,
+    "my": 208,
+    "slug": "shoja"
+  },
+  {
+    "id": 33,
+    "name": "Jalori Pass",
+    "district": "Kullu",
+    "desc": "Drive-up pass at 3120m with panoramic Himalayan views and trail to Sereolesar Lake. Few passes reachable without trekking.",
+    "emoji": "⛰️",
+    "crowd": 22,
+    "vibes": [
+      "adventure",
+      "nature",
+      "offbeat"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "3120m",
+    "famousFor": "High altitude drive, panoramic views",
+    "zone": "tirthan",
+    "mx": 450,
+    "my": 303,
+    "slug": "jalori-pass"
+  },
+  {
+    "id": 34,
+    "name": "GHNP",
+    "district": "Kullu",
+    "desc": "UNESCO World Heritage Site covering 1500 sq km. Snow leopards, 375+ bird species. Trek-only access — pristine.",
+    "emoji": "🌲",
+    "crowd": 18,
+    "vibes": [
+      "nature",
+      "trek",
+      "offbeat"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "1500m+",
+    "famousFor": "UNESCO site, snow leopards, pristine ecosystem",
+    "zone": "tirthan",
+    "mx": 476,
+    "my": 267,
+    "slug": "ghnp"
+  },
+  {
+    "id": 35,
+    "name": "Barot",
+    "district": "Mandi",
+    "desc": "Quiet Uhl river valley at 1800m. Pine forests, natural trout streams, no tourist buses. Real unhurried Himachal.",
+    "emoji": "🏕️",
+    "crowd": 18,
+    "vibes": [
+      "nature",
+      "offbeat",
+      "culture"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "1800m",
+    "famousFor": "Trout fishing, Uhl river, no crowds",
+    "zone": "mandi",
+    "mx": 386,
+    "my": 301,
+    "slug": "barot"
+  },
+  {
+    "id": 36,
+    "name": "Tirthan Valley",
+    "district": "Kullu",
+    "desc": "Gateway to GHNP. Crystal river, trout fishing, dense forests, and the kind of silence that city people forget exists.",
+    "emoji": "🌿",
+    "crowd": 22,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Oct–Nov, Mar–Apr",
+    "altitude": "1600m",
+    "famousFor": "GHNP trekking, trout fishing, silence",
+    "zone": "tirthan",
+    "mx": 423,
+    "my": 285,
+    "slug": "tirthan-valley"
+  },
+  {
+    "id": 37,
+    "name": "Nako Village",
+    "district": "Kinnaur",
+    "desc": "High altitude village at 3625m with an ancient monastery and small lake. Traditional Kinnauri culture unchanged.",
+    "emoji": "🏔️",
+    "crowd": 14,
+    "vibes": [
+      "spiritual",
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "May–Oct",
+    "altitude": "3625m",
+    "famousFor": "High altitude lake, ancient monastery",
+    "zone": "kinnaur",
+    "mx": 794,
+    "my": 232,
+    "slug": "nako-village"
+  },
+  {
+    "id": 38,
+    "name": "Dhankar",
+    "district": "Lahaul & Spiti",
+    "desc": "Village clinging to a cliff at 3894m with an ancient fort-monastery. Dhankar Lake is a short trek above.",
+    "emoji": "🏔️",
+    "crowd": 18,
+    "vibes": [
+      "spiritual",
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Jun–Sep",
+    "altitude": "3894m",
+    "famousFor": "Cliff-edge village, fort-monastery",
+    "zone": "spiti",
+    "mx": 608,
+    "my": 196,
+    "slug": "dhankar"
+  },
+  {
+    "id": 39,
+    "name": "Langza",
+    "district": "Lahaul & Spiti",
+    "desc": "Spiti village at 4400m where marine fossils are found on the ground. A giant Buddha statue watches over the valley.",
+    "emoji": "🪨",
+    "crowd": 18,
+    "vibes": [
+      "offbeat",
+      "spiritual"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Jun–Sep",
+    "altitude": "4400m",
+    "famousFor": "Marine fossils at high altitude, giant Buddha",
+    "zone": "spiti",
+    "mx": 661,
+    "my": 178,
+    "slug": "langza"
+  },
+  {
+    "id": 40,
+    "name": "Hikkim",
+    "district": "Lahaul & Spiti",
+    "desc": "The world's highest post office at 4440m. Send a postcard — the most memorable letter your family will ever receive.",
+    "emoji": "📮",
+    "crowd": 20,
+    "vibes": [
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jun–Sep",
+    "altitude": "4440m",
+    "famousFor": "World's highest post office",
+    "zone": "spiti",
+    "mx": 635,
+    "my": 178,
+    "slug": "hikkim"
+  },
+  {
+    "id": 41,
+    "name": "Sangla Valley",
+    "district": "Kinnaur",
+    "desc": "One of Kinnaur's most beautiful valleys. Baspa river, Kamru Fort, apple orchards on valley walls.",
+    "emoji": "🌾",
+    "crowd": 26,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "2680m",
+    "famousFor": "Baspa valley, Kamru Fort, orchards",
+    "zone": "kinnaur",
+    "mx": 741,
+    "my": 321,
+    "slug": "sangla-valley"
+  },
+  {
+    "id": 42,
+    "name": "Lahaul Valley",
+    "district": "Lahaul & Spiti",
+    "desc": "Between Rohtang and Baralacha La at 3100m. Wild flowers, Buddhist monasteries, Chandrabhaga river.",
+    "emoji": "🌸",
+    "crowd": 22,
+    "vibes": [
+      "offbeat",
+      "spiritual",
+      "nature"
+    ],
+    "color": "#dce4e8",
+    "bestTime": "Jun–Sep",
+    "altitude": "3100m",
+    "famousFor": "Triloknath temple, Chandrabhaga river",
+    "zone": "lahaul",
+    "mx": 476,
+    "my": 142,
+    "slug": "lahaul-valley"
+  },
+  {
+    "id": 43,
+    "name": "Sissu",
+    "district": "Lahaul & Spiti",
+    "desc": "Lahaul village with a stunning waterfall visible from the Atal Tunnel exit. Green meadows in summer.",
+    "emoji": "💧",
+    "crowd": 28,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Jun–Sep",
+    "altitude": "3100m",
+    "famousFor": "Waterfall, green meadows, Atal Tunnel base",
+    "zone": "lahaul",
+    "mx": 450,
+    "my": 160,
+    "slug": "sissu"
+  },
+  {
+    "id": 44,
+    "name": "Chalal",
+    "district": "Kullu",
+    "desc": "Five minutes across the bridge from Kasol. Significantly calmer with the same Parvati river views.",
+    "emoji": "🌿",
+    "crowd": 32,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Oct–Nov, Mar–May",
+    "altitude": "1650m",
+    "famousFor": "5-min trek from Kasol, quieter vibe",
+    "zone": "parvati",
+    "mx": 425,
+    "my": 195,
+    "slug": "chalal"
+  },
+  {
+    "id": 45,
+    "name": "Chitkul",
+    "district": "Kinnaur",
+    "desc": "Last inhabited village before the Indo-Tibetan border at 3450m. Apple orchards, wooden temples, Baspa river.",
+    "emoji": "🍎",
+    "crowd": 24,
+    "vibes": [
+      "offbeat",
+      "nature",
+      "adventure"
+    ],
+    "color": "#e8e4dc",
+    "bestTime": "May–Oct",
+    "altitude": "3450m",
+    "famousFor": "Last village before Tibet border",
+    "zone": "kinnaur",
+    "mx": 741,
+    "my": 330,
+    "slug": "chitkul"
+  },
+  {
+    "id": 46,
+    "name": "Prashar Lake",
+    "district": "Mandi",
+    "desc": "Glacial lake at 2730m with a 14th-century pagoda temple and mysterious floating island. Weekdays are magical.",
+    "emoji": "🌊",
+    "crowd": 44,
+    "vibes": [
+      "spiritual",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jun–Jul, Sep",
+    "altitude": "2730m",
+    "famousFor": "Floating island, pagoda temple",
+    "zone": "mandi",
+    "mx": 367,
+    "my": 234,
+    "slug": "prashar-lake"
+  },
+  {
+    "id": 47,
+    "name": "Suraj Tal",
+    "district": "Lahaul & Spiti",
+    "desc": "One of India's highest lakes at 4950m on the Manali-Leh highway. The Lake of the Sun God.",
+    "emoji": "☀️",
+    "crowd": 18,
+    "vibes": [
+      "trek",
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jul–Sep",
+    "altitude": "4950m",
+    "famousFor": "One of India's highest lakes",
+    "zone": "lahaul",
+    "mx": 529,
+    "my": 107,
+    "slug": "suraj-tal"
+  },
+  {
+    "id": 48,
+    "name": "Chandratal Lake",
+    "district": "Lahaul & Spiti",
+    "desc": "Crescent-shaped lake at 4300m. Water so clear you see the bottom from 5m. Camping here under the Milky Way.",
+    "emoji": "🌙",
+    "crowd": 42,
+    "vibes": [
+      "trek",
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jul–Sep",
+    "altitude": "4300m",
+    "famousFor": "Crescent lake, camping, stargazing",
+    "zone": "spiti",
+    "mx": 529,
+    "my": 125,
+    "slug": "chandratal-lake"
+  },
+  {
+    "id": 49,
+    "name": "Rewalsar Lake",
+    "district": "Mandi",
+    "desc": "Sacred to Hindus, Sikhs, and Buddhists simultaneously — three faiths, one lake. Floating reed islands.",
+    "emoji": "🪷",
+    "crowd": 42,
+    "vibes": [
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Mar",
+    "altitude": "1360m",
+    "famousFor": "Three-faith sacred lake",
+    "zone": "mandi",
+    "mx": 313,
+    "my": 280,
+    "slug": "rewalsar-lake"
+  },
+  {
+    "id": 50,
+    "name": "Kibber",
+    "district": "Lahaul & Spiti",
+    "desc": "High motorable village at 4205m in snow leopard territory. In winter the leopards come down.",
+    "emoji": "🐆",
+    "crowd": 22,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#e0dce8",
+    "bestTime": "Jun–Sep",
+    "altitude": "4205m",
+    "famousFor": "High village, snow leopard territory",
+    "zone": "spiti",
+    "mx": 635,
+    "my": 178,
+    "slug": "kibber"
+  },
+  {
+    "id": 51,
+    "name": "Pin Valley",
+    "district": "Lahaul & Spiti",
+    "desc": "National park in Spiti cold desert. Snow leopards, ibex, Himalayan wolves. Pin-Parvati Pass trek starts here.",
+    "emoji": "🐆",
+    "crowd": 16,
+    "vibes": [
+      "adventure",
+      "nature",
+      "offbeat"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Jun–Sep",
+    "altitude": "3650m",
+    "famousFor": "Snow leopards, Pin-Parvati Pass trek",
+    "zone": "spiti",
+    "mx": 661,
+    "my": 214,
+    "slug": "pin-valley"
+  },
+  {
+    "id": 52,
+    "name": "Chicham Bridge",
+    "district": "Lahaul & Spiti",
+    "desc": "Highest bridge in Asia at 4200m. The gorge below is dizzying. A photo here is non-negotiable.",
+    "emoji": "🌉",
+    "crowd": 25,
+    "vibes": [
+      "adventure",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jun–Sep",
+    "altitude": "4200m",
+    "famousFor": "Highest bridge in Asia",
+    "zone": "spiti",
+    "mx": 635,
+    "my": 178,
+    "slug": "chicham-bridge"
+  },
+  {
+    "id": 53,
+    "name": "Rajgundha",
+    "district": "Kangra",
+    "desc": "High altitude meadow village above Bir that almost nobody knows. Tough trek but complete silence awaits.",
+    "emoji": "🌄",
+    "crowd": 12,
+    "vibes": [
+      "offbeat",
+      "nature",
+      "adventure"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "2800m",
+    "famousFor": "Hidden meadow above Bir, silence",
+    "zone": "kangra",
+    "mx": 273,
+    "my": 210,
+    "slug": "rajgundha"
+  },
+  {
+    "id": 54,
+    "name": "Kalpa",
+    "district": "Kinnaur",
+    "desc": "Quiet village at 2960m facing Kinner Kailash massif. Apple orchards. You plan two days and stay a week.",
+    "emoji": "🏔️",
+    "crowd": 19,
+    "vibes": [
+      "nature",
+      "offbeat",
+      "spiritual"
+    ],
+    "color": "#dce8e4",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "2960m",
+    "famousFor": "Kinner Kailash views, apple orchards",
+    "zone": "kinnaur",
+    "mx": 684,
+    "my": 324,
+    "slug": "kalpa"
+  },
+  {
+    "id": 55,
+    "name": "Bharmour",
+    "district": "Chamba",
+    "desc": "Ancient town with 84 Chaurasi temples at 2195m. Home to the Gaddi nomadic tribe. Base for Manimahesh.",
+    "emoji": "🛕",
+    "crowd": 20,
+    "vibes": [
+      "spiritual",
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Jun–Sep",
+    "altitude": "2195m",
+    "famousFor": "84 Chaurasi temples, Gaddi tribe",
+    "zone": "chamba",
+    "mx": 185,
+    "my": 142,
+    "slug": "bharmour"
+  },
+  {
+    "id": 56,
+    "name": "Manimahesh Lake",
+    "district": "Chamba",
+    "desc": "Sacred Shiva lake at 4080m. Annual pilgrimage draws thousands. Outside that window — almost nobody.",
+    "emoji": "🌊",
+    "crowd": 55,
+    "vibes": [
+      "spiritual",
+      "trek"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Aug–Sep (pilgrimage)",
+    "altitude": "4080m",
+    "famousFor": "Sacred Shiva lake, pilgrimage",
+    "zone": "chamba",
+    "mx": 211,
+    "my": 125,
+    "slug": "manimahesh-lake"
+  },
+  {
+    "id": 57,
+    "name": "Kheerganga",
+    "district": "Kullu",
+    "desc": "12km trek to natural hot springs at 2960m. Soaking in geothermal water with Himalayan peaks around — unforgettable.",
+    "emoji": "♨️",
+    "crowd": 55,
+    "vibes": [
+      "adventure",
+      "spiritual",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "2960m",
+    "famousFor": "Hot springs after 12km trek",
+    "zone": "parvati",
+    "mx": 476,
+    "my": 214,
+    "slug": "kheerganga"
+  },
+  {
+    "id": 58,
+    "name": "Naddi",
+    "district": "Kangra",
+    "desc": "Sunset viewpoint above McLeod Ganj with Dhauladhar views. Much quieter than the main tourist strip below.",
+    "emoji": "🌅",
+    "crowd": 28,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1600m",
+    "famousFor": "Sunset views, peaceful above McLeod",
+    "zone": "kangra",
+    "mx": 266,
+    "my": 170,
+    "slug": "naddi"
+  },
+  {
+    "id": 59,
+    "name": "Dharamkot",
+    "district": "Kangra",
+    "desc": "Hippie Hill above McLeod Ganj. Yoga retreats, organic cafes. Triund trail passes through here.",
+    "emoji": "🧘",
+    "crowd": 38,
+    "vibes": [
+      "offbeat",
+      "culture"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1550m",
+    "famousFor": "Yoga retreats, quieter McLeod alternative",
+    "zone": "kangra",
+    "mx": 245,
+    "my": 194,
+    "slug": "dharamkot"
+  },
+  {
+    "id": 60,
+    "name": "Masrur Rock Temple",
+    "district": "Kangra",
+    "desc": "8th-century rock-cut temples carved from a single rock face. Called the Ellora of Himachal. Almost no visitors.",
+    "emoji": "🗿",
+    "crowd": 22,
+    "vibes": [
+      "culture",
+      "spiritual",
+      "offbeat"
+    ],
+    "color": "#e8e0d4",
+    "bestTime": "Oct–Mar",
+    "altitude": "800m",
+    "famousFor": "8th century rock-cut temples",
+    "zone": "kangra",
+    "mx": 244,
+    "my": 235,
+    "slug": "masrur-rock-temple"
+  },
+  {
+    "id": 61,
+    "name": "Pong Dam Wetlands",
+    "district": "Kangra",
+    "desc": "Ramsar wetland with 220+ migratory bird species. November to February brings extraordinary bar-headed geese flocks.",
+    "emoji": "🦢",
+    "crowd": 20,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Nov–Feb",
+    "altitude": "430m",
+    "famousFor": "Ramsar wetland, migratory birds",
+    "zone": "kangra",
+    "mx": 252,
+    "my": 177,
+    "slug": "pong-dam-wetlands"
+  },
+  {
+    "id": 62,
+    "name": "Nurpur",
+    "district": "Kangra",
+    "desc": "Kangra town with a crumbling fort and Brij Raj Swami temple. Historical significance far exceeds tourist traffic.",
+    "emoji": "🏛️",
+    "crowd": 18,
+    "vibes": [
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Mar",
+    "altitude": "500m",
+    "famousFor": "Nurpur Fort, Brij Raj temple",
+    "zone": "kangra",
+    "mx": 272,
+    "my": 192,
+    "slug": "nurpur"
+  },
+  {
+    "id": 63,
+    "name": "Manikaran",
+    "district": "Kullu",
+    "desc": "Sikh gurudwara and Hindu temple with natural hot springs. Langar cooked using geothermal springs — fascinating.",
+    "emoji": "🙏",
+    "crowd": 65,
+    "vibes": [
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Mar",
+    "altitude": "1737m",
+    "famousFor": "Gurudwara hot springs, pilgrimage",
+    "zone": "parvati",
+    "mx": 485,
+    "my": 238,
+    "slug": "manikaran"
+  },
+  {
+    "id": 64,
+    "name": "Sar Pass",
+    "district": "Kullu",
+    "desc": "Classic 5-day snowfield trek over a 4250m pass. The snowfields in May–June are among HP's most beautiful.",
+    "emoji": "🥾",
+    "crowd": 20,
+    "vibes": [
+      "trek",
+      "adventure"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "May–Jun",
+    "altitude": "4250m",
+    "famousFor": "Classic snowfield trek",
+    "zone": "parvati",
+    "mx": 476,
+    "my": 214,
+    "slug": "sar-pass"
+  },
+  {
+    "id": 65,
+    "name": "Rohru",
+    "district": "Shimla",
+    "desc": "Pabbar river valley for trout fishing. One of the most unexplored parts of Shimla district.",
+    "emoji": "🎣",
+    "crowd": 18,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "1525m",
+    "famousFor": "Pabbar river trout fishing",
+    "zone": "shimla",
+    "mx": 471,
+    "my": 356,
+    "slug": "rohru"
+  },
+  {
+    "id": 66,
+    "name": "Thanedar",
+    "district": "Shimla",
+    "desc": "Where apple cultivation began in HP. Samuel Stokes planted the first orchards in the 1900s.",
+    "emoji": "🍎",
+    "crowd": 14,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "2350m",
+    "famousFor": "Original HP apple orchards, history",
+    "zone": "shimla",
+    "mx": 438,
+    "my": 385,
+    "slug": "thanedar"
+  },
+  {
+    "id": 67,
+    "name": "Chanshal Pass",
+    "district": "Shimla",
+    "desc": "Highest motorable pass in Shimla district at 4520m. Snow till July. Rohtang views with a fraction of crowds.",
+    "emoji": "⛰️",
+    "crowd": 12,
+    "vibes": [
+      "adventure",
+      "offbeat",
+      "nature"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Jun–Sep",
+    "altitude": "4520m",
+    "famousFor": "Highest pass in Shimla, snowfields",
+    "zone": "shimla",
+    "mx": 502,
+    "my": 392,
+    "slug": "chanshal-pass"
+  },
+  {
+    "id": 68,
+    "name": "Sarahan",
+    "district": "Shimla",
+    "desc": "Bhimakali temple town at 2165m — gateway to Kinnaur. Unique Hindu-Buddhist mixed architecture.",
+    "emoji": "🛕",
+    "crowd": 30,
+    "vibes": [
+      "spiritual",
+      "culture",
+      "nature"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Apr–Jun, Sep–Nov",
+    "altitude": "2165m",
+    "famousFor": "Bhimakali temple, gateway to Kinnaur",
+    "zone": "shimla",
+    "mx": 439,
+    "my": 417,
+    "slug": "sarahan"
+  },
+  {
+    "id": 69,
+    "name": "Naldhera",
+    "district": "Shimla",
+    "desc": "India's oldest golf course at 2044m, established by Lord Curzon in 1905. Nag temple is equally historic.",
+    "emoji": "⛳",
+    "crowd": 22,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Mar–Jun, Sep–Oct",
+    "altitude": "2044m",
+    "famousFor": "Oldest golf course in India",
+    "zone": "shimla",
+    "mx": 361,
+    "my": 382,
+    "slug": "naldhera"
+  },
+  {
+    "id": 70,
+    "name": "Jubbal",
+    "district": "Shimla",
+    "desc": "Royal Shimla town with a palace at 1900m. Apple orchards surround it. Part of old Shimla Hills states circuit.",
+    "emoji": "🏰",
+    "crowd": 15,
+    "vibes": [
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Apr–Jun, Sep–Oct",
+    "altitude": "1900m",
+    "famousFor": "Jubbal Palace, royal HP history",
+    "zone": "shimla",
+    "mx": 460,
+    "my": 355,
+    "slug": "jubbal"
+  },
+  {
+    "id": 71,
+    "name": "Shoghi",
+    "district": "Shimla",
+    "desc": "Quiet village near Shimla — excellent off-radar stay alternative. Good food, good views, no Mall Road noise.",
+    "emoji": "🏡",
+    "crowd": 14,
+    "vibes": [
+      "offbeat"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Oct–May",
+    "altitude": "1519m",
+    "famousFor": "Quiet Shimla alternative",
+    "zone": "shimla",
+    "mx": 463,
+    "my": 355,
+    "slug": "shoghi"
+  },
+  {
+    "id": 72,
+    "name": "Dalhousie",
+    "district": "Chamba",
+    "desc": "Colonial hill station across five hills at 2036m, founded 1854. Quieter than Shimla. Khajjiar is 22km away.",
+    "emoji": "🌄",
+    "crowd": 48,
+    "vibes": [
+      "culture",
+      "nature"
+    ],
+    "color": "#dcd8e8",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2036m",
+    "famousFor": "Khajjiar nearby, colonial architecture",
+    "zone": "chamba",
+    "mx": 79,
+    "my": 125,
+    "slug": "dalhousie"
+  },
+  {
+    "id": 73,
+    "name": "Khajjiar",
+    "district": "Chamba",
+    "desc": "1.5km circular meadow at 1920m ringed by deodar trees with a lake at its centre. Called Mini Switzerland of India.",
+    "emoji": "🌿",
+    "crowd": 33,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4e8d8",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1920m",
+    "famousFor": "Mini Switzerland meadow",
+    "zone": "chamba",
+    "mx": 79,
+    "my": 125,
+    "slug": "khajjiar"
+  },
+  {
+    "id": 74,
+    "name": "Chamba Town",
+    "district": "Chamba",
+    "desc": "Ancient capital at 996m with 1500 years of history. Chaugan ground, Lakshmi Narayan temples, ancient miniature painting.",
+    "emoji": "🎭",
+    "crowd": 40,
+    "vibes": [
+      "culture",
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Mar",
+    "altitude": "996m",
+    "famousFor": "Chaugan, Lakshmi Narayan temples",
+    "zone": "chamba",
+    "mx": 132,
+    "my": 107,
+    "slug": "chamba-town"
+  },
+  {
+    "id": 75,
+    "name": "Kalatop Sanctuary",
+    "district": "Chamba",
+    "desc": "Dense deodar forest 2km from Dalhousie. Leopard territory, deer, excellent birdwatching.",
+    "emoji": "🐆",
+    "crowd": 18,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2400m",
+    "famousFor": "Deodar forest, leopards, birdwatching",
+    "zone": "chamba",
+    "mx": 79,
+    "my": 125,
+    "slug": "kalatop-sanctuary"
+  },
+  {
+    "id": 76,
+    "name": "Dainkund Peak",
+    "district": "Chamba",
+    "desc": "Highest point accessible from Dalhousie at 2755m, called the Singing Hill. Panoramic views of Chamba and Kangra.",
+    "emoji": "🗻",
+    "crowd": 22,
+    "vibes": [
+      "adventure",
+      "nature"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2755m",
+    "famousFor": "Highest near Dalhousie, panoramic views",
+    "zone": "chamba",
+    "mx": 52,
+    "my": 125,
+    "slug": "dainkund-peak"
+  },
+  {
+    "id": 77,
+    "name": "Bir Billing",
+    "district": "Kangra",
+    "desc": "India's paragliding capital at 1525m. Tibetan settlement, monasteries, great cafes. Billing at 2400m — views from above.",
+    "emoji": "🪂",
+    "crowd": 52,
+    "vibes": [
+      "adventure",
+      "culture"
+    ],
+    "color": "#d8d4e8",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1525m",
+    "famousFor": "Paragliding capital, Tibetan monasteries",
+    "zone": "kangra",
+    "mx": 291,
+    "my": 214,
+    "slug": "bir-billing"
+  },
+  {
+    "id": 78,
+    "name": "Palampur",
+    "district": "Kangra",
+    "desc": "Tea capital of northwest India at 1220m. Rolling tea gardens, Dhauladhar backdrop, Victorian bungalows.",
+    "emoji": "🍵",
+    "crowd": 26,
+    "vibes": [
+      "nature",
+      "culture",
+      "offbeat"
+    ],
+    "color": "#d4e8dc",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1220m",
+    "famousFor": "Tea gardens, Dhauladhar views",
+    "zone": "kangra",
+    "mx": 251,
+    "my": 143,
+    "slug": "palampur"
+  },
+  {
+    "id": 79,
+    "name": "Baijnath",
+    "district": "Kangra",
+    "desc": "Exquisitely carved 1204 AD Shiva temple. One of the finest examples of Nagara architecture in HP.",
+    "emoji": "🛕",
+    "crowd": 35,
+    "vibes": [
+      "spiritual",
+      "culture"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Oct–Mar",
+    "altitude": "1104m",
+    "famousFor": "1204 AD Shiva temple, stone carvings",
+    "zone": "kangra",
+    "mx": 234,
+    "my": 160,
+    "slug": "baijnath"
+  },
+  {
+    "id": 80,
+    "name": "Kangra Fort",
+    "district": "Kangra",
+    "desc": "Largest fort in the Himalayas. Ancient, partially ruined, deeply atmospheric.",
+    "emoji": "🏰",
+    "crowd": 48,
+    "vibes": [
+      "culture",
+      "spiritual"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Mar",
+    "altitude": "760m",
+    "famousFor": "Largest fort in Himalayas",
+    "zone": "kangra",
+    "mx": 267,
+    "my": 247,
+    "slug": "kangra-fort"
+  },
+  {
+    "id": 81,
+    "name": "Triund",
+    "district": "Kangra",
+    "desc": "Most popular ridge trek from Dharamshala at 2875m. Dhauladhar above, Kangra valley 1500m below. Spectacular but crowded.",
+    "emoji": "⛺",
+    "crowd": 68,
+    "vibes": [
+      "adventure",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2875m",
+    "famousFor": "One-day ridge trek, Dhauladhar views",
+    "zone": "kangra",
+    "mx": 185,
+    "my": 178,
+    "slug": "triund"
+  },
+  {
+    "id": 82,
+    "name": "McLeod Ganj",
+    "district": "Kangra",
+    "desc": "Little Lhasa at 1457m. Home to the Dalai Lama and Tibetan government in exile. Tibetan market, momos, monasteries.",
+    "emoji": "🏳️",
+    "crowd": 74,
+    "vibes": [
+      "spiritual",
+      "culture"
+    ],
+    "color": "#e8dcd4",
+    "bestTime": "Mar–May, Sep–Nov",
+    "altitude": "1457m",
+    "famousFor": "Little Lhasa, Dalai Lama",
+    "zone": "kangra",
+    "mx": 185,
+    "my": 178,
+    "slug": "mcleod-ganj"
+  },
+  {
+    "id": 83,
+    "name": "Dharamshala",
+    "district": "Kangra",
+    "desc": "Gateway to McLeod Ganj and Triund trek. Gets busy but the Tibetan cultural richness justifies it.",
+    "emoji": "🙏",
+    "crowd": 71,
+    "vibes": [
+      "spiritual",
+      "culture",
+      "adventure"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Mar–May, Sep–Nov",
+    "altitude": "1457m",
+    "famousFor": "Dalai Lama temple, Tibetan culture",
+    "zone": "kangra",
+    "mx": 185,
+    "my": 178,
+    "slug": "dharamshala"
+  },
+  {
+    "id": 84,
+    "name": "Jawalamukhi",
+    "district": "Kangra",
+    "desc": "One of the 51 Shaktipeethas with an eternal natural flame burning from the rock — thought to be natural gas.",
+    "emoji": "🔥",
+    "crowd": 62,
+    "vibes": [
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Apr",
+    "altitude": "610m",
+    "famousFor": "Eternal natural flame, Shaktipeeth",
+    "zone": "kangra",
+    "mx": 260,
+    "my": 200,
+    "slug": "jawalamukhi"
+  },
+  {
+    "id": 85,
+    "name": "Kasol",
+    "district": "Kullu",
+    "desc": "Parvati Valley's famous backpacker stop. Beautiful but completely overrun May–September. Visit October–November only.",
+    "emoji": "🏕️",
+    "crowd": 88,
+    "vibes": [
+      "adventure",
+      "nature"
+    ],
+    "color": "#e8d4c8",
+    "bestTime": "Oct–Nov (off-peak only)",
+    "altitude": "1640m",
+    "famousFor": "Little Israel, Parvati river",
+    "zone": "parvati",
+    "mx": 450,
+    "my": 214,
+    "slug": "kasol"
+  },
+  {
+    "id": 86,
+    "name": "Manali",
+    "district": "Kullu",
+    "desc": "HP's most visited town at 2050m. Iconic but June–August is absolute chaos. Come March for snow or October for peace.",
+    "emoji": "🏔️",
+    "crowd": 92,
+    "vibes": [
+      "adventure",
+      "nature",
+      "culture"
+    ],
+    "color": "#e0d4e8",
+    "bestTime": "Mar, Oct–Nov",
+    "altitude": "2050m",
+    "famousFor": "Rohtang Pass, Solang Valley",
+    "zone": "kullu",
+    "mx": 423,
+    "my": 178,
+    "slug": "manali"
+  },
+  {
+    "id": 87,
+    "name": "Shimla",
+    "district": "Shimla",
+    "desc": "HP's colonial capital at 2206m. Mall Road, toy train, Christ Church. Impossibly crowded in summer — come March.",
+    "emoji": "🚂",
+    "crowd": 85,
+    "vibes": [
+      "culture",
+      "nature"
+    ],
+    "color": "#e8dcd4",
+    "bestTime": "Mar, Oct–Nov",
+    "altitude": "2206m",
+    "famousFor": "Mall Road, toy train, Jakhu temple",
+    "zone": "shimla",
+    "mx": 423,
+    "my": 374,
+    "slug": "shimla"
+  },
+  {
+    "id": 88,
+    "name": "Chail",
+    "district": "Shimla",
+    "desc": "Built at 2250m by Maharaja Ranjit Singh. Dense forest, heritage palace, world's highest cricket ground.",
+    "emoji": "🏏",
+    "crowd": 27,
+    "vibes": [
+      "culture",
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d8e4d4",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2250m",
+    "famousFor": "World's highest cricket ground",
+    "zone": "shimla",
+    "mx": 370,
+    "my": 346,
+    "slug": "chail"
+  },
+  {
+    "id": 89,
+    "name": "Kufri",
+    "district": "Shimla",
+    "desc": "Adventure zone and snow destination at 2600m above Shimla. Skiing in winter, Himalayan views year-round.",
+    "emoji": "⛷️",
+    "crowd": 65,
+    "vibes": [
+      "adventure",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jan–Feb (snow), Apr–Jun",
+    "altitude": "2600m",
+    "famousFor": "Skiing, Himalayan views",
+    "zone": "shimla",
+    "mx": 431,
+    "my": 325,
+    "slug": "kufri"
+  },
+  {
+    "id": 90,
+    "name": "Kasauli",
+    "district": "Solan",
+    "desc": "Cantonment town at 1795m with colonial walks, Monkey Point views, and increasingly good craft beer.",
+    "emoji": "🌅",
+    "crowd": 56,
+    "vibes": [
+      "culture",
+      "nature"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1795m",
+    "famousFor": "Monkey Point, colonial architecture",
+    "zone": "solan",
+    "mx": 413,
+    "my": 393,
+    "slug": "kasauli"
+  },
+  {
+    "id": 91,
+    "name": "Dagshai",
+    "district": "Solan",
+    "desc": "One of India's oldest cantonments at 1734m. A British-era jail is now a museum. Quiet, historical, under the radar.",
+    "emoji": "🏛️",
+    "crowd": 12,
+    "vibes": [
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Mar",
+    "altitude": "1734m",
+    "famousFor": "British era cantonment, jail museum",
+    "zone": "solan",
+    "mx": 327,
+    "my": 432,
+    "slug": "dagshai"
+  },
+  {
+    "id": 92,
+    "name": "Bon Monastery",
+    "district": "Solan",
+    "desc": "Yungdrung Bon monastery representing the pre-Buddhist Bon tradition near Solan. Rare and fascinating.",
+    "emoji": "⛩️",
+    "crowd": 15,
+    "vibes": [
+      "spiritual",
+      "culture"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Oct–Apr",
+    "altitude": "1800m",
+    "famousFor": "Rare Bon tradition monastery",
+    "zone": "solan",
+    "mx": 376,
+    "my": 449,
+    "slug": "bon-monastery"
+  },
+  {
+    "id": 93,
+    "name": "Barog",
+    "district": "Solan",
+    "desc": "A stop on the UNESCO Kalka-Shimla railway at 1560m. Tunnel No. 33 is the longest and most famous on the route.",
+    "emoji": "🚂",
+    "crowd": 18,
+    "vibes": [
+      "offbeat",
+      "culture"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Apr",
+    "altitude": "1560m",
+    "famousFor": "Kalka-Shimla railway, Tunnel 33",
+    "zone": "solan",
+    "mx": 420,
+    "my": 449,
+    "slug": "barog"
+  },
+  {
+    "id": 94,
+    "name": "Rajgarh",
+    "district": "Solan",
+    "desc": "The peach bowl of HP at 1400m. Thakur Dwar temple, scenic orchards, and the quiet HP's famous hill stations lost.",
+    "emoji": "🍑",
+    "crowd": 12,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1400m",
+    "famousFor": "Peach orchards, Thakur Dwar temple",
+    "zone": "solan",
+    "mx": 428,
+    "my": 367,
+    "slug": "rajgarh"
+  },
+  {
+    "id": 95,
+    "name": "Renuka Ji Lake",
+    "district": "Sirmaur",
+    "desc": "Largest lake in HP at 672m. Sacred, surrounded by wildlife sanctuary. Annual Renuka fair is a major cultural event.",
+    "emoji": "🪷",
+    "crowd": 38,
+    "vibes": [
+      "spiritual",
+      "nature"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Mar",
+    "altitude": "672m",
+    "famousFor": "Largest lake in HP, sacred site",
+    "zone": "sirmaur",
+    "mx": 485,
+    "my": 396,
+    "slug": "renuka-ji-lake"
+  },
+  {
+    "id": 96,
+    "name": "Paonta Sahib",
+    "district": "Sirmaur",
+    "desc": "Historic Sikh gurudwara at 400m where Guru Gobind Singh stayed and wrote literary work. On the Yamuna river.",
+    "emoji": "🛕",
+    "crowd": 48,
+    "vibes": [
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Mar",
+    "altitude": "400m",
+    "famousFor": "Historic Sikh gurudwara",
+    "zone": "sirmaur",
+    "mx": 466,
+    "my": 431,
+    "slug": "paonta-sahib"
+  },
+  {
+    "id": 97,
+    "name": "Shillai",
+    "district": "Sirmaur",
+    "desc": "Remote area called Mini Kerala for its lush green views — completely unexpected in the dry Sirmaur hills.",
+    "emoji": "🌿",
+    "crowd": 8,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Oct–Apr",
+    "altitude": "1400m",
+    "famousFor": "Mini Kerala views, remote greenery",
+    "zone": "sirmaur",
+    "mx": 502,
+    "my": 486,
+    "slug": "shillai"
+  },
+  {
+    "id": 98,
+    "name": "Suketi Fossil Park",
+    "district": "Sirmaur",
+    "desc": "Fossil park with Miocene-era fossils (8 million years old) and life-size concrete dinosaur models.",
+    "emoji": "🦕",
+    "crowd": 15,
+    "vibes": [
+      "offbeat",
+      "culture"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Mar",
+    "altitude": "600m",
+    "famousFor": "Prehistoric fossils, dinosaur models",
+    "zone": "sirmaur",
+    "mx": 517,
+    "my": 465,
+    "slug": "suketi-fossil-park"
+  },
+  {
+    "id": 99,
+    "name": "Gobind Sagar Lake",
+    "district": "Bilaspur",
+    "desc": "Enormous Bhakra dam reservoir with water sports and winter migratory birds. One of HP's biggest water bodies.",
+    "emoji": "💧",
+    "crowd": 34,
+    "vibes": [
+      "nature",
+      "adventure"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Oct–Mar",
+    "altitude": "375m",
+    "famousFor": "Bhakra dam reservoir, water sports",
+    "zone": "bilaspur",
+    "mx": 257,
+    "my": 316,
+    "slug": "gobind-sagar-lake"
+  },
+  {
+    "id": 100,
+    "name": "Naina Devi Temple",
+    "district": "Bilaspur",
+    "desc": "Major Shaktipeeth at 1220m on a hilltop above Gobind Sagar Lake. Ropeway access. One of HP's most visited.",
+    "emoji": "🛕",
+    "crowd": 55,
+    "vibes": [
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Apr",
+    "altitude": "1220m",
+    "famousFor": "Major Shaktipeeth, ropeway",
+    "zone": "bilaspur",
+    "mx": 236,
+    "my": 389,
+    "slug": "naina-devi-temple"
+  },
+  {
+    "id": 101,
+    "name": "Bahadurpur Fort",
+    "district": "Bilaspur",
+    "desc": "Trek to a hilltop fort with 360° views over Gobind Sagar Lake. Historical and completely off the tourist map.",
+    "emoji": "🏰",
+    "crowd": 10,
+    "vibes": [
+      "offbeat",
+      "culture"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Mar",
+    "altitude": "800m",
+    "famousFor": "360° views, fort trek",
+    "zone": "bilaspur",
+    "mx": 298,
+    "my": 313,
+    "slug": "bahadurpur-fort"
+  },
+  {
+    "id": 102,
+    "name": "Sujanpur Tira",
+    "district": "Hamirpur",
+    "desc": "Fort complex in Hamirpur famous for the annual Holi fair. Raja Sansar Chand's capital. Beas riverfront.",
+    "emoji": "🏰",
+    "crowd": 28,
+    "vibes": [
+      "culture",
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Mar",
+    "altitude": "400m",
+    "famousFor": "Fort, annual Holi fair",
+    "zone": "hamirpur",
+    "mx": 258,
+    "my": 282,
+    "slug": "sujanpur-tira"
+  },
+  {
+    "id": 103,
+    "name": "Deotsidh Baba Balak Nath",
+    "district": "Hamirpur",
+    "desc": "Sacred cave temple at 600m dedicated to Baba Balak Nath. One of HP's most visited, extremely crowded in festivals.",
+    "emoji": "🕌",
+    "crowd": 65,
+    "vibes": [
+      "spiritual"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Mar",
+    "altitude": "600m",
+    "famousFor": "Sacred cave temple, major shrine",
+    "zone": "hamirpur",
+    "mx": 215,
+    "my": 239,
+    "slug": "deotsidh-baba-balak-nath"
+  },
+  {
+    "id": 104,
+    "name": "Chintpurni Temple",
+    "district": "Una",
+    "desc": "One of the 51 Shaktipeethas at 900m in Una district. One of Himachal's most important pilgrimage destinations.",
+    "emoji": "🛕",
+    "crowd": 72,
+    "vibes": [
+      "spiritual"
+    ],
+    "color": "#e8e0d4",
+    "bestTime": "Oct–Apr",
+    "altitude": "900m",
+    "famousFor": "Major Shakti Peetha, pilgrimage",
+    "zone": "una",
+    "mx": 200,
+    "my": 355,
+    "slug": "chintpurni-temple"
+  },
+  {
+    "id": 105,
+    "name": "Kaza",
+    "district": "Lahaul & Spiti",
+    "desc": "Spiti district HQ at 3800m. The marketplace, ATM, and base for every Spiti adventure.",
+    "emoji": "🏘️",
+    "crowd": 35,
+    "vibes": [
+      "offbeat",
+      "culture"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Jun–Sep",
+    "altitude": "3800m",
+    "famousFor": "Spiti HQ, base for all exploration",
+    "zone": "spiti",
+    "mx": 635,
+    "my": 178,
+    "slug": "kaza"
+  },
+  {
+    "id": 106,
+    "name": "Key Monastery",
+    "district": "Lahaul & Spiti",
+    "desc": "1000-year-old gompa dramatically perched on a cliff at 4166m. Most significant monastery in Spiti, 300 monks.",
+    "emoji": "⛩️",
+    "crowd": 40,
+    "vibes": [
+      "spiritual",
+      "offbeat"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Jun–Sep",
+    "altitude": "4166m",
+    "famousFor": "1000-year-old monastery on cliff",
+    "zone": "spiti",
+    "mx": 635,
+    "my": 160,
+    "slug": "key-monastery"
+  },
+  {
+    "id": 107,
+    "name": "Tabo Monastery",
+    "district": "Lahaul & Spiti",
+    "desc": "Over 1000 years old, Ajanta of the Himalayas. The Dalai Lama has called it his chosen place for his final years.",
+    "emoji": "🏛️",
+    "crowd": 30,
+    "vibes": [
+      "spiritual",
+      "culture"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Jun–Sep",
+    "altitude": "3050m",
+    "famousFor": "1000+ year old monastery, ancient murals",
+    "zone": "spiti",
+    "mx": 741,
+    "my": 214,
+    "slug": "tabo-monastery"
+  },
+  {
+    "id": 108,
+    "name": "Triloknath Temple",
+    "district": "Lahaul & Spiti",
+    "desc": "Temple in Lahaul at 2760m worshipped by both Hindus and Buddhists simultaneously — rare anywhere in the world.",
+    "emoji": "🛕",
+    "crowd": 22,
+    "vibes": [
+      "spiritual",
+      "culture"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Jun–Sep",
+    "altitude": "2760m",
+    "famousFor": "Hindu-Buddhist joint worship temple",
+    "zone": "lahaul",
+    "mx": 450,
+    "my": 142,
+    "slug": "triloknath-temple"
+  },
+  {
+    "id": 109,
+    "name": "Keylong",
+    "district": "Lahaul & Spiti",
+    "desc": "Lahaul district HQ at 3100m with Shashur monastery above town. A real Lahauli community, not just a tourist base.",
+    "emoji": "🏘️",
+    "crowd": 20,
+    "vibes": [
+      "offbeat"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Jun–Sep",
+    "altitude": "3100m",
+    "famousFor": "Lahaul HQ, Shashur monastery",
+    "zone": "lahaul",
+    "mx": 598,
+    "my": 191,
+    "slug": "keylong"
+  },
+  {
+    "id": 110,
+    "name": "Jispa",
+    "district": "Lahaul & Spiti",
+    "desc": "Riverside campsite on the Manali-Leh highway at 3200m. Camping by the Bhaga river with Lahaul peaks above.",
+    "emoji": "⛺",
+    "crowd": 25,
+    "vibes": [
+      "adventure",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Jun–Sep",
+    "altitude": "3200m",
+    "famousFor": "Campsite, Manali-Leh highway",
+    "zone": "lahaul",
+    "mx": 502,
+    "my": 125,
+    "slug": "jispa"
+  },
+  {
+    "id": 111,
+    "name": "Vashisht",
+    "district": "Kullu",
+    "desc": "Village 3km from Manali with ancient Vashisht temple and hot water springs. Quieter and more genuine than Manali.",
+    "emoji": "♨️",
+    "crowd": 55,
+    "vibes": [
+      "spiritual",
+      "culture"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "2100m",
+    "famousFor": "Hot water springs, Vashisht temple",
+    "zone": "kullu",
+    "mx": 423,
+    "my": 169,
+    "slug": "vashisht"
+  },
+  {
+    "id": 112,
+    "name": "Naggar",
+    "district": "Kullu",
+    "desc": "Heritage town at 1760m with Naggar Castle and the Nicholas Roerich Art Gallery. Old capital of Kullu kingdom.",
+    "emoji": "🏰",
+    "crowd": 45,
+    "vibes": [
+      "culture",
+      "nature"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1760m",
+    "famousFor": "Naggar Castle, Roerich gallery",
+    "zone": "kullu",
+    "mx": 423,
+    "my": 196,
+    "slug": "naggar"
+  },
+  {
+    "id": 113,
+    "name": "Kullu Town",
+    "district": "Kullu",
+    "desc": "Main Kullu market at 1219m. Raghunath temple, Dussehra festival (largest in HP), Beas river below.",
+    "emoji": "🎭",
+    "crowd": 58,
+    "vibes": [
+      "culture",
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct (Dussehra), Mar–Jun",
+    "altitude": "1219m",
+    "famousFor": "Raghunath temple, Dussehra festival",
+    "zone": "kullu",
+    "mx": 397,
+    "my": 221,
+    "slug": "kullu-town"
+  },
+  {
+    "id": 114,
+    "name": "Malana",
+    "district": "Kullu",
+    "desc": "Isolated village at 2652m with its own culture and governance. Unique. Do not touch the walls.",
+    "emoji": "🏘️",
+    "crowd": 31,
+    "vibes": [
+      "offbeat",
+      "culture",
+      "adventure"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "May–Jun, Sep–Oct",
+    "altitude": "2652m",
+    "famousFor": "Ancient self-governance, isolated culture",
+    "zone": "parvati",
+    "mx": 423,
+    "my": 232,
+    "slug": "malana"
+  },
+  {
+    "id": 115,
+    "name": "Bhagsu Nag",
+    "district": "Kangra",
+    "desc": "Ancient Nag temple and waterfall just 2km from McLeod Ganj. Popular but manageable.",
+    "emoji": "💧",
+    "crowd": 60,
+    "vibes": [
+      "spiritual",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1500m",
+    "famousFor": "Nag temple, Bhagsu waterfall",
+    "zone": "kangra",
+    "mx": 185,
+    "my": 178,
+    "slug": "bhagsu-nag"
+  },
+  {
+    "id": 116,
+    "name": "Kinner Kailash Trek",
+    "district": "Kinnaur",
+    "desc": "Circumambulation of the sacred Kinner Kailash peak at 6050m. Physically demanding multi-day pilgrimage.",
+    "emoji": "🙏",
+    "crowd": 12,
+    "vibes": [
+      "spiritual",
+      "adventure",
+      "trek"
+    ],
+    "color": "#e0dce8",
+    "bestTime": "Jul–Sep",
+    "altitude": "6050m",
+    "famousFor": "Sacred peak circumambulation",
+    "zone": "kinnaur",
+    "mx": 697,
+    "my": 260,
+    "slug": "kinner-kailash-trek"
+  },
+  {
+    "id": 117,
+    "name": "Solang Valley",
+    "district": "Kullu",
+    "desc": "Adventure hub 14km from Manali at 2480m. Paragliding, zorbing, cable car, snow activities.",
+    "emoji": "🪂",
+    "crowd": 82,
+    "vibes": [
+      "adventure"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jan–Feb (snow), May–Sep",
+    "altitude": "2480m",
+    "famousFor": "Paragliding, zorbing, cable car",
+    "zone": "kullu",
+    "mx": 397,
+    "my": 160,
+    "slug": "solang-valley"
+  },
+  {
+    "id": 118,
+    "name": "Rohtang Pass",
+    "district": "Kullu",
+    "desc": "Legendary gateway to Lahaul and Spiti at 3978m. Snow year-round. Book permit in advance — entry limited.",
+    "emoji": "⛰️",
+    "crowd": 78,
+    "vibes": [
+      "adventure",
+      "nature"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "May–Oct",
+    "altitude": "3978m",
+    "famousFor": "Gateway to Lahaul/Spiti, snow",
+    "zone": "kullu",
+    "mx": 423,
+    "my": 142,
+    "slug": "rohtang-pass"
+  },
+  {
+    "id": 119,
+    "name": "Hamta Pass",
+    "district": "Kullu",
+    "desc": "Classic multi-day trek at 4270m connecting Manali to Spiti. Landscape transforms from green to barren.",
+    "emoji": "🥾",
+    "crowd": 30,
+    "vibes": [
+      "adventure",
+      "trek"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Jun–Sep",
+    "altitude": "4270m",
+    "famousFor": "Classic trek Kullu to Spiti",
+    "zone": "kullu",
+    "mx": 484,
+    "my": 209,
+    "slug": "hamta-pass"
+  },
+  {
+    "id": 120,
+    "name": "Chanderkhani Pass",
+    "district": "Kullu",
+    "desc": "Dramatic trek at 3660m connecting Malana to Naggar. Far less crowded than Hamta or Sar Pass.",
+    "emoji": "⛰️",
+    "crowd": 12,
+    "vibes": [
+      "trek",
+      "adventure",
+      "offbeat"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "May–Sep",
+    "altitude": "3660m",
+    "famousFor": "Trek connecting Malana to Naggar",
+    "zone": "kullu",
+    "mx": 464,
+    "my": 201,
+    "slug": "chanderkhani-pass"
+  },
+  {
+    "id": 121,
+    "name": "Nirmand",
+    "district": "Kullu",
+    "desc": "Heritage village at 1338m with ancient temples and traditional Kath-Kuni architecture.",
+    "emoji": "🛕",
+    "crowd": 12,
+    "vibes": [
+      "culture",
+      "spiritual",
+      "offbeat"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Oct–Apr",
+    "altitude": "1338m",
+    "famousFor": "Heritage village, ancient temples",
+    "zone": "kullu",
+    "mx": 474,
+    "my": 193,
+    "slug": "nirmand"
+  },
+  {
+    "id": 122,
+    "name": "Katrain",
+    "district": "Kullu",
+    "desc": "Quiet stretch of Kullu valley at 1463m. Apple orchards, Beas river. Most travelers drive past.",
+    "emoji": "🍎",
+    "crowd": 20,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1463m",
+    "famousFor": "Apple orchards, Beas river",
+    "zone": "kullu",
+    "mx": 483,
+    "my": 202,
+    "slug": "katrain"
+  },
+  {
+    "id": 123,
+    "name": "Bijli Mahadev",
+    "district": "Kullu",
+    "desc": "Ancient Shiva temple at 2460m where lightning strikes the lingam and priests reassemble it with butter. Kullu valley views.",
+    "emoji": "⚡",
+    "crowd": 38,
+    "vibes": [
+      "spiritual",
+      "adventure"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Mar–Jun, Sep–Oct",
+    "altitude": "2460m",
+    "famousFor": "Lightning-struck lingam legend",
+    "zone": "kullu",
+    "mx": 397,
+    "my": 232,
+    "slug": "bijli-mahadev"
+  },
+  {
+    "id": 124,
+    "name": "Sarchu",
+    "district": "Lahaul & Spiti",
+    "desc": "Tent city on the Manali-Leh highway at 4290m. Most people stop one night. Alien and beautiful landscape.",
+    "emoji": "🏕️",
+    "crowd": 30,
+    "vibes": [
+      "adventure"
+    ],
+    "color": "#e0dce8",
+    "bestTime": "Jun–Sep",
+    "altitude": "4290m",
+    "famousFor": "Manali-Leh tent city",
+    "zone": "lahaul",
+    "mx": 529,
+    "my": 89,
+    "slug": "sarchu"
+  },
+  {
+    "id": 125,
+    "name": "Kunzum Pass",
+    "district": "Lahaul & Spiti",
+    "desc": "Gateway from Lahaul to Spiti at 4551m with Kunzum Devi temple. Motorcyclists stop to pay respects before Spiti.",
+    "emoji": "⛰️",
+    "crowd": 28,
+    "vibes": [
+      "adventure",
+      "offbeat"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Jun–Sep",
+    "altitude": "4551m",
+    "famousFor": "Gateway to Spiti, Kunzum Devi",
+    "zone": "spiti",
+    "mx": 555,
+    "my": 125,
+    "slug": "kunzum-pass"
+  },
+  {
+    "id": 126,
+    "name": "Indrahar Pass",
+    "district": "Kangra",
+    "desc": "Challenging pass at 4342m connecting Dharamshala to Chamba through the Dhauladhar range.",
+    "emoji": "⛰️",
+    "crowd": 15,
+    "vibes": [
+      "adventure",
+      "trek"
+    ],
+    "color": "#dde8d4",
+    "bestTime": "Jun–Sep",
+    "altitude": "4342m",
+    "famousFor": "Trek connecting Dharamshala to Chamba",
+    "zone": "kangra",
+    "mx": 185,
+    "my": 178,
+    "slug": "indrahar-pass"
+  },
+  {
+    "id": 127,
+    "name": "Mashobra",
+    "district": "Shimla",
+    "desc": "Quiet village near Shimla at 2149m. Craignano picnic spot, apple orchards. Off-radar weekend.",
+    "emoji": "🌲",
+    "crowd": 20,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Mar–Jun, Sep–Oct",
+    "altitude": "2149m",
+    "famousFor": "Quiet Shimla alternative, picnic spot",
+    "zone": "shimla",
+    "mx": 384,
+    "my": 403,
+    "slug": "mashobra"
+  },
+  {
+    "id": 128,
+    "name": "Tatta Pani",
+    "district": "Shimla",
+    "desc": "Hot sulfur springs on the Sutlej river at 655m. Popular winter pilgrimage stop.",
+    "emoji": "♨️",
+    "crowd": 28,
+    "vibes": [
+      "spiritual",
+      "nature"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Mar",
+    "altitude": "655m",
+    "famousFor": "Hot springs on Sutlej river",
+    "zone": "shimla",
+    "mx": 421,
+    "my": 425,
+    "slug": "tatta-pani"
+  },
+  {
+    "id": 129,
+    "name": "Nahan",
+    "district": "Sirmaur",
+    "desc": "Sirmaur district HQ at 932m. Old bazaar, Rani Tal garden. Base for Renuka Lake and Churdhar.",
+    "emoji": "🏘️",
+    "crowd": 30,
+    "vibes": [
+      "culture"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Oct–Mar",
+    "altitude": "932m",
+    "famousFor": "Old bazaar, Rani Tal",
+    "zone": "sirmaur",
+    "mx": 450,
+    "my": 464,
+    "slug": "nahan"
+  },
+  {
+    "id": 130,
+    "name": "Pong Dam",
+    "district": "Una",
+    "desc": "Pong Dam wetland — winter birding paradise with bar-headed geese and hundreds of migratory species.",
+    "emoji": "🦢",
+    "crowd": 22,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Nov–Feb",
+    "altitude": "430m",
+    "famousFor": "Wetland reserve, migratory birds",
+    "zone": "una",
+    "mx": 79,
+    "my": 214,
+    "slug": "pong-dam"
+  },
+  {
+    "id": 131,
+    "name": "Nadaun",
+    "district": "Hamirpur",
+    "desc": "Historic town on the Beas river. Palace of Raja Sansar Chand, a gurudwara, peaceful riverfront.",
+    "emoji": "🏛️",
+    "crowd": 20,
+    "vibes": [
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Oct–Mar",
+    "altitude": "400m",
+    "famousFor": "Raja Sansar Chand palace, Beas river",
+    "zone": "hamirpur",
+    "mx": 174,
+    "my": 224,
+    "slug": "nadaun"
+  },
+  {
+    "id": 132,
+    "name": "Beas Kund",
+    "district": "Kullu",
+    "desc": "Glacial source of the Beas river at 3700m, reached by a beautiful trek from Solang Valley.",
+    "emoji": "🏔️",
+    "crowd": 25,
+    "vibes": [
+      "trek",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jun–Sep",
+    "altitude": "3700m",
+    "famousFor": "Source of Beas river, glacial lake",
+    "zone": "kullu",
+    "mx": 397,
+    "my": 160,
+    "slug": "beas-kund"
+  },
+  {
+    "id": 133,
+    "name": "Bhrigu Lake",
+    "district": "Kullu",
+    "desc": "High alpine lake at 4300m reached by steep short trek from Manali. Passes through meadows with 360° views.",
+    "emoji": "🌊",
+    "crowd": 28,
+    "vibes": [
+      "trek",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Jun–Sep",
+    "altitude": "4300m",
+    "famousFor": "High alpine lake, 360° views",
+    "zone": "kullu",
+    "mx": 423,
+    "my": 160,
+    "slug": "bhrigu-lake"
+  },
+  {
+    "id": 134,
+    "name": "Old Manali",
+    "district": "Kullu",
+    "desc": "The hippie-vibe older part of Manali with Manu Temple, riverside cafes. Much calmer than New Manali.",
+    "emoji": "☕",
+    "crowd": 70,
+    "vibes": [
+      "culture",
+      "nature"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Mar–Apr, Oct–Nov",
+    "altitude": "2050m",
+    "famousFor": "Manu temple, cafes, chill vibe",
+    "zone": "kullu",
+    "mx": 423,
+    "my": 178,
+    "slug": "old-manali"
+  },
+  {
+    "id": 135,
+    "name": "Sainj Valley",
+    "district": "Kullu",
+    "desc": "Hidden gem valley adjacent to Tirthan. Pundrik Rishi lake, traditional villages, barely any tourists.",
+    "emoji": "🌿",
+    "crowd": 10,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d5e8d0",
+    "bestTime": "Apr–Jun, Sep–Nov",
+    "altitude": "1600m",
+    "famousFor": "Hidden valley, Pundrik Rishi lake",
+    "zone": "tirthan",
+    "mx": 369,
+    "my": 232,
+    "slug": "sainj-valley"
+  },
+  {
+    "id": 136,
+    "name": "Gulaba",
+    "district": "Kullu",
+    "desc": "Snow point before Rohtang at 3100m. Less crowded, same snow experience. Quieter option for families.",
+    "emoji": "❄️",
+    "crowd": 35,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "May–Oct",
+    "altitude": "3100m",
+    "famousFor": "Snow point, quieter Rohtang alternative",
+    "zone": "kullu",
+    "mx": 410,
+    "my": 151,
+    "slug": "gulaba"
+  },
+  {
+    "id": 137,
+    "name": "Jagatsukh",
+    "district": "Kullu",
+    "desc": "Ancient village at 1830m that was the capital of Kullu before Naggar. Two ancient Shiva temples — barely visited.",
+    "emoji": "🛕",
+    "crowd": 18,
+    "vibes": [
+      "spiritual",
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1830m",
+    "famousFor": "Ancient Shiva temples, old Kullu capital",
+    "zone": "kullu",
+    "mx": 447,
+    "my": 187,
+    "slug": "jagatsukh"
+  },
+  {
+    "id": 138,
+    "name": "Kothi",
+    "district": "Kullu",
+    "desc": "Scenic Beas river viewpoint at 2500m on the Rohtang road. Glacier views, small village, peaceful alternative.",
+    "emoji": "🌊",
+    "crowd": 22,
+    "vibes": [
+      "nature",
+      "offbeat"
+    ],
+    "color": "#d4e6da",
+    "bestTime": "Apr–Oct",
+    "altitude": "2500m",
+    "famousFor": "Beas river views, glacier scenery",
+    "zone": "kullu",
+    "mx": 430,
+    "my": 186,
+    "slug": "kothi"
+  },
+  {
+    "id": 139,
+    "name": "Mamleshwar Temple",
+    "district": "Mandi",
+    "desc": "Ancient 10th century Shiva temple in Karsog valley, known for intricate stone carvings.",
+    "emoji": "🛕",
+    "crowd": 14,
+    "vibes": [
+      "spiritual",
+      "culture",
+      "offbeat"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Mar–Jun, Sep–Nov",
+    "altitude": "1400m",
+    "famousFor": "Ancient Shiva temple, stone carvings",
+    "zone": "mandi",
+    "mx": 286,
+    "my": 270,
+    "slug": "mamleshwar-temple"
+  },
+  {
+    "id": 140,
+    "name": "Sundernagar",
+    "district": "Mandi",
+    "desc": "Mandi town with the Sukh Sagar lake created by a nearby dam. Pandoh Dam viewpoint worth a stop.",
+    "emoji": "💧",
+    "crowd": 20,
+    "vibes": [
+      "offbeat"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Oct–Mar",
+    "altitude": "900m",
+    "famousFor": "Sukh Sagar lake, Pandoh Dam",
+    "zone": "mandi",
+    "mx": 331,
+    "my": 237,
+    "slug": "sundernagar"
+  },
+  {
+    "id": 141,
+    "name": "Bhakra Dam",
+    "district": "Bilaspur",
+    "desc": "One of Asia's highest gravity dams at 226m. The view from the top of the dam wall over Gobind Sagar reservoir is genuinely stunning.",
+    "emoji": "🏗️",
+    "crowd": 28,
+    "vibes": [
+      "offbeat",
+      "nature"
+    ],
+    "color": "#d4dce8",
+    "bestTime": "Oct–Mar",
+    "altitude": "380m",
+    "famousFor": "Asia's highest gravity dam, reservoir views",
+    "zone": "bilaspur",
+    "mx": 291,
+    "my": 339,
+    "slug": "bhakra-dam"
+  },
+  {
+    "id": 142,
+    "name": "Tauni Devi",
+    "district": "Hamirpur",
+    "desc": "Temple on a hilltop in Hamirpur with views over the plains. Quiet pilgrimage site, rarely crowded.",
+    "emoji": "🛕",
+    "crowd": 18,
+    "vibes": [
+      "spiritual",
+      "offbeat"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Oct–Mar",
+    "altitude": "700m",
+    "famousFor": "Hilltop temple, Hamirpur views",
+    "zone": "hamirpur",
+    "mx": 260,
+    "my": 289,
+    "slug": "tauni-devi"
+  },
+  {
+    "id": 143,
+    "name": "Bhuntar",
+    "district": "Kullu",
+    "desc": "The airport town and main gateway to Parvati Valley. Starting point for all Parvati Valley explorations.",
+    "emoji": "✈️",
+    "crowd": 30,
+    "vibes": [
+      "nature"
+    ],
+    "color": "#e4dcc8",
+    "bestTime": "Mar–Nov",
+    "altitude": "900m",
+    "famousFor": "Kullu airport, Parvati Valley gateway",
+    "zone": "kullu",
+    "mx": 374,
+    "my": 225,
+    "slug": "bhuntar"
+  },
+  {
+    "id": 144,
+    "name": "Pin Parvati Pass",
+    "district": "Kullu",
+    "desc": "One of India's most challenging high altitude treks at 5319m. Connects Parvati Valley to Spiti through glaciers.",
+    "emoji": "🏔️",
+    "crowd": 8,
+    "vibes": [
+      "adventure",
+      "trek"
+    ],
+    "color": "#e0dce8",
+    "bestTime": "Aug–Sep",
+    "altitude": "5319m",
+    "famousFor": "Extreme trek connecting Kullu and Spiti",
+    "zone": "parvati",
+    "mx": 456,
+    "my": 282,
+    "slug": "pin-parvati-pass"
+  },
+  {
+    "id": 145,
+    "name": "Dharmshala Lower",
+    "district": "Kangra",
+    "desc": "The lower part of Dharamshala with the main market, more affordable and local than McLeod Ganj above.",
+    "emoji": "🛕",
+    "crowd": 55,
+    "vibes": [
+      "culture",
+      "spiritual"
+    ],
+    "color": "#e8d8d0",
+    "bestTime": "Mar–May, Sep–Nov",
+    "altitude": "1400m",
+    "famousFor": "Main market, local Dharamshala experience",
+    "zone": "kangra",
+    "mx": 229,
+    "my": 236,
+    "slug": "dharmshala-lower"
+  },
+  {
+    "id": 146,
+    "name": "Vyas Cave",
+    "district": "Bilaspur",
+    "desc": "Ancient cave near Bilaspur with mythological connection to Rishi Vyas who is said to have meditated here.",
+    "emoji": "🕌",
+    "crowd": 12,
+    "vibes": [
+      "spiritual",
+      "offbeat"
+    ],
+    "color": "#e8e4d4",
+    "bestTime": "Oct–Mar",
+    "altitude": "375m",
+    "famousFor": "Ancient cave, Rishi Vyas connection",
+    "zone": "bilaspur",
+    "slug": "vyas-cave"
+  }
+]
