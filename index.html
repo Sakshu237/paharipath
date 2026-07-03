@@ -1436,6 +1436,14 @@ function hTab(tab, btn){
         ${[['Property Name',s.name],['Location',s.loc],['Type',s.type||'Homestay'],['Price per night',s.price||'₹'+s.pn+'/night'],['Contact',s.contact||'—'],['Eco certified',s.eco?'✅ Yes':'❌ No']].map(([k,v])=>`<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);margin-bottom:4px">${k}</div><div style="font-size:14px;color:var(--ink)">${v}</div></div>`).join('')}
       </div>
     </div>
+    ${s.id?`<div class="h-card">
+      <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:6px">🚦 Availability</div>
+      <p style="font-size:12px;color:var(--stone);margin-bottom:14px">Fully booked this week? Toggle this off and guests will see "Fully Booked" instead of a Book button — no need to email us.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="hostSetAvailability('active')" style="flex:1;min-width:140px;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);border:1.5px solid ${(s.status||'active')==='active'?'#1e6b3c':'rgba(74,124,95,.2)'};background:${(s.status||'active')==='active'?'#e6f4ec':'#fff'};color:${(s.status||'active')==='active'?'#1e6b3c':'var(--stone)'}">✅ Open for booking</button>
+        <button onclick="hostSetAvailability('full')" style="flex:1;min-width:140px;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);border:1.5px solid ${s.status==='full'?'#c0392b':'rgba(74,124,95,.2)'};background:${s.status==='full'?'#fdeaea':'#fff'};color:${s.status==='full'?'#c0392b':'var(--stone)'}">🔴 Fully booked</button>
+      </div>
+    </div>`:''}
     <div class="h-card">
       <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:12px">Update Details</div>
       <p style="font-size:13px;color:var(--stone);margin-bottom:16px">To update your listing details, contact us at <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a> or WhatsApp <a href="https://wa.me/91XXXXXXXXXX" style="color:var(--pine)">+91 XXXXXXXXXX</a>. Full self-edit coming soon.</p>
@@ -1511,6 +1519,18 @@ async function hostSaveCrowd(){
   if(typeof renderCrowd==='function')renderCrowd();
   if(typeof renderMap==='function')renderMap();
   toast(`✓ Crowd level updated to ${val}% — live for all travellers now`);
+}
+
+async function hostSetAvailability(status){
+  if(!_hostStay||!_hostStay.id){toast('Your listing needs to be linked first — contact hello@paharipath.in');return;}
+  const {error}=await _sb.from('stays').update({status}).eq('id',_hostStay.id);
+  if(error){toast('Error: '+error.message);return;}
+  _hostStay.status=status;
+  const idx=STAYS.findIndex(x=>x.id===_hostStay.id);
+  if(idx>=0) STAYS[idx].status=status;
+  if(typeof renderStays==='function') renderStays();
+  toast(status==='full'?'🔴 Marked fully booked — travellers will see this instantly':'✅ Reopened for bookings');
+  hTab('listing', document.querySelectorAll('.htab')[3]);
 }
 
 // ═══ ERROR BOUNDARY ═══
@@ -1825,8 +1845,17 @@ async function adminSaveMedia(){
   let videos=existing?.videos||[];
 
   if(photoInput){
-    const newPhotos=photoInput.split(',').map(u=>u.trim()).filter(u=>u.length>5);
-    images=[...images,...newPhotos];
+    const rawPhotos=photoInput.split(',').map(u=>u.trim()).filter(u=>u.length>5);
+    toast('Checking '+rawPhotos.length+' photo link'+(rawPhotos.length!==1?'s':'')+'…');
+    const results=await validateImageUrls(rawPhotos);
+    const goodPhotos=results.filter(r=>r.ok).map(r=>r.url);
+    const badPhotos=results.filter(r=>!r.ok);
+    images=[...images,...goodPhotos];
+    if(badPhotos.length){
+      const first=badPhotos[0];
+      toast(`⚠️ ${badPhotos.length} of ${rawPhotos.length} photo link${badPhotos.length!==1?'s':''} skipped — ${first.reason}`);
+    }
+    if(!goodPhotos.length && badPhotos.length){return;}
   }
   if(videoInput && videoInput.includes('youtu')){
     videos=[...videos,videoInput];
@@ -1855,6 +1884,33 @@ async function adminDeleteMedia(pid,idx,type){
 }
 // Crowd overrides — loaded from Supabase on init, fallback to empty
 let CROWD_OVR = {};
+
+// ═══ IMAGE URL VALIDATION ═══
+// Catches the most common mistake — pasting a photo's page URL instead of
+// the direct image file URL (e.g. unsplash.com/photos/xyz instead of
+// images.unsplash.com/photo-xyz). A page URL returns HTML, not an image,
+// so the <img> tag's onerror silently hides it and nothing ever appears.
+function detectBadPhotoUrl(u){
+  if(/^https?:\/\/(www\.)?unsplash\.com\/photos\//i.test(u)) return 'Unsplash page link — right-click the photo itself and choose "Copy image address"';
+  if(/^https?:\/\/photos\.(app\.goo\.gl|google\.com)/i.test(u)) return 'Google Photos share link, not a direct image file';
+  if(/^https?:\/\/(www\.)?pinterest\./i.test(u)) return 'Pinterest page link, not a direct image file';
+  if(/^https?:\/\/(www\.)?drive\.google\.com/i.test(u)) return 'Google Drive share link, not a direct image file';
+  return null;
+}
+// Actually tries loading each URL as an image before saving, so broken
+// links are caught immediately with a clear reason instead of silently
+// failing once the page is already live.
+function validateImageUrls(urls){
+  return Promise.all(urls.map(u=>new Promise(resolve=>{
+    const badReason=detectBadPhotoUrl(u);
+    if(badReason){resolve({url:u,ok:false,reason:badReason});return;}
+    const img=new Image();
+    const timer=setTimeout(()=>resolve({url:u,ok:false,reason:'Timed out loading — check the link works in a new tab'}),6000);
+    img.onload=()=>{clearTimeout(timer);resolve({url:u,ok:true});};
+    img.onerror=()=>{clearTimeout(timer);resolve({url:u,ok:false,reason:'Could not load as an image — link may be broken or private'});};
+    img.src=u;
+  })));
+}
 
 // ═══ UTILS ═══
 const cColor=c=>c>=70?'#e24a4a':c>=45?'#e8a020':'#3aab66';
@@ -2419,8 +2475,11 @@ function renderStays(){
     const photos=getStayPhotos(s.id);
     const firstPhoto=photos[0]||'';
     const cnt=photos.length;
+    const isFull=s.status==='full';
+    const isPaused=s.status==='paused';
+    const unavailable=isFull||isPaused;
     return `
-    <div class="sc" onclick="openStayDetail(${s.id})">
+    <div class="sc" style="${unavailable?'opacity:.72':''}" onclick="openStayDetail(${s.id})">
       <div class="s-img" style="background:${s.color}">
         ${firstPhoto
           ? `<img class="s-img-cover" src="${firstPhoto}" alt="${s.name}" loading="lazy" onerror="this.style.display='none'"/>
@@ -2430,6 +2489,8 @@ function renderStays(){
           : `${s.eco?'<div class="eco-fl">🌱 Eco</div>':''}${s.emoji}
              <div class="s-no-photo">📷 Photos coming soon — yours could be first!</div>`
         }
+        ${isFull?'<div style="position:absolute;top:8px;right:8px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.03em">FULLY BOOKED</div>':''}
+        ${isPaused?'<div style="position:absolute;top:8px;right:8px;background:#6b7c6e;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.03em">UNAVAILABLE</div>':''}
       </div>
       <div class="s-body">
         <span class="s-type ${s.eco?'eco-type':''}">${s.type}</span>
@@ -2438,7 +2499,9 @@ function renderStays(){
         <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">⭐ ${s.rating}</span></div>
         <div class="s-contact">📞 ${s.contact}</div>
         <div style="display:flex;gap:7px" onclick="event.stopPropagation()">
-          <button class="s-btn" onclick="openBookMo(${s.id})" style="flex:1;font-weight:700">🔒 Book / Pay</button>
+          ${unavailable
+            ? `<button class="s-btn" disabled style="flex:1;font-weight:700;background:#e5e5e2;color:#9a9a96;cursor:not-allowed">${isFull?'🔴 Fully Booked':'⏸ Not Available'}</button>`
+            : `<button class="s-btn" onclick="openBookMo(${s.id})" style="flex:1;font-weight:700">🔒 Book / Pay</button>`}
           <button class="s-btn" onclick="waBook(${s.id})" style="flex:1;background:#25D366;color:#fff;border:none;font-weight:600">💬 WhatsApp</button>
         </div>
       </div>
@@ -2451,7 +2514,10 @@ function renderStayCard(s){
   const photos=getStayPhotos(s.id);
   const firstPhoto=photos[0]||'';
   const cnt=photos.length;
-  return `<div class="sc" onclick="openStayDetail(${s.id})">
+  const isFull=s.status==='full';
+  const isPaused=s.status==='paused';
+  const unavailable=isFull||isPaused;
+  return `<div class="sc" style="${unavailable?'opacity:.72':''}" onclick="openStayDetail(${s.id})">
     <div class="s-img" style="background:${s.color}">
       ${firstPhoto
         ? `<img class="s-img-cover" src="${firstPhoto}" alt="${s.name}" loading="lazy" onerror="this.style.display='none'"/>
@@ -2460,6 +2526,8 @@ function renderStayCard(s){
            ${s.eco?'<div class="eco-fl">🌱 Eco</div>':''}`
         : `${s.eco?'<div class="eco-fl">🌱 Eco</div>':''}${s.emoji}`
       }
+      ${isFull?'<div style="position:absolute;top:8px;right:8px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.03em">FULLY BOOKED</div>':''}
+      ${isPaused?'<div style="position:absolute;top:8px;right:8px;background:#6b7c6e;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.03em">UNAVAILABLE</div>':''}
     </div>
     <div class="s-body">
       <span class="s-type ${s.eco?'eco-type':''}">${s.type}</span>
@@ -2468,7 +2536,9 @@ function renderStayCard(s){
       <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">⭐ ${s.rating}</span></div>
       <div class="s-contact">📞 ${s.contact}</div>
       <div style="display:flex;gap:7px" onclick="event.stopPropagation()">
-        <button class="s-btn" onclick="openBookMo(${s.id})" style="flex:1;font-weight:700">🔒 Book / Pay</button>
+        ${unavailable
+          ? `<button class="s-btn" disabled style="flex:1;font-weight:700;background:#e5e5e2;color:#9a9a96;cursor:not-allowed">${isFull?'🔴 Fully Booked':'⏸ Not Available'}</button>`
+          : `<button class="s-btn" onclick="openBookMo(${s.id})" style="flex:1;font-weight:700">🔒 Book / Pay</button>`}
         <button class="s-btn" onclick="waBook(${s.id})" style="flex:1;background:#25D366;color:#fff;border:none;font-weight:600">💬 WhatsApp</button>
       </div>
     </div>
@@ -2513,9 +2583,13 @@ function openStayDetail(id){
         ${s.eco?'<span style="background:#e6f4ec;color:#1e6b3c;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">🌱 Eco Certified</span>':''}
         <span style="background:var(--mist);color:var(--stone);font-size:11px;padding:3px 10px;border-radius:20px">📞 ${s.contact}</span>
         ${photos.length?`<span style="background:var(--mist);color:var(--stone);font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer" onclick="openStayPhotos(${id},0)">📷 ${photos.length} Photos</span>`:''}
+        ${s.status==='full'?'<span style="background:#fdeaea;color:#c0392b;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">🔴 Fully Booked</span>':''}
+        ${s.status==='paused'?'<span style="background:#f0f0ee;color:#6b7c6e;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">⏸ Currently Unavailable</span>':''}
       </div>
       <div style="display:flex;gap:8px">
-        <button class="pay-btn" onclick="closeMo();openBookMo(${id})" style="flex:1">Book / Pay</button>
+        ${(s.status==='full'||s.status==='paused')
+          ? `<button class="pay-btn" disabled style="flex:1;background:#e5e5e2;color:#9a9a96;cursor:not-allowed">${s.status==='full'?'🔴 Fully Booked — Try Another Stay':'⏸ Not Available Right Now'}</button>`
+          : `<button class="pay-btn" onclick="closeMo();openBookMo(${id})" style="flex:1">Book / Pay</button>`}
         <button class="pay-btn" onclick="waBook(${id})" style="flex:0 0 auto;background:#25D366;padding:14px 18px">WhatsApp</button>
       </div>
     </div>`;
@@ -3031,9 +3105,9 @@ function openPD(id){addRecentlyViewed(id);
   if(!imgs.length&&!vids.length){setMain(`<span style="font-size:72px;opacity:.5">${p.emoji}</span>`);}
   else{
     if(imgs[0])setMain(`<img src="${imgs[0]}" alt="${p.name}"/>`);
-    else if(vids[0]){const yi=ytEmbed(vids[0]);setMain(yi?`<iframe src="${yi}" allowfullscreen></iframe>`:`<span style="font-size:72px">${p.emoji}</span>`);}
+    else if(vids[0]){const yi=ytEmbed(vids[0]);setMain(yi?`<iframe src="${yi}" allowfullscreen frameborder="0" style="width:100%;height:100%;border:none;position:absolute;inset:0"></iframe>`:`<span style="font-size:72px">${p.emoji}</span>`);}
     imgs.forEach((src,i)=>{const t=document.createElement('img');t.className='pd-thumb'+(i===0?' act':'');t.src=src;t.onclick=()=>{setMain(`<img src="${src}" alt="${p.name}"/>`);tb.querySelectorAll('.pd-thumb,.pd-thumbv').forEach(x=>x.classList.remove('act'));t.classList.add('act');};tb.appendChild(t);});
-    vids.forEach((url,i)=>{const t=document.createElement('div');t.className='pd-thumbv'+(imgs.length===0&&i===0?' act':'');t.innerHTML='▶';t.onclick=()=>{const yi=ytEmbed(url,true);setMain(yi?`<iframe src="${yi}" allowfullscreen></iframe>`:`<video src="${url}" controls autoplay></video>`);tb.querySelectorAll('.pd-thumb,.pd-thumbv').forEach(x=>x.classList.remove('act'));t.classList.add('act');};tb.appendChild(t);});
+    vids.forEach((url,i)=>{const t=document.createElement('div');t.className='pd-thumbv'+(imgs.length===0&&i===0?' act':'');t.innerHTML='▶';t.onclick=()=>{const yi=ytEmbed(url,true);setMain(yi?`<iframe src="${yi}" allowfullscreen frameborder="0" style="width:100%;height:100%;border:none;position:absolute;inset:0"></iframe>`:`<video src="${url}" controls autoplay></video>`);tb.querySelectorAll('.pd-thumb,.pd-thumbv').forEach(x=>x.classList.remove('act'));t.classList.add('act');};tb.appendChild(t);});
   }
   // Videos section
   const vg=document.getElementById('pdvids'),ve=document.getElementById('pdvid-empty');
@@ -3857,6 +3931,8 @@ function openBookMo(sid){
     },200);
   }
   const s=STAYS.find(x=>x.id===sid);if(!s)return;
+  if(s.status==='full'){toast('🔴 This stay is fully booked right now — try another one, or WhatsApp the host to ask about last-minute openings');return;}
+  if(s.status==='paused'){toast('⏸ This stay isn\'t taking bookings right now');return;}
   curBooking=s;
   document.getElementById('moTitle').textContent='Book — '+s.name;
   document.getElementById('moBody').innerHTML=buildBookForm(s);
@@ -3864,6 +3940,7 @@ function openBookMo(sid){
   document.body.style.overflow='hidden';
   // Trigger eco calculator first (it calls recalcBooking internally)
   setTimeout(() => recalcEco(s.pn, s.placeid || 0), 60);
+  setTimeout(() => checkDateAvailability(s.id, s.pn), 80);
 }
 function openPermitMo(name){
   document.getElementById('moTitle').textContent='Eco Permit — '+name;
@@ -3890,13 +3967,14 @@ function buildBookForm(s) {
   <div class="fg-row">
     <div class="fg">
       <label>Check-in Date</label>
-      <input type="date" class="fi" id="ciD" value="${fmt(ci)}" min="${fmt(today)}" onchange="recalcBooking(${s.pn})"/>
+      <input type="date" class="fi" id="ciD" value="${fmt(ci)}" min="${fmt(today)}" onchange="recalcBooking(${s.pn});checkDateAvailability(${s.id},${s.pn})"/>
     </div>
     <div class="fg">
       <label>Check-out Date</label>
-      <input type="date" class="fi" id="coD" value="${fmt(co)}" min="${fmt(ci)}" onchange="recalcBooking(${s.pn})"/>
+      <input type="date" class="fi" id="coD" value="${fmt(co)}" min="${fmt(ci)}" onchange="recalcBooking(${s.pn});checkDateAvailability(${s.id},${s.pn})"/>
     </div>
   </div>
+  <div id="dateAvailWarning" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:10px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px"></div>
 
   <div class="fg-row">
     <div class="fg"><label>Your Name</label><input type="text" class="fi" id="gName" placeholder="Full name"/></div>
@@ -4225,6 +4303,8 @@ function adTab(tab,el){
         <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Linked Destination</label>
           <select class="ai" id="sPlaceid"><option value="">— Select —</option>${ALL.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>
         <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Emoji</label><input class="ai" id="sEmoji" placeholder="🏡" style="font-size:20px" maxlength="2"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Availability</label>
+          <select class="ai" id="sStatus"><option value="active">✅ Open for booking</option><option value="full">🔴 Fully booked</option><option value="paused">⏸ Paused / Off market</option></select></div>
       </div>
       <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
         <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="sEco"/> 🌱 Eco Certified</label>
@@ -4233,8 +4313,8 @@ function adTab(tab,el){
       </div>
     </div>
     <div class="adm-panel"><h3>Current Stays (${STAYS.length})</h3>
-    <div style="overflow-x:auto"><table class="dt"><thead><tr><th>Property</th><th>Location</th><th>Price/night</th><th>Contact</th><th>Rating</th><th>Place</th><th>Eco</th><th>Actions</th></tr></thead><tbody id="staysTbody">
-    ${STAYS.map(s=>{const linked=ALL.find(p=>p.id===s.placeid);return`<tr id="strow-${s.id}"><td><b>${s.emoji||'🏡'} ${s.name}</b></td><td style="font-size:12px">${s.loc}</td><td>₹${s.pn?.toLocaleString()||'—'}/night</td><td>${s.contact}</td><td>⭐ ${s.rating}</td><td style="font-size:12px">${linked?linked.name:'—'}</td><td>${s.eco?'🌱':'—'}</td><td style="display:flex;gap:6px;flex-wrap:wrap"><button class="ab ab-p" style="font-size:11px;padding:5px 10px" onclick="adminEditStay(${s.id})">✏️ Edit</button><button class="ab ab-d" style="font-size:11px;padding:5px 10px" onclick="adminDeleteStay(${s.id})">🗑 Delete</button></td></tr>`;}).join('')}
+    <div style="overflow-x:auto"><table class="dt"><thead><tr><th>Property</th><th>Location</th><th>Price/night</th><th>Contact</th><th>Rating</th><th>Place</th><th>Eco</th><th>Availability</th><th>Actions</th></tr></thead><tbody id="staysTbody">
+    ${STAYS.map(s=>{const linked=ALL.find(p=>p.id===s.placeid);const st=s.status||'active';const stLabel=st==='full'?'🔴 Full':st==='paused'?'⏸ Paused':'✅ Open';const stColor=st==='full'?'#c0392b':st==='paused'?'#9b6c1a':'#1e6b3c';return`<tr id="strow-${s.id}"><td><b>${s.emoji||'🏡'} ${s.name}</b></td><td style="font-size:12px">${s.loc}</td><td>₹${s.pn?.toLocaleString()||'—'}/night</td><td>${s.contact}</td><td>⭐ ${s.rating}</td><td style="font-size:12px">${linked?linked.name:'—'}</td><td>${s.eco?'🌱':'—'}</td><td><span style="font-size:11px;font-weight:600;color:${stColor}">${stLabel}</span></td><td style="display:flex;gap:6px;flex-wrap:wrap"><button class="ab ab-p" style="font-size:11px;padding:5px 10px" onclick="adminEditStay(${s.id})">✏️ Edit</button><button class="ab ab-d" style="font-size:11px;padding:5px 10px" onclick="adminDeleteStay(${s.id})">🗑 Delete</button></td></tr>`;}).join('')}
     </tbody></table></div></div>`;
   }else if(tab==='book'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">All Bookings</h2>
@@ -4381,6 +4461,7 @@ function adTab(tab,el){
     ${ngoWork.slice().reverse().map(w=>`<tr><td><b>${w.name}</b><br><span style="font-size:10px;color:var(--stone)">${w.phone}</span></td><td style="font-size:12px">${w.typeLabel}</td><td style="font-size:11px">${w.location}</td><td>${w.kg>0?w.kg+'kg':'—'}</td><td>${w.hours}h</td><td style="font-size:13px">${w.badge}</td><td style="color:var(--pine);font-weight:600">+${w.pts}</td><td style="font-size:11px">${w.date}</td></tr>`).join('')}
     </tbody></table></div>` : '<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">No activities logged yet. When volunteers join a clean-up, log their contribution here.</div>'}
     </div>`;
+  }else if(tab==='media'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Media Manager</h2>
     <div class="adm-panel"><h3>📷 Stay Photos (click a stay to manage)</h3>
     <p style="font-size:13px;color:var(--stone);margin-bottom:14px;line-height:1.7">Upload real photos for each stay. Guests see these in the card gallery and lightbox when browsing. Add comma-separated image URLs or paste direct photo links. Your own photos work best!</p>
@@ -4485,6 +4566,8 @@ function adTab(tab,el){
     ]).then(([{data:pending},{data:approved}])=>{
       const el=document.getElementById('adminPinsList');
       if(!el)return;
+      window._pinsCache={};
+      (pending||[]).concat(approved||[]).forEach(p=>{window._pinsCache[p.id]=p;});
       const pendingHTML=(pending||[]).length?`
         <div class="adm-panel">
           <h3>⏳ Pending Review (${pending.length})</h3>
@@ -4496,8 +4579,9 @@ function adTab(tab,el){
               <div style="font-size:12px;color:var(--stone);margin-top:2px">${t.label} · ${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)} · by ${pin.submitted_by||'Anonymous'}</div>
               ${pin.description?`<div style="font-size:12px;color:#444;margin-top:4px;font-style:italic">"${pin.description}"</div>`:''}
             </div>
-            <div style="display:flex;gap:8px;flex-shrink:0">
+            <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
               <a href="https://www.google.com/maps?q=${pin.lat},${pin.lng}" target="_blank" style="padding:6px 12px;background:#f0f6f2;color:var(--pine);border-radius:7px;font-size:12px;font-weight:600;text-decoration:none">🗺 View</a>
+              <button onclick="adminEditPin('${pin.id}')" style="padding:6px 12px;background:#f0f6f2;color:var(--pine);border:1px solid rgba(74,124,95,.25);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">✏️ Edit</button>
               <button onclick="adminApprovePin('${pin.id}')" style="padding:6px 12px;background:#2d8a4e;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">✓ Approve</button>
               <button onclick="adminRejectPin('${pin.id}')" style="padding:6px 12px;background:#c0392b;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">✗ Reject</button>
             </div>
@@ -4510,7 +4594,7 @@ function adTab(tab,el){
           <td>${t.icon}</td><td style="font-weight:600">${pin.name}</td>
           <td style="font-size:11px;font-family:monospace">${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}</td>
           <td style="font-size:12px">${pin.submitted_by||'—'}</td>
-          <td><button onclick="adminRejectPin('${pin.id}')" style="padding:4px 10px;background:#fee;border:1px solid #fcc;color:#c0392b;border-radius:6px;font-size:11px;cursor:pointer">Remove</button></td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap"><button onclick="adminEditPin('${pin.id}')" style="padding:4px 10px;background:#f0f6f2;color:var(--pine);border:1px solid rgba(74,124,95,.25);border-radius:6px;font-size:11px;cursor:pointer">✏️ Edit</button><button onclick="adminRejectPin('${pin.id}')" style="padding:4px 10px;background:#fee;border:1px solid #fcc;color:#c0392b;border-radius:6px;font-size:11px;cursor:pointer">Remove</button></td>
         </tr>`}).join('')}
         </tbody></table></div>`:'<div style="padding:20px;text-align:center;color:var(--stone)">No approved pins yet.</div>'}
       </div>`;
@@ -4554,35 +4638,55 @@ function previewStayPhotos(){
     <div class="sp-admin-grid">${photos.map((src,i)=>`<div style="position:relative"><img class="sp-thumb" src="${src}" alt="Stay photo ${i+1}" onerror="this.parentNode.style.display='none'"/>
       <button onclick="removeStayPhoto(${id},${i})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.65);border:none;color:#fff;font-size:10px;border-radius:4px;padding:1px 4px;cursor:pointer">✕</button></div>`).join('')}</div>`;
 }
-function saveStayPhotos(replace){
+async function saveStayPhotos(replace){
   const id=parseInt(document.getElementById('stayPhotoSel').value);
   if(!id){toast('Select a stay first');return;}
-  const urls=(document.getElementById('stayPhotoUrls').value||'').split(',').map(s=>s.trim()).filter(Boolean);
-  if(!urls.length){toast('Enter at least one image URL');return;}
-  if(!STAY_PHOTOS[id]||replace)STAY_PHOTOS[id]=[];
-  STAY_PHOTOS[id]=[...STAY_PHOTOS[id],...urls];
-  try{localStorage.setItem('pp_stay_photos',JSON.stringify(STAY_PHOTOS));}catch(e){}
+  const rawUrls=(document.getElementById('stayPhotoUrls').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if(!rawUrls.length){toast('Enter at least one image URL');return;}
+  toast('Checking '+rawUrls.length+' photo link'+(rawUrls.length!==1?'s':'')+'…');
+  const results=await validateImageUrls(rawUrls);
+  const urls=results.filter(r=>r.ok).map(r=>r.url);
+  const bad=results.filter(r=>!r.ok);
+  if(!urls.length){
+    toast('⚠️ None of those links loaded as images — '+(bad[0]?.reason||'check the URLs and try again'));
+    return;
+  }
+  const s=STAYS.find(x=>x.id===id);
+  const existing=(s&&s.photos)||[];
+  const finalPhotos=replace?urls:[...existing,...urls];
+  const {error}=await _sb.from('stays').update({photos:finalPhotos}).eq('id',id);
+  if(error){toast('Error saving photos: '+error.message);return;}
+  if(s) s.photos=finalPhotos;
   document.getElementById('stayPhotoUrls').value='';
   renderStays();
   previewStayPhotos();
-  toast(`✓ ${urls.length} photo${urls.length!==1?'s':''} ${replace?'set':'added'} for this stay`);
+  if(bad.length){
+    toast(`✓ ${urls.length} photo${urls.length!==1?'s':''} saved · ⚠️ ${bad.length} skipped — ${bad[0].reason}`);
+  } else {
+    toast(`✓ ${urls.length} photo${urls.length!==1?'s':''} ${replace?'set':'added'} for this stay — live for everyone now`);
+  }
 }
-function removeStayPhoto(id,idx){
-  if(!STAY_PHOTOS[id])STAY_PHOTOS[id]=[...( DEMO_STAY_PHOTOS[id]||[])];
-  STAY_PHOTOS[id].splice(idx,1);
-  try{localStorage.setItem('pp_stay_photos',JSON.stringify(STAY_PHOTOS));}catch(e){}
+async function removeStayPhoto(id,idx){
+  const s=STAYS.find(x=>x.id===id);
+  const current=[...getStayPhotos(id)];
+  current.splice(idx,1);
+  const {error}=await _sb.from('stays').update({photos:current}).eq('id',id);
+  if(error){toast('Error removing photo: '+error.message);return;}
+  if(s) s.photos=current;
   renderStays();
   previewStayPhotos();
 }
-function clearStayPhotos(){
+async function clearStayPhotos(){
   const id=parseInt(document.getElementById('stayPhotoSel').value);
   if(!id){toast('Select a stay first');return;}
   if(!confirm('Clear all photos for this stay?'))return;
-  STAY_PHOTOS[id]=[];
-  try{localStorage.setItem('pp_stay_photos',JSON.stringify(STAY_PHOTOS));}catch(e){}
+  const {error}=await _sb.from('stays').update({photos:[]}).eq('id',id);
+  if(error){toast('Error: '+error.message);return;}
+  const s=STAYS.find(x=>x.id===id);
+  if(s) s.photos=[];
   renderStays();
   previewStayPhotos();
-  toast('Photos cleared');
+  toast('Photos cleared — live for everyone now');
 }
 // ═══ ADMIN — STAYS CRUD ═══
 async function adminSaveStay(){
@@ -4596,6 +4700,7 @@ async function adminSaveStay(){
   const placeid=parseInt(document.getElementById('sPlaceid')?.value||'0')||0;
   const eco=document.getElementById('sEco')?.checked||false;
   const emoji=(document.getElementById('sEmoji')?.value||'🏡').trim()||'🏡';
+  const status=document.getElementById('sStatus')?.value||'active';
 
   if(!name){toast('Property name is required');return;}
   if(!loc){toast('Location is required');return;}
@@ -4607,14 +4712,14 @@ async function adminSaveStay(){
 
   if(editId){
     const id=parseInt(editId);
-    const {error}=await _sb.from('stays').update({name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,emoji}).eq('id',id);
+    const {error}=await _sb.from('stays').update({name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,emoji,status}).eq('id',id);
     if(error){toast('Error updating stay: '+error.message);return;}
     const idx=STAYS.findIndex(s=>s.id===id);
-    if(idx>=0) STAYS[idx]={...STAYS[idx],name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,emoji};
+    if(idx>=0) STAYS[idx]={...STAYS[idx],name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,emoji,status};
     toast('Stay updated: '+name+' ✓');
   } else {
     const newColor=colors[STAYS.length%colors.length];
-    const {data,error}=await _sb.from('stays').insert({name,loc,type,eco,pn,price,rating:String(rating),emoji,color:newColor,contact,nights:2,placeid}).select().single();
+    const {data,error}=await _sb.from('stays').insert({name,loc,type,eco,pn,price,rating:String(rating),emoji,color:newColor,contact,nights:2,placeid,status}).select().single();
     if(error){toast('Error adding stay: '+error.message);return;}
     STAYS.push(data);
     toast('Stay added: '+name+' ✓');
@@ -4636,6 +4741,7 @@ function adminEditStay(id){
   document.getElementById('sPlaceid').value=s.placeid||'';
   document.getElementById('sEco').checked=!!s.eco;
   document.getElementById('sEmoji').value=s.emoji||'🏡';
+  document.getElementById('sStatus').value=s.status||'active';
   document.getElementById('stayFormTitle').textContent='Edit Stay — '+s.name;
   document.getElementById('staySubmitBtn').textContent='💾 Save Changes';
   document.getElementById('stayCancelBtn').style.display='inline-flex';
@@ -4658,6 +4764,7 @@ function adminCancelEditStay(){
   document.getElementById('sPlaceid').value='';
   document.getElementById('sEco').checked=false;
   document.getElementById('sEmoji').value='🏡';
+  document.getElementById('sStatus').value='active';
   document.getElementById('stayFormTitle').textContent='Add New Stay';
   document.getElementById('staySubmitBtn').textContent='+ Add Stay';
   document.getElementById('stayCancelBtn').style.display='none';
@@ -4851,6 +4958,54 @@ async function adminRejectPin(id){
   if(!confirm('Remove this pin?'))return;
   await _sb.from('community_pins').delete().eq('id',id);
   toast('Pin removed');
+  adTab('pins',document.querySelector('.adm-ni[onclick*="pins"]'));
+  loadCommunityPins();
+}
+
+// ═══ ADMIN — EDIT COMMUNITY PIN (name, type, description, coordinates, photos) ═══
+function adminEditPin(id){
+  const pin=(window._pinsCache&&window._pinsCache[id])||null;
+  if(!pin){toast('Pin data not loaded — reopen the Community Pins tab and try again');return;}
+  document.getElementById('epId').value=pin.id;
+  document.getElementById('epName').value=pin.name||'';
+  document.getElementById('epType').value=pin.type||'viewpoint';
+  document.getElementById('epDesc').value=pin.description||'';
+  document.getElementById('epLat').value=pin.lat;
+  document.getElementById('epLng').value=pin.lng;
+  document.getElementById('epPhotos').value=(pin.photos||[]).join(', ');
+  document.getElementById('epStatus').value=pin.status||'pending';
+  const mo=document.getElementById('editPinMo');
+  mo.style.display='flex'; mo.classList.add('open');
+}
+
+function editPinUseMapCenter(){
+  if(!_lmap){toast('Open the live map first (Map tab on the site) so a center point is available');return;}
+  const c=_lmap.getCenter();
+  document.getElementById('epLat').value=c.lat.toFixed(6);
+  document.getElementById('epLng').value=c.lng.toFixed(6);
+  toast('✓ Coordinates set to current map center');
+}
+
+async function adminSavePinEdit(){
+  const id=document.getElementById('epId').value;
+  const name=(document.getElementById('epName').value||'').trim();
+  const type=document.getElementById('epType').value;
+  const description=(document.getElementById('epDesc').value||'').trim();
+  const lat=parseFloat(document.getElementById('epLat').value);
+  const lng=parseFloat(document.getElementById('epLng').value);
+  const status=document.getElementById('epStatus').value;
+  const photos=(document.getElementById('epPhotos').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+
+  if(!name){toast('Name is required');return;}
+  if(isNaN(lat)||isNaN(lng)){toast('Latitude and longitude must be valid numbers');return;}
+  if(lat<29||lat>34||lng<74||lng>80){toast('Coordinates look outside Himachal Pradesh — double check before saving');return;}
+
+  const {error}=await _sb.from('community_pins').update({name,type,description,lat,lng,status,photos}).eq('id',id);
+  if(error){toast('Error saving: '+error.message);return;}
+
+  document.getElementById('editPinMo').classList.remove('open');
+  document.getElementById('editPinMo').style.display='none';
+  toast('✓ Pin updated');
   adTab('pins',document.querySelector('.adm-ni[onclick*="pins"]'));
   loadCommunityPins();
 }
@@ -5315,6 +5470,42 @@ function getNights() {
   return Math.max(1, Math.round(diff));
 }
 
+// ═══ DATE-RANGE CONFLICT CHECK ═══
+// Prevents two guests from booking the same stay for overlapping dates.
+// Fails open (doesn't block) if the checkin_date/checkout_date/stay_id columns
+// haven't been added to the bookings table yet — see migration note.
+async function checkDateAvailability(stayId, pricePerNight){
+  const warnEl=document.getElementById('dateAvailWarning');
+  const payBtn=document.getElementById('payBtn');
+  if(!warnEl) return true;
+  const ci=document.getElementById('ciD')?.value;
+  const co=document.getElementById('coD')?.value;
+  if(!ci||!co||!stayId){warnEl.style.display='none';return true;}
+  try{
+    const {data,error}=await _sb.from('bookings').select('id,checkin_date,checkout_date')
+      .eq('stay_id',stayId).eq('status','confirmed')
+      .lt('checkin_date',co).gt('checkout_date',ci);
+    if(error){
+      // Migration not run yet — don't block bookings, just skip the check silently
+      warnEl.style.display='none';
+      if(payBtn){payBtn.disabled=false;payBtn.style.opacity='';payBtn.style.cursor='';}
+      return true;
+    }
+    if(data && data.length){
+      warnEl.innerHTML='⚠️ This stay already has a confirmed booking for these dates. Please pick different dates, or <a href="#" onclick="event.preventDefault();waBookCurrent()" style="color:#9b2020;text-decoration:underline">message the host directly</a>.';
+      warnEl.style.display='block';
+      if(payBtn){payBtn.disabled=true;payBtn.style.opacity='.5';payBtn.style.cursor='not-allowed';}
+      return false;
+    }
+    warnEl.style.display='none';
+    if(payBtn){payBtn.disabled=false;payBtn.style.opacity='';payBtn.style.cursor='';}
+    return true;
+  }catch(e){
+    warnEl.style.display='none';
+    return true;
+  }
+}
+
 function recalcBooking(pricePerNight) {
   const nights = getNights();
   const guests = parseInt((document.getElementById('gGuests') ? document.getElementById('gGuests').value : 1) || 1);
@@ -5477,6 +5668,17 @@ async function processPayment() {
     return;
   }
 
+  // Final availability check — re-verify right before payment to close the race-condition
+  // window where two guests could both pass the earlier check and both try to pay.
+  const stayIdForCheck = curBooking ? curBooking.id : null;
+  if (stayIdForCheck) {
+    const stillAvailable = await checkDateAvailability(stayIdForCheck, curBooking.pn);
+    if (!stillAvailable) {
+      toast('These dates were just booked by someone else — please pick different dates');
+      return;
+    }
+  }
+
   const total = window._bookingTotal || 0;
   const ref = 'PP' + Date.now().toString().slice(-6);
   const ci = (document.getElementById('ciD') ? document.getElementById('ciD').value : '');
@@ -5494,8 +5696,11 @@ async function processPayment() {
     guest: name,
     guest_phone: phone,
     guest_email: email||null,
+    stay_id: stayObj ? stayObj.id : null,
     stay_name: (stayObj ? stayObj.name : '') || 'Stay',
     dates: ciStr + ' – ' + coStr,
+    checkin_date: ci||null,
+    checkout_date: co||null,
     amount: '₹' + (total || '—').toLocaleString(),
     eco: eco.included,
     eco_amount: eco.amount||0,
@@ -5690,8 +5895,9 @@ function shareEpass(ref, guestName, stayName, ci, co) {
 }
 
 // ═══ STAY PHOTOS ═══
-// Per-stay photos stored by stay id. Admin can add URLs; users can add their own.
-let STAY_PHOTOS = (function(){try{return JSON.parse(localStorage.getItem('pp_stay_photos')||'{}')}catch(e){return {}}})();
+// Per-stay photos now stored in Supabase (stays.photos jsonb column) — see
+// getStayPhotos/saveStayPhotos below. DEMO_STAY_PHOTOS is just a visual
+// fallback for stays that haven't had real photos added yet.
 
 // Seed demo photos for each stay using reliable Unsplash nature/cabin images
 const DEMO_STAY_PHOTOS = {
@@ -5708,7 +5914,7 @@ const DEMO_STAY_PHOTOS = {
   11:['https://images.unsplash.com/photo-1518639192441-8fce0a366e2e?w=800','https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=800','https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800'],
   12:['https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?w=800','https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800','https://images.unsplash.com/photo-1502126324834-38f8e02d7160?w=800'],
 };
-function getStayPhotos(id){return (STAY_PHOTOS[id]&&STAY_PHOTOS[id].length)?STAY_PHOTOS[id]:(DEMO_STAY_PHOTOS[id]||[]);}
+function getStayPhotos(id){const s=STAYS.find(x=>x.id===id);return (s&&s.photos&&s.photos.length)?s.photos:(DEMO_STAY_PHOTOS[id]||[]);}
 
 // ═══ GOOD TRAVELLER SCORE ═══
 const TRAVELLER_TITLES=[
@@ -5852,6 +6058,51 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
       📍 Pin will be placed at your selected location on the map. Photos can be added after approval by the community.
     </div>
     <button onclick="submitCommunityPin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit for Review ✓</button>
+  </div>
+</div>
+
+<!-- ADMIN — EDIT COMMUNITY PIN MODAL -->
+<div id="editPinMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:480px">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('editPinMo').classList.remove('open');document.getElementById('editPinMo').style.display='none'">✕</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:36px;margin-bottom:8px">✏️</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">Edit Pin</div>
+      <p style="font-size:13px;color:var(--stone);margin-top:6px">Update details, coordinates, or photos for this community pin.</p>
+    </div>
+    <input type="hidden" id="epId"/>
+    <div class="fg"><label>Place Name *</label><input class="fi" id="epName" placeholder="Place name"/></div>
+    <div class="fg"><label>Category *</label>
+      <select class="fi" id="epType">
+        <option value="viewpoint">🌅 Viewpoint</option>
+        <option value="waterfall">🌊 Waterfall</option>
+        <option value="parking">🅿️ Parking</option>
+        <option value="dhaba">🍽️ Dhaba / Food</option>
+        <option value="temple">🛕 Temple / Monastery</option>
+        <option value="campsite">🏕️ Campsite</option>
+        <option value="petrol">⛽ Petrol Pump</option>
+        <option value="medical">🏥 Medical / Emergency</option>
+        <option value="atm">🏧 ATM</option>
+        <option value="network">📡 Network Spot</option>
+        <option value="road_alert">⚠️ Road Alert</option>
+        <option value="glacier">🧊 Glacier / Snow Point</option>
+        <option value="shop">🏪 Shop / Market</option>
+      </select>
+    </div>
+    <div class="fg"><label>Description</label><textarea class="fi" id="epDesc" rows="3" placeholder="What makes this place special?"></textarea></div>
+    <div class="fg-row">
+      <div class="fg"><label>Latitude *</label><input class="fi" id="epLat" type="number" step="0.000001" placeholder="e.g. 31.9"/></div>
+      <div class="fg"><label>Longitude *</label><input class="fi" id="epLng" type="number" step="0.000001" placeholder="e.g. 77.2"/></div>
+    </div>
+    <button onclick="editPinUseMapCenter()" style="width:100%;padding:9px;background:#f0f6f2;color:var(--pine);border:1.5px dashed rgba(74,124,95,.3);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb);margin-bottom:14px">📌 Use current map center as coordinates</button>
+    <div class="fg"><label>Photo URLs <span style="font-weight:400;color:var(--stone)">(comma separated)</span></label><textarea class="fi" id="epPhotos" rows="2" placeholder="https://..., https://..."></textarea></div>
+    <div class="fg"><label>Status</label>
+      <select class="fi" id="epStatus">
+        <option value="pending">⏳ Pending review</option>
+        <option value="approved">✅ Approved (live on map)</option>
+      </select>
+    </div>
+    <button onclick="adminSavePinEdit()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Save Changes ✓</button>
   </div>
 </div>
 
