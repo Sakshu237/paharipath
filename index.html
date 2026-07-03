@@ -891,6 +891,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 </footer>
 </div>
 <div style="margin-top:10px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+  <a href="/blog" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Blog</a>
   <a href="#" onclick="showPrivacy()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Privacy Policy</a>
   <a href="#" onclick="showTerms()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Terms of Service</a>
   <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
@@ -1006,6 +1007,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="adm-ni" onclick="adTab('pins',this)">📍 Community Pins</div>
       <div class="adm-ni" onclick="adTab('corrections',this)">🛠️ Location Fixes</div>
       <div class="adm-ni" onclick="adTab('profiles',this)">🏅 Traveller Profiles</div>
+      <div class="adm-ni" onclick="adTab('blog',this)">📝 Blog</div>
       <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:10px">
         <div class="adm-ni" onclick="setView('home')">← Back to Site</div>
         <div class="adm-ni" onclick="adminLogout()" style="color:#f08080;margin-top:4px">🔓 Sign Out</div>
@@ -1632,6 +1634,16 @@ async function ppInit(){
   const {data:{session}}=await _sb.auth.getSession();
   if(session){ adminLoggedIn=true; await loadBookings(); }
   renderAll();
+
+  // Deep-link support: /?openPlace=123 (used by /destination/:slug landing pages
+  // and shared links) opens that destination's detail view directly.
+  try{
+    const params=new URLSearchParams(location.search);
+    const openId=parseInt(params.get('openPlace')||'0');
+    if(openId){
+      setTimeout(()=>{ if(typeof openPD==='function') openPD(openId); },400);
+    }
+  }catch(e){}
 }
 
 // ═══ TRAVELLER PROFILE LOOKUP ═══
@@ -4652,7 +4664,121 @@ function adTab(tab,el){
       <div id="allProfilesTable"><div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">Loading…</div></div>
     </div>`;
     setTimeout(loadAllProfiles, 80);
+  }else if(tab==='blog'){
+    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">📝 Blog</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px;line-height:1.7">Posts publish to real, Google-indexable pages at <strong>paharipath.in/blog/your-post-slug</strong> — separate from the main app, built for search traffic. Write in plain paragraphs; leave a blank line between paragraphs.</p>
+    <div class="adm-panel">
+      <h3 id="blogFormTitle">Write New Post</h3>
+      <input type="hidden" id="editBlogId" value=""/>
+      <div class="fg"><label>Title</label><input class="ai" id="bTitle" placeholder="e.g. Best Time to Visit Spiti Valley" oninput="autoSlugBlog()"/></div>
+      <div class="fg"><label>URL Slug <span style="font-weight:400;color:var(--stone)">(auto-generated, editable)</span></label><input class="ai" id="bSlug" placeholder="best-time-to-visit-spiti-valley"/></div>
+      <div class="fg"><label>Excerpt <span style="font-weight:400;color:var(--stone)">(shown in Google search results — keep under 155 characters)</span></label><textarea class="ai" id="bExcerpt" rows="2" maxlength="160" placeholder="One or two sentences that make someone want to click"></textarea></div>
+      <div class="fg"><label>Cover Image URL <span style="font-weight:400;color:var(--stone)">(optional — use the direct image link, not a page link)</span></label><input class="ai" id="bCover" placeholder="https://images.unsplash.com/photo-..."/></div>
+      <div class="fg"><label>Content</label><textarea class="ai" id="bContent" rows="14" placeholder="Write your post here. Leave a blank line between paragraphs." style="font-family:var(--fb);line-height:1.6"></textarea></div>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <button class="ab" id="blogSaveDraftBtn" style="background:#f4f5f2;color:var(--stone);border:1px solid #ddd" onclick="adminSaveBlogPost('draft')">Save as Draft</button>
+        <button class="ab ab-p" id="blogPublishBtn" onclick="adminSaveBlogPost('published')">Publish ✓</button>
+        <button class="ab" id="blogCancelBtn" style="display:none;background:#fee;color:#c0392b;border:1px solid #fcc" onclick="adminCancelEditBlog()">Cancel Edit</button>
+      </div>
+    </div>
+    <div class="adm-panel"><h3>All Posts</h3><div id="blogPostsList"><div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">Loading…</div></div></div>`;
+    loadAdminBlogPosts();
   }
+}
+
+// ═══ BLOG ═══
+function autoSlugBlog(){
+  const editing=document.getElementById('editBlogId')?.value;
+  if(editing) return; // don't auto-rewrite the slug once editing an existing post
+  const title=document.getElementById('bTitle')?.value||'';
+  const slug=title.toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  const slugEl=document.getElementById('bSlug');
+  if(slugEl) slugEl.value=slug;
+}
+
+async function loadAdminBlogPosts(){
+  const el=document.getElementById('blogPostsList');
+  if(!el) return;
+  const {data,error}=await _sb.from('blog_posts').select('*').order('created_at',{ascending:false});
+  if(error){el.innerHTML=`<div style="padding:20px;color:#c0392b;font-size:13px">Error loading posts: ${error.message}<br><span style="color:var(--stone);font-weight:400">Make sure the blog_posts table has been created in Supabase — see setup instructions.</span></div>`;return;}
+  if(!data||!data.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">No posts yet — write your first one above.</div>';return;}
+  el.innerHTML=`<div class="bk-list">${data.map(p=>`
+    <div class="bk-item">
+      <div>
+        <div class="bk-n">${p.title}</div>
+        <div class="bk-m">/blog/${p.slug} · ${p.status==='published'?'Published '+(p.published_at?new Date(p.published_at).toLocaleDateString('en-IN'):''):'Draft'}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <span class="bst ${p.status==='published'?'bs-c':'bs-p'}">${p.status}</span>
+        ${p.status==='published'?`<a href="https://paharipath.in/blog/${p.slug}" target="_blank" style="font-size:11px;color:var(--pine);text-decoration:underline">View live</a>`:''}
+        <button class="ab ab-p" style="font-size:11px;padding:5px 10px" onclick="adminEditBlogPost('${p.id}')">✏️ Edit</button>
+        <button class="ab ab-d" style="font-size:11px;padding:5px 10px" onclick="adminDeleteBlogPost('${p.id}')">🗑 Delete</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+async function adminSaveBlogPost(status){
+  const editId=document.getElementById('editBlogId')?.value;
+  const title=(document.getElementById('bTitle')?.value||'').trim();
+  const slug=(document.getElementById('bSlug')?.value||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+  const excerpt=(document.getElementById('bExcerpt')?.value||'').trim();
+  const cover_image=(document.getElementById('bCover')?.value||'').trim();
+  const content=(document.getElementById('bContent')?.value||'').trim();
+
+  if(!title){toast('Title is required');return;}
+  if(!slug){toast('URL slug is required');return;}
+  if(!content){toast('Write some content before saving');return;}
+
+  const payload={title,slug,excerpt,cover_image:cover_image||null,content,status};
+  if(status==='published') payload.published_at=new Date().toISOString();
+
+  if(editId){
+    const {error}=await _sb.from('blog_posts').update(payload).eq('id',editId);
+    if(error){toast('Error: '+error.message);return;}
+    toast(status==='published'?'✓ Post published — live at paharipath.in/blog/'+slug:'✓ Draft saved');
+  } else {
+    const {error}=await _sb.from('blog_posts').insert(payload);
+    if(error){
+      if(error.message&&error.message.includes('duplicate')){toast('That URL slug is already used by another post — pick a different one');return;}
+      toast('Error: '+error.message);return;
+    }
+    toast(status==='published'?'✓ Post published — live at paharipath.in/blog/'+slug:'✓ Draft saved');
+  }
+  adminCancelEditBlog();
+  loadAdminBlogPosts();
+}
+
+async function adminEditBlogPost(id){
+  const {data,error}=await _sb.from('blog_posts').select('*').eq('id',id).maybeSingle();
+  if(error||!data){toast('Could not load post');return;}
+  document.getElementById('editBlogId').value=id;
+  document.getElementById('bTitle').value=data.title||'';
+  document.getElementById('bSlug').value=data.slug||'';
+  document.getElementById('bExcerpt').value=data.excerpt||'';
+  document.getElementById('bCover').value=data.cover_image||'';
+  document.getElementById('bContent').value=data.content||'';
+  document.getElementById('blogFormTitle').textContent='Editing — '+data.title;
+  document.getElementById('blogCancelBtn').style.display='inline-flex';
+  document.getElementById('adMain').scrollTo({top:0,behavior:'smooth'});
+}
+
+function adminCancelEditBlog(){
+  document.getElementById('editBlogId').value='';
+  document.getElementById('bTitle').value='';
+  document.getElementById('bSlug').value='';
+  document.getElementById('bExcerpt').value='';
+  document.getElementById('bCover').value='';
+  document.getElementById('bContent').value='';
+  document.getElementById('blogFormTitle').textContent='Write New Post';
+  document.getElementById('blogCancelBtn').style.display='none';
+}
+
+async function adminDeleteBlogPost(id){
+  if(!confirm('Delete this post permanently?'))return;
+  const {error}=await _sb.from('blog_posts').delete().eq('id',id);
+  if(error){toast('Error: '+error.message);return;}
+  toast('Post deleted');
+  loadAdminBlogPosts();
 }
 function previewStayPhotos(){
   const id=parseInt(document.getElementById('stayPhotoSel').value);
@@ -5194,10 +5320,19 @@ function closeMobMenu(){
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('mobDrawer').classList.contains('open'))closeMobMenu();});
 
 // ═══ WHATSAPP PLACE SHARE ═══
+function slugifyName(name){
+  return String(name||'').toLowerCase()
+    .replace(/&/g,'and')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'');
+}
 function waSharePlace(id,name){
-  // Build share URL without history API (works in sandboxed iframes)
-  const base=location.href.split('#')[0].split('?')[0];
-  const txt=encodeURIComponent('Check out '+name+' on PahariPath 🏔️ — '+base);
+  // Share the real destination URL (indexable page) instead of just the homepage —
+  // gives a proper link preview and helps that destination's page get discovered.
+  const p=ALL.find(x=>x.id===id);
+  const slug=p?p.slug||slugifyName(p.name):slugifyName(name);
+  const url='https://paharipath.in/destination/'+slug;
+  const txt=encodeURIComponent('Check out '+name+' on PahariPath 🏔️ — '+url);
   window.open('https://wa.me/?text='+txt,'_blank');
 }
 
