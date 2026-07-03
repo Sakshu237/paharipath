@@ -25,6 +25,32 @@
 <meta name="twitter:description" content="Live crowd tracking for 146+ HP destinations. Find quiet valleys and book local stays."/>
 <meta name="twitter:image" content="https://paharipath.in/og-image.jpg"/>
 <link rel="canonical" href="https://paharipath.in/"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "PahariPath",
+  "url": "https://paharipath.in",
+  "logo": "https://paharipath.in/icon-192.png",
+  "description": "Responsible travel discovery and booking platform for Himachal Pradesh — 146+ offbeat destinations with live crowd tracking and direct local homestay bookings.",
+  "email": "hello@paharipath.in",
+  "areaServed": {
+    "@type": "State",
+    "name": "Himachal Pradesh",
+    "containedInPlace": { "@type": "Country", "name": "India" }
+  },
+  "sameAs": []
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "PahariPath",
+  "url": "https://paharipath.in",
+  "description": "Discover 146+ offbeat destinations in Himachal Pradesh with live crowd tracking. Book directly with local hosts."
+}
+</script>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1a3d2b"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -6181,33 +6207,90 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
 
 <!-- PRIVACY POLICY MODAL -->
 <div id="privacyMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
-  <div class="mo-box" style="max-width:600px;max-height:80vh;overflow-y:auto">
+  <div class="mo-box" style="max-width:640px;max-height:82vh;overflow-y:auto">
     <button class="mo-x" onclick="document.getElementById('privacyMo').classList.remove('open');document.getElementById('privacyMo').style.display='none'">✕</button>
-    <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:16px">Privacy Policy</h2>
-    <div style="font-size:13px;color:var(--stone);line-height:1.8">
-      <p><strong>Last updated:</strong> June 2026</p>
-      <p><strong>What we collect:</strong> When you make a booking, we collect your name, phone number, and email to process the reservation and contact you. We do not store payment card details.</p>
-      <p><strong>Analytics:</strong> We use Plausible Analytics — a privacy-first tool that does not use cookies, does not track individuals, and does not share data with third parties.</p>
-      <p><strong>Your data:</strong> Your booking data is stored securely in our database. We do not sell your data. You can request deletion at any time by emailing hello@paharipath.in.</p>
-      <p><strong>Cookies:</strong> We use minimal cookies for session management only. No advertising cookies.</p>
-      <p><strong>Contact:</strong> hello@paharipath.in | PahariPath, Himachal Pradesh, India</p>
+    <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:4px">Privacy Policy</h2>
+    <p style="font-size:11px;color:var(--stone);margin-bottom:18px">Last updated: July 2026 · Applies to paharipath.in and the PahariPath platform</p>
+    <div style="font-size:13px;color:var(--stone);line-height:1.85">
+      <p><strong>1. Who we are</strong><br>PahariPath ("we", "us") operates a travel discovery and booking platform for Himachal Pradesh, India. This policy explains what personal data we collect, why, and the rights you have over it under India's Digital Personal Data Protection Act, 2023 (DPDP Act).</p>
+
+      <p><strong>2. What we collect</strong></p>
+      <ul style="margin:0 0 12px 18px;padding:0">
+        <li>When you book a stay: name, phone number, email (optional), number of guests, check-in/check-out dates.</li>
+        <li>When you create a Traveller Profile: name, phone number, and activity history (bookings, eco offsets, pledges, PAHADI points).</li>
+        <li>When you register as a host: name, property details, phone number, email, and login credentials.</li>
+        <li>When you submit a Community Pin or report a location correction: the location itself, an optional description, and your name if you choose to provide it.</li>
+        <li>Payments: processed directly by Razorpay. We never see or store your card, UPI, or bank details — only the payment confirmation and amount.</li>
+        <li>Basic usage analytics via Plausible Analytics — a cookieless, privacy-first tool that does not track individuals or share data with third parties.</li>
+      </ul>
+
+      <p><strong>3. Why we collect it</strong><br>To process and confirm bookings, connect you with the host you're booking, operate the PAHADI traveller rewards system, respond to enquiries, maintain the accuracy of destination and map data, and improve the platform. We do not collect more than is needed for these purposes.</p>
+
+      <p><strong>4. Who we share it with</strong></p>
+      <ul style="margin:0 0 12px 18px;padding:0">
+        <li><strong>Razorpay</strong> (payment processing) — handles your payment details directly; governed by Razorpay's own privacy policy.</li>
+        <li><strong>Your host</strong> — when you book a stay, we share your name, phone number, and booking dates with that specific host so they can prepare for your visit.</li>
+        <li><strong>Supabase</strong> (our database and backend infrastructure provider) — stores platform data on our behalf under standard data-processing terms.</li>
+      </ul>
+      <p>We do not sell your personal data to anyone, ever.</p>
+
+      <p><strong>5. Cookies</strong><br>We use only minimal, functional cookies (e.g. remembering your cookie consent choice). Our analytics tool, Plausible, does not use cookies at all. We do not use advertising or third-party tracking cookies.</p>
+
+      <p><strong>6. Data retention</strong><br>We retain booking and traveller profile data for as long as your account is active or as needed to resolve disputes, comply with tax/accounting obligations, and maintain the PAHADI points history. You can request deletion at any time (see Section 8).</p>
+
+      <p><strong>7. Children's privacy</strong><br>PahariPath is not directed at children under 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us data, contact us and we'll remove it.</p>
+
+      <p><strong>8. Your rights</strong><br>Under the DPDP Act, you have the right to access, correct, or request deletion of your personal data, and to withdraw consent at any time. To exercise these rights, email <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a> with your registered phone number or email.</p>
+
+      <p><strong>9. Grievance Officer</strong><br>As required under Indian law, grievances relating to this policy can be directed to our Grievance Officer at <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a>. <em>[Founder: please designate a named Grievance Officer with contact details here before public launch — required under the DPDP Act.]</em></p>
+
+      <p><strong>10. Security</strong><br>Data is transmitted over encrypted connections (HTTPS) and stored with access controls on our database. No system is 100% secure, and we can't guarantee absolute security, but we take reasonable measures to protect your data.</p>
+
+      <p><strong>11. Changes to this policy</strong><br>We may update this policy as the platform evolves. Material changes will be reflected by updating the "Last updated" date above.</p>
+
+      <p><strong>12. Contact</strong><br>hello@paharipath.in · PahariPath, Himachal Pradesh, India</p>
+
+      <p style="font-size:11px;color:#999;margin-top:16px;padding-top:12px;border-top:1px solid #eee">This policy is provided as a starting point and has not been reviewed by a lawyer. Please have it reviewed by a qualified legal professional familiar with the DPDP Act before relying on it in production, especially the Grievance Officer designation in Section 9.</p>
     </div>
   </div>
 </div>
 
 <!-- TERMS OF SERVICE MODAL -->
 <div id="termsMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
-  <div class="mo-box" style="max-width:600px;max-height:80vh;overflow-y:auto">
+  <div class="mo-box" style="max-width:640px;max-height:82vh;overflow-y:auto">
     <button class="mo-x" onclick="document.getElementById('termsMo').classList.remove('open');document.getElementById('termsMo').style.display='none'">✕</button>
-    <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:16px">Terms of Service</h2>
-    <div style="font-size:13px;color:var(--stone);line-height:1.8">
-      <p><strong>Last updated:</strong> June 2026</p>
-      <p><strong>Platform:</strong> PahariPath is a travel discovery and booking platform for Himachal Pradesh. We connect travellers with local homestay hosts.</p>
-      <p><strong>Bookings:</strong> Bookings are confirmed subject to host availability. Payment is processed securely. Cancellation policies are set by individual hosts.</p>
-      <p><strong>Crowd data:</strong> Crowd levels shown are estimates based on historical data and admin overrides. They are indicative, not guaranteed.</p>
-      <p><strong>Eco pledges:</strong> Eco pledges are voluntary commitments. PahariPath is not liable for enforcement.</p>
-      <p><strong>Liability:</strong> PahariPath is not liable for cancellations, weather conditions, road closures, or any loss during travel.</p>
-      <p><strong>Contact:</strong> hello@paharipath.in</p>
+    <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:4px">Terms of Service</h2>
+    <p style="font-size:11px;color:var(--stone);margin-bottom:18px">Last updated: July 2026</p>
+    <div style="font-size:13px;color:var(--stone);line-height:1.85">
+      <p><strong>1. About PahariPath</strong><br>PahariPath is a discovery and booking marketplace connecting travellers with independent local hosts across Himachal Pradesh. We are an intermediary platform — the actual accommodation contract is between you and the host, not with PahariPath.</p>
+
+      <p><strong>2. Eligibility</strong><br>You must be at least 18 years old to make a booking or register as a host on PahariPath.</p>
+
+      <p><strong>3. Bookings & payment</strong><br>Bookings are confirmed once payment is completed via Razorpay and the host has been notified. Prices shown include a 5% GST component, applied at checkout. Cancellations made more than 48 hours before check-in are eligible for a free cancellation; cancellation terms within 48 hours of check-in are at the host's discretion — contact the host directly via the number provided in your booking confirmation.</p>
+
+      <p><strong>4. Carbon offset contributions</strong><br>Carbon offset amounts added at checkout are voluntary contributions passed toward tree-planting initiatives via our conservation partner. They are non-refundable once a booking is confirmed.</p>
+
+      <p><strong>5. Eco Permits</strong><br>Eco Permits for sensitive zones (e.g. Spiti, Parvati, Pin Valley) are date-specific, non-transferable, and non-refundable once issued. 70% of the permit fee is directed to local conservation efforts.</p>
+
+      <p><strong>6. PAHADI Traveller Points</strong><br>PAHADI points, tiers, and badges are a loyalty and recognition system with no cash value and cannot be redeemed, transferred, or sold. We may adjust the points system, thresholds, or rewards at any time.</p>
+
+      <p><strong>7. Crowd data & forecasts</strong><br>Live crowd levels, weekly forecasts, and weather/road-safety guidance are estimates based on historical patterns, seasonal data, and host-submitted updates. They are indicative only, not a guarantee of actual conditions — always verify road and weather conditions independently before travelling to remote or high-altitude areas.</p>
+
+      <p><strong>8. Community-submitted content</strong><br>Community Pins, location corrections, and reviews are user-submitted and reviewed by our team before appearing publicly. By submitting content, you grant PahariPath a non-exclusive right to display it on the platform. We may edit, reject, or remove submissions at our discretion.</p>
+
+      <p><strong>9. Host responsibilities</strong><br>Hosts are responsible for the accuracy of their listings, honoring confirmed bookings, complying with applicable local, state, and tax regulations (including any Himachal Pradesh tourism/homestay registration requirements), and maintaining safe accommodations.</p>
+
+      <p><strong>10. Prohibited conduct</strong><br>You agree not to misuse the platform, submit false information, attempt to circumvent bookings or payments outside the platform in bad faith, or engage in behavior that endangers hosts, guests, wildlife, or protected areas.</p>
+
+      <p><strong>11. Limitation of liability</strong><br>PahariPath facilitates bookings but is not liable for cancellations by hosts, weather conditions, road closures, natural disasters, or any loss, injury, or damage arising during your travel. Bookings in high-altitude or environmentally sensitive areas carry inherent risk — travel at your own discretion and judgment.</p>
+
+      <p><strong>12. Governing law</strong><br>These terms are governed by the laws of India. <em>[Founder: confirm the jurisdiction/courts you want specified here, typically your state of incorporation or principal place of business.]</em></p>
+
+      <p><strong>13. Changes to these terms</strong><br>We may update these terms as the platform evolves. Continued use of PahariPath after changes constitutes acceptance of the updated terms.</p>
+
+      <p><strong>14. Contact</strong><br>hello@paharipath.in</p>
+
+      <p style="font-size:11px;color:#999;margin-top:16px;padding-top:12px;border-top:1px solid #eee">These terms are a starting draft and have not been reviewed by a lawyer. Please have them reviewed by a qualified legal professional before public launch, particularly Sections 3 (refund/cancellation enforceability), 9 (host compliance obligations), and 12 (jurisdiction).</p>
     </div>
   </div>
 </div>
