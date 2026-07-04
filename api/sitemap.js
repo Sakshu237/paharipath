@@ -32,6 +32,7 @@ module.exports = async (req, res) => {
   const urls = [
     { loc: 'https://paharipath.in/', priority: '1.0', freq: 'weekly', lastmod: today },
     { loc: 'https://paharipath.in/blog', priority: '0.7', freq: 'weekly', lastmod: today },
+    { loc: 'https://paharipath.in/privacy-policy.html', priority: '0.3', freq: 'yearly', lastmod: today },
     ...places.map(p => ({
       loc: `https://paharipath.in/destination/${p.slug}`,
       priority: '0.8',
