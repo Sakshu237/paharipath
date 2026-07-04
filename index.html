@@ -336,7 +336,7 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .pg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
 .pc{background:#fff;border:1px solid rgba(74,124,95,.09);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s}
 .pc:hover{border-color:rgba(74,124,95,.28);box-shadow:0 12px 40px rgba(26,61,43,.1);transform:translateY(-4px)}
-.pc-img{height:165px;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative}
+.pc-img{height:165px;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;overflow:hidden}
 .pc-badge{position:absolute;top:10px;right:10px}
 .pc-body{padding:15px 18px}
 .pc-n{font-family:var(--fd);font-size:19px;font-weight:600;color:var(--ink)}
@@ -585,13 +585,14 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 </svg>
     <span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1a3d2b;letter-spacing:-0.5px">Pahari<span style="font-weight:400;color:#4a7c5f">Path</span></span>
   </div>
-  <ul class="nl">
+ <ul class="nl">
     <li><a onclick="goTo('crowd')">Crowd Meter</a></li>
     <li><a onclick="goTo('mapwrap')">Map</a></li>
     <li><a onclick="goTo('plansec')">Plan Trip</a></li>
     <li><a onclick="goTo('explore')">Explore</a></li>
     <li><a onclick="goTo('stays-bg')">Stays</a></li>
-    
+    <li><a href="/blog">Blog</a></li>
+   
   </ul>
   <div class="nr">
     <div class="lp"><div class="ld"></div> Live</div>
@@ -619,12 +620,13 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 </svg><span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1a3d2b;letter-spacing:-0.5px">Pahari<span style="font-weight:400;color:#4a7c5f">Path</span></span></div>
       <button class="mob-x" onclick="closeMobMenu()" aria-label="Close menu">✕</button>
     </div>
-    <div class="mob-links">
+   <div class="mob-links">
       <div class="mob-link" onclick="closeMobMenu();goTo('crowd')"><span class="ml-icon">🚦</span>Crowd Meter</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('mapwrap')"><span class="ml-icon">🗺️</span>Live Map</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('plansec')"><span class="ml-icon">🗓</span>Plan Trip</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('explore')"><span class="ml-icon">🏔️</span>Explore Places</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('stays-bg')"><span class="ml-icon">🏡</span>Find Stays</div>
+      <a href="/blog" class="mob-link" style="text-decoration:none"><span class="ml-icon">📝</span>Blog</a>
     </div>
     <div class="mob-footer">
       <button class="nb" onclick="closeMobMenu();goTo('stays-bg')" style="text-align:center">Find Stays →</button>
@@ -2402,7 +2404,7 @@ function renderPlaces(f){
     const c=getCrowd(p.crowd,p.zone);
     const saved=getSaved().includes(p.id);
     return `<div class="pc" onclick="openPD(${p.id})">
-      <div class="pc-img" style="background:${p.color}"><span>${p.emoji}</span>
+      <div class="pc-img" style="background:${p.color}">${(MEDIA[p.id]&&MEDIA[p.id].images&&MEDIA[p.id].images[0]) ? `<img src="${MEDIA[p.id].images[0]}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display='none'"/>` : `<span>${p.emoji}</span>`}
         <div class="pc-badge"><span class="cp ${pClass(c)}">${cLabel(c)}</span></div>
         <button class="save-btn ${saved?'saved':''}" onclick="event.stopPropagation();toggleSave(${p.id},'${p.name.replace(/'/g,"\'")}',this)">${saved?'❤️':'🤍'}</button>
       </div>
@@ -2443,7 +2445,7 @@ function plFilter(type, btn){
     const c=getCrowd(p.crowd,p.zone);
     const saved=getSaved().includes(p.id);
     return `<div class="pc" onclick="openPD(${p.id})">
-      <div class="pc-img" style="background:${p.color}"><span>${p.emoji}</span>
+      <div class="pc-img" style="background:${p.color}">${(MEDIA[p.id]&&MEDIA[p.id].images&&MEDIA[p.id].images[0]) ? `<img src="${MEDIA[p.id].images[0]}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display='none'"/>` : `<span>${p.emoji}</span>`}
         <div class="pc-badge"><span class="cp ${pClass(c)}">${cLabel(c)}</span></div>
         <button class="save-btn ${saved?'saved':''}" onclick="event.stopPropagation();toggleSave(${p.id},'${p.name.replace(/'/g,"\'")}',this)" title="${saved?'Unsave':'Save'}">${saved?'❤️':'🤍'}</button>
       </div>
@@ -2467,7 +2469,7 @@ function plFilter(type, btn){
       const c=getCrowd(p.crowd,p.zone);
       const saved=getSaved().includes(p.id);
       return `<div class="pc" onclick="openPD(${p.id})">
-        <div class="pc-img" style="background:${p.color}"><span>${p.emoji}</span>
+        <div class="pc-img" style="background:${p.color}">${(MEDIA[p.id]&&MEDIA[p.id].images&&MEDIA[p.id].images[0]) ? `<img src="${MEDIA[p.id].images[0]}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display='none'"/>` : `<span>${p.emoji}</span>`}
           <div class="pc-badge"><span class="cp ${pClass(c)}">${cLabel(c)}</span></div>
           <button class="save-btn ${saved?'saved':''}" onclick="event.stopPropagation();toggleSave(${p.id},'${p.name.replace(/'/g,"\'")}',this)">${saved?'❤️':'🤍'}</button>
         </div>
@@ -2794,7 +2796,7 @@ function fltrStays(btn){
     const c=getCrowd(p.crowd,p.zone);
     const matchedStays=STAYS.filter(s=>s.placeid===p.id);
     return `<div class="pc" onclick="openPD(${p.id})">
-      <div class="pc-img" style="background:${p.color}"><span>${p.emoji}</span>
+      <div class="pc-img" style="background:${p.color}">${(MEDIA[p.id]&&MEDIA[p.id].images&&MEDIA[p.id].images[0]) ? `<img src="${MEDIA[p.id].images[0]}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display='none'"/>` : `<span>${p.emoji}</span>`}
         <div class="pc-badge"><span class="cp ${pClass(c)}">${cLabel(c)}</span></div>
         <div style="position:absolute;top:10px;left:10px;background:#1e6b3c;color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px">🏡 ${matchedStays.length} stay${matchedStays.length>1?'s':''}</div>
       </div>
