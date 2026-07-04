@@ -4136,6 +4136,11 @@ function buildBookForm(s) {
     </div>
   </div>
 
+  <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#1a1a1a;cursor:pointer;margin-bottom:14px">
+    <input type="checkbox" id="privacyConsent" required style="accent-color:#1a3d2b;margin-top:2px;flex-shrink:0"/>
+    I have read and agree to the <a href="/privacy-policy.html" target="_blank" style="color:var(--pine);text-decoration:underline">Privacy Policy</a>
+  </label>
+
   <div class="pm-row">
     <span style="font-size:12px;color:var(--stone);font-weight:500">Pay via:</span>
     <span class="pm-tag act">📱 UPI</span>
@@ -5826,11 +5831,15 @@ async function processPayment() {
   // Eco pledge check
   const pledges = ['pledge1','pledge2','pledge3','pledge4'];
   const unchecked = pledges.filter(id => !(document.getElementById(id) ? document.getElementById(id).checked : false));
-  if (unchecked.length === 4) {
+ if (unchecked.length === 4) {
     toast('Please accept at least one responsible travel pledge to continue');
     return;
   }
 
+  if (!document.getElementById('privacyConsent') ? true : !document.getElementById('privacyConsent').checked) {
+    toast('Please accept the Privacy Policy to continue');
+    return;
+  }
   // Final availability check — re-verify right before payment to close the race-condition
   // window where two guests could both pass the earlier check and both try to pay.
   const stayIdForCheck = curBooking ? curBooking.id : null;
@@ -5870,6 +5879,8 @@ async function processPayment() {
     eco_trees: eco.trees||0,
     nights: nights,
     guests: parseInt((document.getElementById('gGuests')?document.getElementById('gGuests').value:1)||1),
+    privacy_consent: true,
+    privacy_consent_at: new Date().toISOString(),
     status: 'confirmed'
   };
 
