@@ -4136,9 +4136,13 @@ function buildBookForm(s) {
     </div>
   </div>
 
-  <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#1a1a1a;cursor:pointer;margin-bottom:14px">
+<label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#1a1a1a;cursor:pointer;margin-bottom:8px">
     <input type="checkbox" id="privacyConsent" required style="accent-color:#1a3d2b;margin-top:2px;flex-shrink:0"/>
     I have read and agree to the <a href="/privacy-policy.html" target="_blank" style="color:var(--pine);text-decoration:underline">Privacy Policy</a>
+  </label>
+  <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#1a1a1a;cursor:pointer;margin-bottom:14px">
+    <input type="checkbox" id="termsConsent" required style="accent-color:#1a3d2b;margin-top:2px;flex-shrink:0"/>
+    I have read and agree to the <a href="/terms-of-service.html" target="_blank" style="color:var(--pine);text-decoration:underline">Terms of Service</a>
   </label>
 
   <div class="pm-row">
@@ -5840,6 +5844,11 @@ async function processPayment() {
     toast('Please accept the Privacy Policy to continue');
     return;
   }
+
+  if (!document.getElementById('termsConsent') ? true : !document.getElementById('termsConsent').checked) {
+    toast('Please accept the Terms of Service to continue');
+    return;
+  }
   // Final availability check — re-verify right before payment to close the race-condition
   // window where two guests could both pass the earlier check and both try to pay.
   const stayIdForCheck = curBooking ? curBooking.id : null;
@@ -5878,9 +5887,11 @@ async function processPayment() {
     eco_amount: eco.amount||0,
     eco_trees: eco.trees||0,
     nights: nights,
-    guests: parseInt((document.getElementById('gGuests')?document.getElementById('gGuests').value:1)||1),
+   guests: parseInt((document.getElementById('gGuests')?document.getElementById('gGuests').value:1)||1),
     privacy_consent: true,
     privacy_consent_at: new Date().toISOString(),
+    terms_consent: true,
+    terms_consent_at: new Date().toISOString(),
     status: 'confirmed'
   };
 
