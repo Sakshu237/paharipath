@@ -4,7 +4,7 @@
 // full guide in the app" handoff that deep-links straight to that place's
 // detail view inside the main PahariPath single-page app.
 
-const places = require('../../data/places.json');
+const places = require('../../places.json');
 
 function escapeHtml(str) {
   if (str === undefined || str === null) return '';
