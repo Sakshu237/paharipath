@@ -3144,10 +3144,9 @@ function openPD(id){addRecentlyViewed(id);
   function setMain(html){mb.innerHTML=html;}
   if(!imgs.length&&!vids.length){setMain(`<span style="font-size:72px;opacity:.5">${p.emoji}</span>`);}
   else{
-    if(imgs[0])setMain(`<img src="${imgs[0]}" alt="${p.name}"/>`);
-    else if(vids[0]){const yi=ytEmbed(vids[0]);setMain(yi?`<iframe src="${yi}" allowfullscreen frameborder="0" style="width:100%;height:100%;border:none;position:absolute;inset:0"></iframe>`:`<span style="font-size:72px">${p.emoji}</span>`);}
-    imgs.forEach((src,i)=>{const t=document.createElement('img');t.className='pd-thumb'+(i===0?' act':'');t.src=src;t.onclick=()=>{setMain(`<img src="${src}" alt="${p.name}"/>`);tb.querySelectorAll('.pd-thumb,.pd-thumbv').forEach(x=>x.classList.remove('act'));t.classList.add('act');};tb.appendChild(t);});
-    vids.forEach((url,i)=>{const t=document.createElement('div');t.className='pd-thumbv'+(imgs.length===0&&i===0?' act':'');t.innerHTML='▶';t.onclick=()=>{const yi=ytEmbed(url,true);setMain(yi?`<iframe src="${yi}" allowfullscreen frameborder="0" style="width:100%;height:100%;border:none;position:absolute;inset:0"></iframe>`:`<video src="${url}" controls autoplay></video>`);tb.querySelectorAll('.pd-thumb,.pd-thumbv').forEach(x=>x.classList.remove('act'));t.classList.add('act');};tb.appendChild(t);});
+   if(imgs[0])setMain(`<img src="${imgs[0]}" alt="${p.name}"/>`);
+    else setMain(`<span style="font-size:72px">${p.emoji}</span>`);
+    imgs.forEach((src,i)=>{const t=document.createElement('img');t.className='pd-thumb'+(i===0?' act':'');t.src=src;t.onclick=()=>{setMain(`<img src="${src}" alt="${p.name}"/>`);tb.querySelectorAll('.pd-thumb').forEach(x=>x.classList.remove('act'));t.classList.add('act');};tb.appendChild(t);});
   }
   // Videos section
   const vg=document.getElementById('pdvids'),ve=document.getElementById('pdvid-empty');
