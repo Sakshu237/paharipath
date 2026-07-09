@@ -5906,13 +5906,22 @@ async function processPayment() {
     _sb.from('traveller_scores').upsert({user_key:_tsKey(phone),guest_name:name,phone_hint:phone},{onConflict:'user_key'}).then(({error})=>{
       if(error) console.warn('Name save error:',error.message);
     });
-    BOOKINGS.unshift({...bookingRow, stay: bookingRow.stay_name});
-    await loadTravellerScore(phone);
-  const scoreResult = await awardPoints({
-    ref, nights, stay: stayObj ? stayObj.name : '',
-    eco: eco.included, pledges: pledgesAccepted,
-    offbeat: isOffbeat, phone, guestName: name
-  });
+  BOOKINGS.unshift({...bookingRow, stay: bookingRow.stay_name});
+
+  // Points are now awarded server-side via /api/award-points, which
+  // verifies a real confirmed booking exists before crediting anything —
+  // the browser can no longer write points directly.
+  const awardRes = await fetch('/api/award-points', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ bookingRef: ref })
+  }).then(r=>r.json()).catch(e=>({error: e.message}));
+
+  if(awardRes.error) console.warn('Points award error:', awardRes.error);
+
+  await loadTravellerScore(phone);
+  const ts = getTravellerScore();
+  const scoreResult = { pts: awardRes.awarded || 0, reasons: awardRes.reasons || [], total: ts.points, ts };
   const tsBefore = scoreResult.total - scoreResult.pts;
   const tsNow = scoreResult.total;
   const prevTitle = getTravellerTitle(tsBefore);
