@@ -5920,8 +5920,8 @@ async function processPayment() {
   if(awardRes.error) console.warn('Points award error:', awardRes.error);
 
   await loadTravellerScore(phone);
-  const ts = getTravellerScore();
-  const scoreResult = { pts: awardRes.awarded || 0, reasons: awardRes.reasons || [], total: ts.points, ts };
+  const tsData = getTravellerScore();
+ const scoreResult = { pts: awardRes.awarded || 0, reasons: awardRes.reasons || [], total: tsData.points, ts: tsData };
   const tsBefore = scoreResult.total - scoreResult.pts;
   const tsNow = scoreResult.total;
   const prevTitle = getTravellerTitle(tsBefore);
