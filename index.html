@@ -5940,11 +5940,13 @@ async function processPayment() {
  const scoreResult = { pts: awardRes.awarded || 0, reasons: awardRes.reasons || [], total: tsData.points, ts: tsData };
   const tsBefore = scoreResult.total - scoreResult.pts;
   const tsNow = scoreResult.total;
-  const prevTitle = getTravellerTitle(tsBefore);
-  const newTitle  = getTravellerTitle(tsNow);
-  const leveledUp = prevTitle.title !== newTitle.title;
   const ts = scoreResult.ts;
-  const nextT = TRAVELLER_TITLES.find(t=>t.min>tsNow);
+  const pahadiPrevIdx = getPahadiIdx(tsBefore);
+  const pahadiNowIdx = getPahadiIdx(tsNow);
+  const pahadiLeveledUp = pahadiNowIdx > pahadiPrevIdx;
+  const pahadiNow = pahadiNowIdx >= 0
+    ? PAHADI_LADDER[pahadiNowIdx]
+    : {letter:'—', name:'New Traveller', benefit:'Earn 1,000 pts to unlock your first PAHADI tier'};
 
   // Build e-pass badges — booking badges + host-awarded + NGO earned
   const badges=[];
@@ -5959,7 +5961,7 @@ async function processPayment() {
   // NGO/clean-up badges (matched by phone number)
   const ngoBadges=(window._ngoBadges&&window._ngoBadges[phone])||[];
   ngoBadges.forEach(b=>{if(!badges.includes(b))badges.push(b);});
-  badges.push(newTitle.icon+' '+newTitle.title);
+  badges.push(pahadiNow.letter+' '+pahadiNow.name);
 
   // Pre-fill traveller name in booking if logged in
   const tp = _tProfile;
@@ -6010,7 +6012,7 @@ async function processPayment() {
         <div class="epass-score-row">
           <div class="epass-score-num">${tsNow}</div>
           <div class="epass-score-info">
-            <div class="epass-score-title">${newTitle.icon} ${newTitle.title}</div>
+            <div class="epass-score-title">${pahadiNow.letter} ${pahadiNow.name}</div>
             <div class="epass-score-pts">+${scoreResult.pts} pts this booking · ${ts.stays} total stays</div>
           </div>
           <div class="epass-qr">SCAN<br>TO<br>VERIFY</div>
@@ -6020,27 +6022,23 @@ async function processPayment() {
         </div>
       </div>
 
-      <!-- ═══ TRAVELLER SCORE REVEAL ═══ -->
-      ${leveledUp ? `<div style="background:linear-gradient(135deg,#fff8e8,#fffdf0);border:2px solid #d4a017;border-radius:14px;padding:16px 18px;margin-top:14px;text-align:center">
+     <!-- ═══ PAHADI PROGRESS (unified) ═══ -->
+      ${pahadiLeveledUp ? `<div style="background:linear-gradient(135deg,#fff8e8,#fffdf0);border:2px solid #d4a017;border-radius:14px;padding:16px 18px;margin-top:14px;text-align:center">
         <div style="font-size:28px;margin-bottom:4px">🎉</div>
-        <div style="font-family:var(--fd);font-size:18px;color:#9b6c1a;margin-bottom:2px">New Title Unlocked!</div>
-        <div style="font-size:24px;margin:6px 0">${newTitle.icon}</div>
-        <div style="font-size:20px;font-weight:600;color:#1a3d2b">${newTitle.title}</div>
-        <div style="font-size:12px;color:var(--stone);margin-top:4px">${newTitle.desc}</div>
+        <div style="font-family:var(--fd);font-size:18px;color:#9b6c1a;margin-bottom:2px">New PAHADI Tier Unlocked!</div>
+        <div style="font-size:24px;margin:6px 0">${pahadiNow.letter}</div>
+        <div style="font-size:20px;font-weight:600;color:#1a3d2b">${pahadiNow.name}</div>
+        <div style="font-size:12px;color:var(--stone);margin-top:4px">${pahadiNow.benefit}</div>
       </div>` : ''}
 
       <div class="ts-wrap" style="margin-top:14px">
         <div class="ts-header">
           <div class="ts-big">${tsNow}</div>
           <div class="ts-info">
-            <div class="ts-title">${newTitle.icon} ${newTitle.title}</div>
-            <div class="ts-sub">Pahari Traveller Score · +${scoreResult.pts} this booking</div>
+            <div class="ts-title">${pahadiNow.letter} ${pahadiNow.name}</div>
+            <div class="ts-sub">PAHADI points · +${scoreResult.pts} this booking</div>
           </div>
         </div>
-        ${nextT ? `<div class="ts-bar-wrap">
-          <div class="ts-bar-label"><span>Progress to ${nextT.icon} ${nextT.title}</span><span>${nextT.min-tsNow} pts to go</span></div>
-          <div class="ts-bar"><div class="ts-bar-fill" style="width:${Math.min(100,Math.round((tsNow-newTitle.min)/(nextT.min-newTitle.min)*100))}%"></div></div>
-        </div>` : `<div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px">🌟 Maximum rank achieved. You are a legend.</div>`}
         <div class="ts-factors">
           <div class="ts-factor"><div class="ts-factor-n">Total Stays</div><div class="ts-factor-v">${ts.stays}</div></div>
           <div class="ts-factor"><div class="ts-factor-n">Total Nights</div><div class="ts-factor-v">${ts.nights}</div></div>
@@ -6048,7 +6046,6 @@ async function processPayment() {
           <div class="ts-factor"><div class="ts-factor-n">Pledges Taken</div><div class="ts-factor-v">${ts.pledges}</div></div>
         </div>
       </div>
-
       <!-- ═══ HOW POINTS WERE EARNED ═══ -->
       <div style="background:#f8faf8;border-radius:10px;padding:12px 14px;margin-top:14px;font-size:12px;color:var(--stone)">
         <div style="font-weight:600;color:var(--ink);margin-bottom:6px">Points earned this booking:</div>
