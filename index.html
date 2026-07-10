@@ -6146,12 +6146,12 @@ function getStayPhotos(id){const s=STAYS.find(x=>x.id===id);return (s&&s.photos&
 
 // ═══ GOOD TRAVELLER SCORE ═══
 const TRAVELLER_TITLES=[
-  {min:0,   title:'Curious Wanderer',  icon:'🌱', desc:'Your Pahari journey begins'},
-  {min:50,  title:'Hill Roamer',       icon:'🥾', desc:'You\'ve found the winding paths'},
-  {min:120, title:'Valley Keeper',     icon:'🏞', desc:'You tread lightly, leave less'},
-  {min:250, title:'Pahari Soul',       icon:'🏔️', desc:'The mountains know your name'},
-  {min:500, title:'Guardian of Peaks', icon:'⛰', desc:'Others follow your trail'},
-  {min:1000,title:'Legend of the Hills',icon:'🌟',desc:'Your story is carved in these peaks'},
+  {min:1000, title:'Pravaasi',          icon:'🥾', desc:'The Wanderer',       letter:'P', benefit:'5% off your next booking'},
+  {min:2000, title:'Anveshak',          icon:'🧭', desc:'The Explorer',       letter:'A', benefit:'10% off + 1 free carbon offset'},
+  {min:3000, title:'Himveer',           icon:'⛰️', desc:'The Hill Brave',     letter:'H', benefit:'15% off + priority host response'},
+  {min:4000, title:'Aatmiya',           icon:'🤝', desc:'The Kindred Soul',   letter:'A', benefit:'20% off + 1 free Eco Permit'},
+  {min:5000, title:'Dharohar Rakshak',  icon:'🛡️', desc:'Heritage Guardian',  letter:'D', benefit:'25% off + lead community events'},
+  {min:6000, title:'Icon of the Hills', icon:'⭐', desc:'',                    letter:'I', benefit:'30% lifetime discount + stewardship track'},
 ];
 function _tsKey(phone){// simple key: hashed phone for privacy
   if(!phone)return 'anon';
@@ -6265,8 +6265,11 @@ function sanitize(str){
   if(!str)return '';
   return String(str).replace(/[<>&"'`]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]||c));
 }
-function getTravellerTitle(pts){let t=TRAVELLER_TITLES[0];for(const x of TRAVELLER_TITLES)if(pts>=x.min)t=x;return t;}
-async function awardPoints(booking){
+function getTravellerTitle(pts){
+  let t = null;
+  for(const x of TRAVELLER_TITLES) if(pts>=x.min) t=x;
+  return t || {min:0, title:'New Traveller', icon:'🌱', desc:'Just getting started', letter:'', benefit:'Book your first stay to start earning PAHADI points'};
+}
   const ts=getTravellerScore();
   const nights=booking.nights||1;
   let pts=0,reasons=[];
