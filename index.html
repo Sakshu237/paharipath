@@ -6270,21 +6270,7 @@ function getTravellerTitle(pts){
   for(const x of TRAVELLER_TITLES) if(pts>=x.min) t=x;
   return t || {min:0, title:'New Traveller', icon:'🌱', desc:'Just getting started', letter:'', benefit:'Book your first stay to start earning PAHADI points'};
 }
-  const ts=getTravellerScore();
-  const nights=booking.nights||1;
-  let pts=0,reasons=[];
-  pts+=nights*10; reasons.push(`+${nights*10} for ${nights} night${nights!==1?'s':''}`);
-  if(booking.eco){pts+=30;reasons.push('+30 carbon offset');}
-  if(booking.pledges>0){pts+=booking.pledges*5;reasons.push(`+${booking.pledges*5} eco pledges`);}
-  if(booking.offbeat){pts+=20;reasons.push('+20 offbeat/village stay');}
-  ts.points+=pts; ts.stays+=1; ts.nights+=nights;
-  if(booking.eco)ts.eco+=1;
-  ts.pledges+=booking.pledges||0;
-  ts.history.push({ref:booking.ref,stay:booking.stay,pts,date:new Date().toLocaleDateString('en-IN'),reasons});
-  await saveTravellerScore(ts, booking.phone, booking.guestName||null);
-  return {pts,reasons,total:ts.points,ts};
-}
-ppInit();
+ ppInit();
 // Init map after first render (DOM is ready — ppInit calls renderAll which calls renderMap). If a Mappls API key is
 // configured, load the Mappls SDK first so initMap() can use it for an
 // India-compliant basemap; otherwise go straight to OpenStreetMap.
