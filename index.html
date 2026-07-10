@@ -1475,10 +1475,14 @@ function hTab(tab, btn){
       </div>
     </div>`:''}
     <div class="h-card">
-      <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:12px">Update Details</div>
-      <p style="font-size:13px;color:var(--stone);margin-bottom:16px">To update your listing details, contact us at <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a> or WhatsApp <a href="https://wa.me/91XXXXXXXXXX" style="color:var(--pine)">+91 XXXXXXXXXX</a>. Full self-edit coming soon.</p>
+      <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:12px">Your WhatsApp Number</div>
+      <p style="font-size:12px;color:var(--stone);margin-bottom:12px;line-height:1.6">We'll use this to send you booking updates and guest-briefing reminders. Guests never see this number directly.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="hostPhoneInput" class="fi" placeholder="e.g. 9812345678" value="${s.host_phone||''}" style="flex:1;min-width:160px"/>
+        <button onclick="hostSaveWhatsapp()" style="padding:10px 18px;background:var(--pine);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">Save</button>
+      </div>
+      <p style="font-size:11px;color:var(--stone);margin-top:10px">Need to change your property name, price, or photos? Contact <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a>.</p>
     </div>` : '<div class="h-card" style="text-align:center;padding:40px;color:var(--stone)">No listing found. <button onclick="showPartnerForm()" style="background:var(--pine);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-left:10px">Apply Now</button></div>'}`;
-  }
 
   else if(tab==='crowd'){
     el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">🚦 Update Crowd Level</h2>
@@ -4024,6 +4028,18 @@ function buildBookForm(s) {
     <input type="email" class="fi" id="gEmail" placeholder="For booking confirmation"/>
   </div>
   <div class="fg">
+    <label>Your Photo <span style="font-weight:400;color:var(--stone);text-transform:none;letter-spacing:0">(optional — for your E-Pass)</span></label>
+    <div id="epassPhotoZone" onclick="document.getElementById('epassPhotoInput').click()" style="border:2px dashed rgba(74,124,95,.28);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s">
+      <input type="file" id="epassPhotoInput" accept="image/*" style="display:none" onchange="handleEpassPhotoUpload(event)"/>
+      <div id="epassPhotoPlaceholder">
+        <div style="font-size:28px;margin-bottom:6px">📷</div>
+        <div style="font-size:12px;color:var(--pine);font-weight:500">Tap to add a photo</div>
+        <div style="font-size:10.5px;color:var(--stone);margin-top:3px">Shown on your E-Pass and shareable card</div>
+      </div>
+      <img id="epassPhotoPreview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:8px"/>
+    </div>
+  </div>
+  <div class="fg">
     <label>Number of Guests</label>
     <select class="fi" id="gGuests" onchange="recalcBooking(${s.pn})" style="cursor:pointer">
       <option value="1">1 Guest</option>
@@ -5950,12 +5966,20 @@ async function processPayment() {
   document.getElementById('moTitle').textContent='Your E-Pass 🎟️';
   document.getElementById('moBody').innerHTML = `
     <div class="epass-wrap">
-      <!-- ═══ E-PASS CARD ═══ -->
+     <!-- ═══ E-PASS CARD ═══ -->
       <div class="epass-card" id="epassCard">
         <div class="epass-logo" style="display:flex;align-items:center;gap:8px;margin-bottom:18px"><svg width="28" height="28" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0"><rect width="36" height="36" rx="8" fill="#1a3d2b"/><polygon points="18,24 25,10 32,24" fill="#2d5a40"/><polygon points="14,24 22,8 30,24" fill="#3d7a55"/><polygon points="7,25 18,4 29,25" fill="none" stroke="#f5f2ec" stroke-width="2" stroke-linejoin="round"/><polygon points="7,25 18,4 29,25" fill="#f5f2ec" opacity="0.92"/><polygon points="18,4 22,12 14,12" fill="#1a3d2b"/><path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg><span style="font-family:Georgia,serif;font-size:12px;letter-spacing:.1em;color:rgba(255,255,255,.65)">Pahari<span style="color:rgba(255,255,255,.4)">Path</span> · Responsible Travel</span></div>
+        ${window._epassPhotoUrl ? `<div style="width:100%;height:180px;border-radius:14px;overflow:hidden;margin-bottom:16px;position:relative">
+          <img src="${window._epassPhotoUrl}" style="width:100%;height:100%;object-fit:cover;display:block"/>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(13,35,24,.75) 0%,transparent 45%)"></div>
+          <div style="position:absolute;bottom:10px;left:14px;font-family:var(--fd);font-size:22px;font-weight:600;color:#fff">${name}</div>
+        </div>` : ''}
         <div class="epass-title">Booking Confirmed</div>
         <div class="epass-sub">Eco Travel Pass · Himachal Pradesh</div>
         <div class="epass-ref">${ref}</div>
+        <div style="display:flex;gap:5px;justify-content:center;margin:14px 0">${renderPahadiLettersHTML(tsNow)}</div>
+        ${renderBenefitBlockHTML(tsNow)}
+        ${renderNextTasksHTML(tsNow)}
         <div class="epass-grid">
           <div class="epass-field">
             <div class="epass-field-label">Guest</div>
@@ -6040,8 +6064,22 @@ async function processPayment() {
       <!-- ═══ ACTION BUTTONS ═══ -->
       <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
         <button class="epass-dl-btn" style="flex:1" onclick="shareEpass('${ref}','${name}','${stayObj?stayObj.name:''}','${ciStr}','${coStr}')">📤 Share E-Pass</button>
-        <button class="epass-ig-btn" style="flex:1" onclick="toast('📸 Screenshot this card & share on Instagram with #PahariPath!')">📸 Instagram</button>
+        <button class="epass-ig-btn" style="flex:1" onclick="showIgCard('${name}','${tsNow}')">📸 Instagram Card</button>
         <button class="pay-btn" style="flex:0 0 auto;padding:10px 18px;background:var(--mist);color:var(--pine);font-size:12px" onclick="closeMo()">Done ✓</button>
+      </div>
+      <div id="igCardView" style="display:none;margin-top:16px">
+        <div style="width:100%;aspect-ratio:4/5;border-radius:20px;overflow:hidden;position:relative;background:#0a1f14;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+          ${window._epassPhotoUrl ? `<img src="${window._epassPhotoUrl}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"/>` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;background:linear-gradient(160deg,#0f2d1a,#1a3d2b)">🏔️</div>`}
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,31,20,.95) 0%,rgba(10,31,20,.1) 55%,transparent 70%)"></div>
+          <div style="position:absolute;top:16px;left:16px;font-family:var(--fd);font-size:13px;color:rgba(255,255,255,.85)">🏔️ PahariPath</div>
+          <div style="position:absolute;bottom:20px;left:20px;right:20px">
+            <div style="font-family:var(--fd);font-size:30px;color:#fff;font-weight:600">${name}</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:#e8d49a;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;margin-top:8px">${newTitle.icon} ${newTitle.title}</div>
+            <div style="display:flex;gap:4px;margin-top:10px">${renderPahadiLettersHTML(tsNow)}</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--stone);text-align:center;margin-top:10px">This public-safe card has no booking details — screenshot &amp; share anywhere</div>
+        <button class="btn-ghost" style="width:100%;padding:9px;margin-top:8px;border-radius:8px;border:1px solid rgba(74,124,95,.2);background:none;color:var(--stone);font-size:12px;cursor:pointer" onclick="document.getElementById('igCardView').style.display='none'">← Back to E-Pass</button>
       </div>
     </div>`;
   } // end _saveAndConfirm
@@ -6143,6 +6181,89 @@ async function saveTravellerScore(ts,phone,guestNameHint){
   await _sb.from('traveller_scores').upsert(upsertData,{onConflict:'user_key'});
 }
 function onlyNums(el){el.value=el.value.replace(/[^0-9]/g,'');}
+
+window._epassPhotoUrl = null;
+async function handleEpassPhotoUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('epassPhotoPlaceholder').style.display='none';
+    const prev = document.getElementById('epassPhotoPreview');
+    prev.src = ev.target.result;
+    prev.style.display='block';
+  };
+  reader.readAsDataURL(file);
+
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `guest-${Date.now()}.${ext}`;
+  const { error } = await _sb.storage.from('epass-photos').upload(path, file, { upsert:true });
+  if(error){ toast('Photo upload failed — you can still book without it'); return; }
+  const { data } = _sb.storage.from('epass-photos').getPublicUrl(path);
+  window._epassPhotoUrl = data.publicUrl;
+}
+
+const PAHADI_LADDER = [
+  {letter:'P', name:'Pravaasi', threshold:1000, benefit:'5% off your next booking'},
+  {letter:'A', name:'Anveshak', threshold:2000, benefit:'10% off + 1 free carbon offset'},
+  {letter:'H', name:'Himveer', threshold:3000, benefit:'15% off + priority host response'},
+  {letter:'A', name:'Aatmiya', threshold:4000, benefit:'20% off + 1 free Eco Permit'},
+  {letter:'D', name:'Dharohar Rakshak', threshold:5000, benefit:'25% off + lead community events'},
+  {letter:'I', name:'Icon of the Hills', threshold:6000, benefit:'30% lifetime discount + stewardship track'},
+];
+const PAHADI_NEXT_TASKS = [
+  [{i:'✅',t:'Accept all 4 pledges',p:20},{i:'📸',t:'Share your E-Pass',p:25},{i:'⭐',t:'Leave a review after checkout',p:30}],
+  [{i:'🌱',t:'Book an eco-certified stay',p:30},{i:'🗺️',t:'Visit an offbeat destination',p:30},{i:'📍',t:'Submit a Community Pin',p:20}],
+  [{i:'📍',t:'GPS check-in at a sensitive zone',p:25},{i:'🌙',t:'Stay 3+ nights in one booking',p:30},{i:'🏅',t:'Earn host "Responsible Guest" badge',p:50}],
+  [{i:'🧹',t:'Join a trail or river clean-up',p:60},{i:'🗓️',t:'Book during off-season',p:40},{i:'✍️',t:'Write a destination guide',p:50}],
+  [{i:'🧹',t:'Organize/lead a clean-up event',p:100},{i:'🤝',t:'Refer a new homestay host',p:80},{i:'🌙',t:'10-night cumulative milestone',p:60}],
+  [{i:'⭐',t:'Feature in a PahariPath story',p:50}],
+];
+
+function getPahadiIdx(pts){
+  let idx=-1;
+  for(let i=0;i<PAHADI_LADDER.length;i++){ if(pts>=PAHADI_LADDER[i].threshold) idx=i; }
+  return idx;
+}
+function renderPahadiLettersHTML(pts){
+  const idx = getPahadiIdx(pts);
+  return PAHADI_LADDER.map((tItem,i)=>{
+    const lit = i<=idx;
+    const bg = lit ? 'background:linear-gradient(160deg,#c9a84c,#a8863c);color:#1a1206;border:1.5px solid #e8d49a' : 'background:rgba(255,255,255,.08);color:rgba(255,255,255,.3);border:1.5px solid rgba(255,255,255,.1)';
+    return `<div style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:17px;font-weight:700;${bg}">${tItem.letter}</div>`;
+  }).join('');
+}
+function renderBenefitBlockHTML(pts){
+  const idx = getPahadiIdx(pts);
+  const tier = PAHADI_LADDER[idx];
+  if(!tier) return `<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;margin:14px 0;font-size:12px;color:rgba(255,255,255,.6)">Earn 1,000 points to unlock your first PAHADI benefit</div>`;
+  return `<div style="background:linear-gradient(120deg,rgba(201,168,76,.14),rgba(201,168,76,.03));border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:12px 14px;margin:14px 0;display:flex;align-items:center;gap:10px">
+    <div style="font-size:20px">🎁</div>
+    <div style="font-size:12px;line-height:1.5;color:#f0e5c0"><b style="color:#fff">${tier.name} benefit:</b> ${tier.benefit}</div>
+  </div>`;
+}
+function renderNextTasksHTML(pts){
+  const idx = getPahadiIdx(pts);
+  const nextIdx = idx+1;
+  if(nextIdx >= PAHADI_LADDER.length) return '';
+  const tasks = PAHADI_NEXT_TASKS[nextIdx] || [];
+  const nextLetter = PAHADI_LADDER[nextIdx].letter;
+  const nextName = PAHADI_LADDER[nextIdx].name;
+  return `<div style="background:rgba(255,255,255,.05);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,.08);margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);margin-bottom:10px">🎯 Next tasks to reach "${nextLetter}" — ${nextName}</div>
+    ${tasks.map(tk=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+      <div style="width:26px;height:26px;border-radius:8px;background:rgba(58,171,102,.15);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${tk.i}</div>
+      <div style="flex:1;font-size:12px">${tk.t}</div>
+      <div style="font-size:11.5px;font-weight:700;color:#a8d4b4">+${tk.p}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function showIgCard(name, points){
+  document.getElementById('igCardView').style.display = 'block';
+  document.getElementById('igCardView').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
 function sanitize(str){
   if(!str)return '';
   return String(str).replace(/[<>&"'`]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]||c));
