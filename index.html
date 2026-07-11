@@ -94,7 +94,7 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .ham.open span:nth-child(2){opacity:0;transform:scaleX(0)}
 .ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 /* MOBILE DRAWER */
-.mob-drawer{display:none;position:fixed;inset:0;z-index:190;pointer-events:none}
+.mob-drawer{display:none;position:fixed;inset:0;z-index:210;pointer-events:none}
 .mob-drawer.open{display:block;pointer-events:auto}
 .mob-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);animation:fdIn .2s ease}
 @keyframes fdIn{from{opacity:0}to{opacity:1}}
@@ -596,7 +596,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   </ul>
   <div class="nr">
     <div class="lp"><div class="ld"></div> Live</div>
-    <button class="nb" onclick="openTravellerProfile()" style="background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);color:var(--pine);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">🏔️ My Profile</button>
+    <button class="nb" onclick="openTravellerProfile()" style="background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);color:var(--pine);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">🏔️ My Bookings</button>
 <button class="nb ol" onclick="openBookMo(1)">Book a Stay</button>
     <button class="nb" onclick="goTo('stays-bg')">Find Stays →</button>
     <button class="ham" id="hamBtn" onclick="openMobMenu()" aria-label="Open menu" aria-expanded="false">
@@ -627,6 +627,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="mob-link" onclick="closeMobMenu();goTo('explore')"><span class="ml-icon">🏔️</span>Explore Places</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('stays-bg')"><span class="ml-icon">🏡</span>Find Stays</div>
       <a href="/blog" class="mob-link" style="text-decoration:none"><span class="ml-icon">📝</span>Blog</a>
+      <div class="mob-link" onclick="closeMobMenu();openTravellerProfile()"><span class="ml-icon">🏔️</span>My Bookings</div>
     </div>
     <div class="mob-footer">
       <button class="nb" onclick="closeMobMenu();goTo('stays-bg')" style="text-align:center">Find Stays →</button>
@@ -5571,6 +5572,30 @@ async function showTravellerDashboard(){
   const ptsToNext = nextTier ? nextTier.min - ts.points : 0;
   const progress = nextTier ? Math.round(((ts.points - title.min)/(nextTier.min - title.min))*100) : 100;
 
+  // Fetch this traveller's bookings
+  let myBookings = [];
+  if(_tProfile?.phone){
+    const {data,error} = await _sb.from('bookings').select('*').eq('guest_phone',_tProfile.phone).order('created_at',{ascending:false});
+    if(error) console.warn('Could not load bookings:', error.message);
+    myBookings = data||[];
+  }
+  const _today = new Date().toISOString().slice(0,10);
+  const upcomingBk = myBookings.filter(b=>b.checkin_date && b.checkin_date>=_today && b.status!=='cancelled');
+  const pastBk = myBookings.filter(b=>!upcomingBk.includes(b));
+  const bkRow = b=>{
+    const sc = b.status==='confirmed'?'#1a6b3a':(b.status==='cancelled'?'#b3261e':'#a8710a');
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f3">
+      <div>
+        <div style="font-size:13px;font-weight:600">${b.stay_name||'Stay'}</div>
+        <div style="font-size:11px;color:var(--stone)">${b.checkin_date||b.dates||'—'}${b.checkout_date?' → '+b.checkout_date:''}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;font-weight:700;color:${sc};text-transform:capitalize">${b.status||'pending'}</div>
+        ${b.amount?`<div style="font-size:11px;color:var(--stone)">₹${b.amount}</div>`:''}
+      </div>
+    </div>`;
+  };
+
   document.getElementById('tDashView').innerHTML = `
     <!-- Profile card -->
     <div style="background:linear-gradient(135deg,#1a3d2b,#2d5a40);border-radius:16px;padding:22px;color:#fff;margin-bottom:16px">
@@ -5588,6 +5613,15 @@ async function showTravellerDashboard(){
       </div>
       ${nextTier?`<div style="margin-bottom:4px;font-size:11px;opacity:.6;display:flex;justify-content:space-between"><span>Progress to ${nextTier.title}</span><span>${ptsToNext} pts to go</span></div>
       <div style="background:rgba(255,255,255,.15);border-radius:99px;height:5px"><div style="background:#7fd4a0;border-radius:99px;height:5px;width:${progress}%"></div></div>`:''}
+    </div>
+
+    <!-- My Bookings -->
+    <div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">🏡 My Bookings</div>
+      ${myBookings.length===0 ? `<div style="font-size:13px;color:var(--stone)">No bookings found under +91 ${_tProfile?.phone||''} yet.</div>` : `
+        ${upcomingBk.length?`<div style="font-size:11px;font-weight:600;color:var(--pine);margin-bottom:4px">Upcoming</div>${upcomingBk.map(bkRow).join('')}`:''}
+        ${pastBk.length?`<div style="font-size:11px;font-weight:600;color:var(--stone);margin:${upcomingBk.length?'12px':'0'} 0 4px">Past / Other</div>${pastBk.map(bkRow).join('')}`:''}
+      `}
     </div>
 
     <!-- Stats -->
