@@ -5908,6 +5908,8 @@ async function processPayment() {
     eco_trees: eco.trees||0,
     nights: nights,
    guests: parseInt((document.getElementById('gGuests')?document.getElementById('gGuests').value:1)||1),
+    offbeat: isOffbeat,
+    pledges_accepted: pledgesAccepted,
     privacy_consent: true,
     privacy_consent_at: new Date().toISOString(),
     terms_consent: true,
