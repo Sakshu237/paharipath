@@ -5911,7 +5911,11 @@ function toggleEcoOffset(pricePerNight) {
 
 // ═══ UPDATED PROCESS PAYMENT ═══
 async function processPayment() {
-  // Rate limit: max 3 booking attempts per 10 minutes
+  // Soft client-side pre-check for instant feedback — the REAL rate
+  // limit is now enforced server-side in /api/create-booking (this
+  // localStorage check alone was bypassable via incognito mode, so it
+  // no longer does the actual blocking, just gives faster feedback for
+  // the common case).
   try{
     const key='pp_bl';const now=Date.now();
     const bl=JSON.parse(localStorage.getItem(key)||'[]').filter(t=>now-t<600000);
@@ -6005,12 +6009,39 @@ async function processPayment() {
 
   async function _saveAndConfirm(paymentId=''){
     bookingRow.payment_id = paymentId||null;
-    _sb.from('bookings').insert(bookingRow).then(({error})=>{
-      if(error) console.warn('Booking save error:',error.message);
-    });
-    _sb.from('traveller_scores').upsert({user_key:_tsKey(phone),guest_name:name,phone_hint:phone},{onConflict:'user_key'}).then(({error})=>{
-      if(error) console.warn('Name save error:',error.message);
-    });
+
+    // Show a loading state immediately — booking creation + points
+    // check involve a couple of network round-trips, and without this
+    // the modal just sits static/unresponsive-looking for a second or
+    // two after payment succeeds.
+    document.getElementById('moTitle').textContent = 'Confirming your booking…';
+    document.getElementById('moBody').innerHTML = `
+      <div style="text-align:center;padding:50px 20px">
+        <div style="width:44px;height:44px;border:3px solid rgba(74,124,95,.15);border-top-color:var(--pine);border-radius:50%;margin:0 auto 20px;animation:ppSpin .8s linear infinite"></div>
+        <div style="font-family:var(--fd);font-size:18px;color:var(--pine);margin-bottom:6px">Confirming your booking</div>
+        <div style="font-size:13px;color:var(--stone)">Just a moment — securing your dates and generating your E-Pass…</div>
+      </div>
+      <style>@keyframes ppSpin{to{transform:rotate(360deg)}}</style>`;
+
+    // Booking creation now goes through a server endpoint instead of
+    // writing to Supabase directly from the browser — this is what
+    // lets rate limiting actually be enforced (by phone AND by IP),
+    // rather than relying on a client-side check anyone could bypass.
+    const createRes = await fetch('/api/create-booking', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(bookingRow)
+    }).then(r=>r.json().then(data=>({status:r.status, data}))).catch(e=>({status:0, data:{error:e.message}}));
+
+    if(createRes.data.error){
+      toast(createRes.data.error);
+      document.getElementById('moTitle').textContent='Book — '+curBooking.name;
+      document.getElementById('moBody').innerHTML=buildBookForm(curBooking);
+      setTimeout(() => recalcEco(curBooking.pn, curBooking.placeid || 0), 60);
+      setTimeout(() => checkDateAvailability(curBooking.id, curBooking.pn), 80);
+      return;
+    }
+
   BOOKINGS.unshift({...bookingRow, stay: bookingRow.stay_name});
 
   // Points are awarded server-side, and ONLY once the check-in date
