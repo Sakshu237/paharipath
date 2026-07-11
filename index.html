@@ -595,8 +595,8 @@ input[type=range]{flex:1;accent-color:var(--pine)}
    
   </ul>
   <div class="nr">
+    <button class="nb" onclick="openTravellerProfile()" style="background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);color:var(--pine);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">🏔️ My Profile</button>
     <div class="lp"><div class="ld"></div> Live</div>
-    <button class="nb" onclick="openTravellerProfile()" style="background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);color:var(--pine);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">🏔️ My Bookings</button>
 <button class="nb ol" onclick="openBookMo(1)">Book a Stay</button>
     <button class="nb" onclick="goTo('stays-bg')">Find Stays →</button>
     <button class="ham" id="hamBtn" onclick="openMobMenu()" aria-label="Open menu" aria-expanded="false">
@@ -621,13 +621,13 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <button class="mob-x" onclick="closeMobMenu()" aria-label="Close menu">✕</button>
     </div>
    <div class="mob-links">
+      <div class="mob-link" onclick="closeMobMenu();openTravellerProfile()" style="background:rgba(74,124,95,.08);border-radius:10px;margin-bottom:4px"><span class="ml-icon">🏔️</span>My Profile</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('crowd')"><span class="ml-icon">🚦</span>Crowd Meter</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('mapwrap')"><span class="ml-icon">🗺️</span>Live Map</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('plansec')"><span class="ml-icon">🗓</span>Plan Trip</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('explore')"><span class="ml-icon">🏔️</span>Explore Places</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('stays-bg')"><span class="ml-icon">🏡</span>Find Stays</div>
       <a href="/blog" class="mob-link" style="text-decoration:none"><span class="ml-icon">📝</span>Blog</a>
-      <div class="mob-link" onclick="closeMobMenu();openTravellerProfile()"><span class="ml-icon">🏔️</span>My Bookings</div>
     </div>
     <div class="mob-footer">
       <button class="nb" onclick="closeMobMenu();goTo('stays-bg')" style="text-align:center">Find Stays →</button>
@@ -4045,6 +4045,10 @@ async function cancelMyBooking(ref){
 
 // ═══ BOOKING MODAL ═══
 function openBookMo(sid){
+  // Reset any e-pass photo left over from a previous booking in this session —
+  // otherwise a guest who uploaded a photo for stay #1 could silently have it
+  // reused on stay #2 if they don't upload a new one.
+  window._epassPhotoUrl = null;
   // Auto-fill from traveller profile if logged in
   if(_tProfile){
     setTimeout(()=>{
@@ -5569,10 +5573,7 @@ async function showTravellerDashboard(){
   const ts = getTravellerScore();
   const title = getTravellerTitle(ts.points);
   const nextTier = TRAVELLER_TITLES.find(t=>t.min>ts.points);
-  const ptsToNext = nextTier ? nextTier.min - ts.points : 0;
-  const progress = nextTier ? Math.round(((ts.points - title.min)/(nextTier.min - title.min))*100) : 100;
-
-  // Fetch this traveller's bookings
+  // Fetch this traveller's bookings + matching stay details
   let myBookings = [];
   if(_tProfile?.phone){
     const {data,error} = await _sb.from('bookings').select('*').eq('guest_phone',_tProfile.phone).order('created_at',{ascending:false});
@@ -5582,19 +5583,52 @@ async function showTravellerDashboard(){
   const _today = new Date().toISOString().slice(0,10);
   const upcomingBk = myBookings.filter(b=>b.checkin_date && b.checkin_date>=_today && b.status!=='cancelled');
   const pastBk = myBookings.filter(b=>!upcomingBk.includes(b));
+
+  const nextStepFor = b=>{
+    if(b.status==='cancelled') return {t:'This booking was cancelled', c:'#b3261e', i:'✕'};
+    if(!b.checkin_date) return {t:'Host will confirm your exact dates shortly', c:'#a8710a', i:'📞'};
+    if(b.checkin_date>_today){
+      const days = Math.ceil((new Date(b.checkin_date)-new Date(_today))/86400000);
+      return days<=3
+        ? {t:`Check-in in ${days} day${days!==1?'s':''} — pack, carry a valid ID, and message the host to confirm arrival time`, c:'#1a6b3a', i:'🎒'}
+        : {t:`Check-in in ${days} days — ${b.stay_name||'your host'} will reach out closer to the date`, c:'#1a6b3a', i:'🗓️'};
+    }
+    if(b.checkout_date && b.checkout_date>=_today) return {t:'Your stay is ongoing right now — enjoy the hills!', c:'#1a6b3a', i:'🏡'};
+    return {t:'Stay completed — rate your host to earn bonus PAHADI points', c:'#a8710a', i:'⭐'};
+  };
+
   const bkRow = b=>{
+    const stay = STAYS.find(s=>s.id===b.stay_id) || null;
+    const photo = stay?.photos?.[0];
     const sc = b.status==='confirmed'?'#1a6b3a':(b.status==='cancelled'?'#b3261e':'#a8710a');
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f3">
-      <div>
-        <div style="font-size:13px;font-weight:600">${b.stay_name||'Stay'}</div>
-        <div style="font-size:11px;color:var(--stone)">${b.checkin_date||b.dates||'—'}${b.checkout_date?' → '+b.checkout_date:''}</div>
+    const step = nextStepFor(b);
+    return `<div style="border:1px solid rgba(74,124,95,.12);border-radius:12px;overflow:hidden;margin-bottom:12px">
+      <div style="display:flex;gap:12px;padding:12px">
+        <div style="width:60px;height:60px;border-radius:10px;flex-shrink:0;background:${photo?`url('${photo}') center/cover`:'linear-gradient(135deg,#e8f4ed,#d4e6da)'};display:flex;align-items:center;justify-content:center;font-size:22px">${photo?'':(stay?.emoji||'🏡')}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;gap:8px">
+            <div style="display:flex;align-items:center;gap:6px;min-width:0">
+              ${b.guest_photo_url?`<img src="${b.guest_photo_url}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0" alt=""/>`:''}
+              <div style="font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.stay_name||stay?.name||'Stay'}</div>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:${sc};text-transform:capitalize;white-space:nowrap">${b.status||'pending'}</div>
+          </div>
+          ${stay?.loc?`<div style="font-size:11px;color:var(--stone);margin-top:1px">📍 ${stay.loc}</div>`:''}
+          <div style="font-size:11.5px;color:var(--stone);margin-top:4px">🗓️ ${b.checkin_date||b.dates||'—'}${b.checkout_date?' → '+b.checkout_date:''} · 🌙 ${b.nights||'—'} night${b.nights===1?'':'s'} · 👥 ${b.guests||1}</div>
+          <div style="font-size:11.5px;color:var(--stone);margin-top:2px">🎟️ Ref: ${b.id||'—'}${b.amount?' · '+b.amount:''}</div>
+        </div>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:12px;font-weight:700;color:${sc};text-transform:capitalize">${b.status||'pending'}</div>
-        ${b.amount?`<div style="font-size:11px;color:var(--stone)">₹${b.amount}</div>`:''}
+      <div style="background:rgba(74,124,95,.06);padding:9px 14px;font-size:11.5px;display:flex;align-items:center;gap:7px;color:${step.c}">
+        <span>${step.i}</span><span style="flex:1">${step.t}</span>
       </div>
+      ${stay?.contact?`<div style="padding:0 14px 12px">
+        <a href="https://wa.me/91${stay.contact}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;text-decoration:none">💬 Message Host</a>
+      </div>`:''}
     </div>`;
   };
+
+  const ptsToNext = nextTier ? nextTier.min - ts.points : 0;
+  const progress = nextTier ? Math.round(((ts.points - title.min)/(nextTier.min - title.min))*100) : 100;
 
   document.getElementById('tDashView').innerHTML = `
     <!-- Profile card -->
@@ -5615,12 +5649,15 @@ async function showTravellerDashboard(){
       <div style="background:rgba(255,255,255,.15);border-radius:99px;height:5px"><div style="background:#7fd4a0;border-radius:99px;height:5px;width:${progress}%"></div></div>`:''}
     </div>
 
+    <!-- Next tasks toward your next PAHADI tier -->
+    ${renderNextTasksHTML(ts.points)}
+
     <!-- My Bookings -->
     <div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:14px;margin-bottom:16px">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">🏡 My Bookings</div>
       ${myBookings.length===0 ? `<div style="font-size:13px;color:var(--stone)">No bookings found under +91 ${_tProfile?.phone||''} yet.</div>` : `
-        ${upcomingBk.length?`<div style="font-size:11px;font-weight:600;color:var(--pine);margin-bottom:4px">Upcoming</div>${upcomingBk.map(bkRow).join('')}`:''}
-        ${pastBk.length?`<div style="font-size:11px;font-weight:600;color:var(--stone);margin:${upcomingBk.length?'12px':'0'} 0 4px">Past / Other</div>${pastBk.map(bkRow).join('')}`:''}
+        ${upcomingBk.length?`<div style="font-size:11px;font-weight:600;color:var(--pine);margin-bottom:8px">Upcoming</div>${upcomingBk.map(bkRow).join('')}`:''}
+        ${pastBk.length?`<div style="font-size:11px;font-weight:600;color:var(--stone);margin:${upcomingBk.length?'12px':'0'} 0 8px">Past / Other</div>${pastBk.map(bkRow).join('')}`:''}
       `}
     </div>
 
@@ -6017,6 +6054,7 @@ async function processPayment() {
     guest: name,
     guest_phone: phone,
     guest_email: email||null,
+    guest_photo_url: window._epassPhotoUrl || null,
     stay_id: stayObj ? stayObj.id : null,
     stay_name: (stayObj ? stayObj.name : '') || 'Stay',
     dates: ciStr + ' – ' + coStr,
