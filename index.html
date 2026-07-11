@@ -5831,17 +5831,16 @@ function toggleEcoOffset(pricePerNight) {
 async function processPayment() {
   // Rate limit: max 3 booking attempts per 10 minutes
   try{
-try{
-  const key='pp_bl';const now=Date.now();
-  const bl=JSON.parse(localStorage.getItem(key)||'[]').filter(t=>now-t<600000);
-  if(bl.length>=5){
-    const oldestAttempt=Math.min(...bl);
-    const waitMin=Math.ceil((600000-(now-oldestAttempt))/60000);
-    toast(`Too many attempts — please wait ${waitMin} minute${waitMin!==1?'s':''} and try again, or contact us on WhatsApp to book directly.`);
-    return;
-  }
-  bl.push(now);localStorage.setItem(key,JSON.stringify(bl));
-}catch(e){}
+    const key='pp_bl';const now=Date.now();
+    const bl=JSON.parse(localStorage.getItem(key)||'[]').filter(t=>now-t<600000);
+    if(bl.length>=5){
+      const oldestAttempt=Math.min(...bl);
+      const waitMin=Math.ceil((600000-(now-oldestAttempt))/60000);
+      toast(`Too many attempts — please wait ${waitMin} minute${waitMin!==1?'s':''} and try again, or contact us on WhatsApp to book directly.`);
+      return;
+    }
+    bl.push(now);localStorage.setItem(key,JSON.stringify(bl));
+  }catch(e){}
   const name = (document.getElementById('gName') ? document.getElementById('gName').value : '').replace(/^\s+|\s+$/g,'');
   const phone = (document.getElementById('gPhone') ? document.getElementById('gPhone').value : '').replace(/^\s+|\s+$/g,'');
   const email = (document.getElementById('gEmail') ? document.getElementById('gEmail').value : '').replace(/^\s+|\s+$/g,'');
