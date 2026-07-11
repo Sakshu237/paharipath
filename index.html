@@ -897,6 +897,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <a href="/privacy-policy.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Privacy Policy</a>
   <a href="/terms-of-service.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Terms of Service</a>
   <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
+  <a href="#" onclick="openManageBooking()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Manage / Cancel Booking</a>
   <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us</a></div><!-- /home -->
 
 <!-- ADMIN LOGIN -->
@@ -3960,6 +3961,87 @@ function waBookCurrent() {
   else toast('No stay selected');
 }
 
+// ═══ MANAGE / CANCEL BOOKING ═══
+function openManageBooking(){
+  const mo=document.getElementById('manageBookingMo');
+  document.getElementById('mbLookupView').style.display='block';
+  document.getElementById('mbDetailView').style.display='none';
+  document.getElementById('mbDetailView').innerHTML='';
+  document.getElementById('mbRef').value='';
+  document.getElementById('mbPhone').value='';
+  document.getElementById('mbLookupErr').style.display='none';
+  mo.style.display='flex'; mo.classList.add('open');
+}
+
+async function lookupMyBooking(){
+  const ref=(document.getElementById('mbRef')?.value||'').trim().toUpperCase();
+  const phone=(document.getElementById('mbPhone')?.value||'').trim();
+  const errEl=document.getElementById('mbLookupErr');
+  errEl.style.display='none';
+  if(!ref){errEl.textContent='Please enter your booking reference';errEl.style.display='block';return;}
+  if(!phone||!/^[6-9]\d{9}$/.test(phone)){errEl.textContent='Please enter a valid 10-digit mobile number';errEl.style.display='block';return;}
+
+  const res = await fetch('/api/lookup-booking', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({bookingRef:ref, phone})
+  }).then(r=>r.json()).catch(e=>({error:e.message}));
+
+  if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}
+
+  const b=res.booking;
+  document.getElementById('mbLookupView').style.display='none';
+  const detailEl=document.getElementById('mbDetailView');
+  detailEl.style.display='block';
+
+  const statusLabel = b.status==='cancelled' ? '🚫 Cancelled' : b.status==='completed' ? '✅ Stay Completed' : '✅ Confirmed';
+  const canCancel = b.status==='confirmed';
+
+  detailEl.innerHTML = `
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:32px;margin-bottom:6px">🎟️</div>
+      <div style="font-family:var(--fd);font-size:19px;color:var(--pine);font-weight:600">${b.stay_name||'Your Stay'}</div>
+      <div style="font-size:12px;color:var(--stone);margin-top:4px">${statusLabel}</div>
+    </div>
+    <div style="background:#f8faf8;border:1px solid rgba(74,124,95,.12);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--stone)"><span>Reference</span><span style="color:var(--ink);font-weight:600">${b.id}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--stone)"><span>Dates</span><span style="color:var(--ink)">${b.dates||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--stone)"><span>Nights</span><span style="color:var(--ink)">${b.nights||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--stone)"><span>Guests</span><span style="color:var(--ink)">${b.guests||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--pine);padding-top:8px;margin-top:6px;border-top:1px solid #e0e0e0"><span>Amount</span><span>${b.amount||'—'}</span></div>
+    </div>
+    ${canCancel ? `
+      <div id="mbCancelErr" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px"></div>
+      <button onclick="cancelMyBooking('${b.id}')" style="width:100%;padding:13px;background:#c0392b;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Cancel This Booking</button>
+      <p style="font-size:11px;color:var(--stone);text-align:center;margin-top:10px">If your stay hasn't started yet, this is free and any points already credited are unaffected since none have been awarded yet.</p>
+    ` : b.status==='cancelled' ? `<div style="text-align:center;font-size:13px;color:var(--stone)">This booking has already been cancelled.</div>`
+      : `<div style="text-align:center;font-size:13px;color:var(--stone)">This stay has already been completed and can no longer be cancelled. Contact hello@paharipath.in for help.</div>`}
+    <button onclick="openManageBooking()" style="width:100%;padding:10px;background:none;border:none;font-size:12px;color:var(--stone);cursor:pointer;margin-top:10px;font-family:var(--fb)">← Look up a different booking</button>
+  `;
+}
+
+async function cancelMyBooking(ref){
+  const phone=(document.getElementById('mbPhone')?.value||'').trim();
+  const errEl=document.getElementById('mbCancelErr');
+  if(!confirm('Cancel this booking? This cannot be undone.')) return;
+
+  const res = await fetch('/api/cancel-booking', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({bookingRef:ref, phone})
+  }).then(r=>r.json()).catch(e=>({error:e.message}));
+
+  if(res.error){
+    if(errEl){errEl.textContent=res.error;errEl.style.display='block';}
+    else toast(res.error);
+    return;
+  }
+
+  toast(res.pointsReversed>0
+    ? `✓ Booking cancelled. ${res.pointsReversed} points have been reversed.`
+    : '✓ Booking cancelled — no points were affected since none had been credited yet.');
+  document.getElementById('manageBookingMo').classList.remove('open');
+  document.getElementById('manageBookingMo').style.display='none';
+}
+
 // ═══ BOOKING MODAL ═══
 function openBookMo(sid){
   // Auto-fill from traveller profile if logged in
@@ -5931,9 +6013,11 @@ async function processPayment() {
     });
   BOOKINGS.unshift({...bookingRow, stay: bookingRow.stay_name});
 
-  // Points are now awarded server-side via /api/award-points, which
-  // verifies a real confirmed booking exists before crediting anything —
-  // the browser can no longer write points directly.
+  // Points are awarded server-side, and ONLY once the check-in date
+  // has actually arrived — this closes the "book then cancel" exploit,
+  // since nothing is credited for a booking that never happens. Most
+  // bookings get their points via the daily cron (/api/complete-stays);
+  // this call only fires the award immediately for same-day check-ins.
   const awardRes = await fetch('/api/award-points', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -5941,6 +6025,7 @@ async function processPayment() {
   }).then(r=>r.json()).catch(e=>({error: e.message}));
 
   if(awardRes.error) console.warn('Points award error:', awardRes.error);
+  const pointsPending = !!awardRes.pending;
 
   await loadTravellerScore(phone);
   const tsData = getTravellerScore();
@@ -6020,7 +6105,7 @@ async function processPayment() {
           <div class="epass-score-num">${tsNow}</div>
           <div class="epass-score-info">
             <div class="epass-score-title">${pahadiNow.letter} ${pahadiNow.name}</div>
-            <div class="epass-score-pts">+${scoreResult.pts} pts this booking · ${ts.stays} total stays</div>
+            <div class="epass-score-pts">${pointsPending?'🕐 Points credited after check-in':'+'+scoreResult.pts+' pts this booking'} · ${ts.stays} total stays</div>
           </div>
           <div class="epass-qr">SCAN<br>TO<br>VERIFY</div>
         </div>
@@ -6038,12 +6123,16 @@ async function processPayment() {
         <div style="font-size:12px;color:var(--stone);margin-top:4px">${pahadiNow.benefit}</div>
       </div>` : ''}
 
+      ${pointsPending ? `<div style="background:#fff8e8;border:1px solid rgba(212,160,23,.3);border-radius:12px;padding:14px 16px;margin-top:14px;font-size:12px;color:#7a5a1a;line-height:1.7">
+        🕐 <strong>Points are credited after your stay begins</strong> — your check-in date is ${ciStr}. This is so points can't be earned by booking and cancelling; they're only awarded once your stay has actually started.
+      </div>` : ''}
+
       <div class="ts-wrap" style="margin-top:14px">
         <div class="ts-header">
           <div class="ts-big">${tsNow}</div>
           <div class="ts-info">
             <div class="ts-title">${pahadiNow.letter} ${pahadiNow.name}</div>
-            <div class="ts-sub">PAHADI points · +${scoreResult.pts} this booking</div>
+            <div class="ts-sub">PAHADI points ${pointsPending?'· pending check-in':'· +'+scoreResult.pts+' this booking'}</div>
           </div>
         </div>
         <div class="ts-factors">
@@ -6054,14 +6143,14 @@ async function processPayment() {
         </div>
       </div>
       <!-- ═══ HOW POINTS WERE EARNED ═══ -->
-      <div style="background:#f8faf8;border-radius:10px;padding:12px 14px;margin-top:14px;font-size:12px;color:var(--stone)">
+      ${!pointsPending ? `<div style="background:#f8faf8;border-radius:10px;padding:12px 14px;margin-top:14px;font-size:12px;color:var(--stone)">
         <div style="font-weight:600;color:var(--ink);margin-bottom:6px">Points earned this booking:</div>
         ${scoreResult.reasons.map(r=>`<div style="padding:2px 0">✦ ${r}</div>`).join('')}
-      </div>
+      </div>` : ''}
 
       <div style="background:#e6f4ec;border-radius:10px;padding:11px 14px;margin-top:12px;font-size:12px;color:#1e6b3c;line-height:1.8">
         ✅ Host will call within 2 hours · 📞 ${phone}<br>
-        ✅ 48-hour free cancellation applies<br>
+        ✅ Free cancellation until check-in — <a href="#" onclick="event.preventDefault();closeMo();openManageBooking();" style="color:#1e6b3c;text-decoration:underline">manage or cancel your booking</a><br>
         ${eco.included ? `✅ ${eco.trees} tree${eco.trees!==1?'s':''} will be planted in ${name}'s name 🌱` : ''}
       </div>
 
@@ -6297,6 +6386,25 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
   document.getElementById('utime').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
 }, 5*60*1000);
 </script>
+<!-- MANAGE / CANCEL BOOKING MODAL -->
+<div id="manageBookingMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:460px">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('manageBookingMo').classList.remove('open');document.getElementById('manageBookingMo').style.display='none'">✕</button>
+    <div id="mbLookupView">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:36px;margin-bottom:8px">🎟️</div>
+        <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">Manage Your Booking</div>
+        <p style="font-size:13px;color:var(--stone);margin-top:6px">Enter your booking reference and the phone number you booked with.</p>
+      </div>
+      <div class="fg"><label>Booking Reference</label><input class="fi" id="mbRef" placeholder="e.g. PP482913" style="text-transform:uppercase"/></div>
+      <div class="fg"><label>Phone Number</label><input class="fi" id="mbPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+      <div id="mbLookupErr" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px"></div>
+      <button onclick="lookupMyBooking()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Find My Booking →</button>
+    </div>
+    <div id="mbDetailView" style="display:none"></div>
+  </div>
+</div>
+
 <!-- REPORT WRONG PIN MODAL -->
 <div id="reportPinMo" class="mo" onclick="if(event.target===this)cancelPinReport()" style="display:none">
   <div class="mo-box" style="max-width:420px">
