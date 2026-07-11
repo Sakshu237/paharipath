@@ -80,11 +80,12 @@ module.exports = async (req, res) => {
     const nights = booking.nights || 1;
     let pts = 0;
     const reasons = [];
-    pts += nights * 10; reasons.push(`+${nights*10} for ${nights} night${nights!==1?'s':''}`);
-    if (booking.eco) { pts += 30; reasons.push('+30 carbon offset'); }
+    pts += 100; reasons.push('+100 for completing a booking');
+    pts += nights * 20; reasons.push(`+${nights*20} for ${nights} night${nights!==1?'s':''}`);
+    if (booking.eco) { pts += 50; reasons.push('+50 carbon offset'); }
     const pledgeCount = booking.pledges_accepted || 0;
-    if (pledgeCount > 0) { pts += pledgeCount*5; reasons.push(`+${pledgeCount*5} eco pledges`); }
-    if (booking.offbeat) { pts += 20; reasons.push('+20 offbeat/village stay'); }
+    if (pledgeCount > 0) { pts += pledgeCount*10; reasons.push(`+${pledgeCount*10} eco pledges`); }
+    if (booking.offbeat) { pts += 50; reasons.push('+50 offbeat/village stay'); }
 
     // 4. Load the traveller's current score row, if any.
     const phone = booking.guest_phone;
