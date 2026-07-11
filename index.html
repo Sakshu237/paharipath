@@ -5578,12 +5578,24 @@ async function showTravellerDashboard(){
   const ts = getTravellerScore();
   const title = getTravellerTitle(ts.points);
   const nextTier = TRAVELLER_TITLES.find(t=>t.min>ts.points);
-  // Fetch this traveller's bookings + matching stay details
+  // Fetch this traveller's bookings via the server endpoint — bookings
+  // is locked down against direct anon reads (see /api/my-bookings.js),
+  // so a direct _sb.from('bookings') query here would silently return
+  // nothing. This is the actual source of "bookings not showing."
   let myBookings = [];
   if(_tProfile?.phone){
-    const {data,error} = await _sb.from('bookings').select('*').eq('guest_phone',_tProfile.phone).order('created_at',{ascending:false});
-    if(error) console.warn('Could not load bookings:', error.message);
-    myBookings = data||[];
+    try{
+      const bkRes = await fetch('/api/my-bookings', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({phone:_tProfile.phone})
+      });
+      const bkJson = await bkRes.json();
+      if(!bkRes.ok) console.warn('Could not load bookings:', bkJson.error);
+      else myBookings = bkJson.bookings||[];
+    }catch(err){
+      console.warn('Could not load bookings:', err.message);
+    }
   }
   const _today = new Date().toISOString().slice(0,10);
   const upcomingBk = myBookings.filter(b=>b.checkin_date && b.checkin_date>=_today && b.status!=='cancelled');
@@ -5639,7 +5651,10 @@ async function showTravellerDashboard(){
     <!-- Profile card -->
     <div style="background:linear-gradient(135deg,#1a3d2b,#2d5a40);border-radius:16px;padding:22px;color:#fff;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-        <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${title.icon}</div>
+        <div style="position:relative;flex-shrink:0">
+          <div style="width:52px;height:52px;background:${ts.photo_url?`url('${ts.photo_url}') center/cover`:'rgba(255,255,255,.15)'};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px">${ts.photo_url?'':title.icon}</div>
+          <label id="profilePhotoBtn" style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.3)"><span id="profilePhotoIcon">📷</span><input type="file" accept="image/*" onchange="handleProfilePhotoUpload(event)" style="display:none"></label>
+        </div>
         <div style="flex:1">
           <div style="font-family:var(--fd);font-size:18px;font-weight:600">${_tProfile?.name||'Traveller'}</div>
           <div style="font-size:12px;opacity:.7">📱 +91 ${_tProfile?.phone||''}</div>
@@ -6364,13 +6379,13 @@ function _tsKey(phone){// simple key: hashed phone for privacy
 let _tsCachedKey=null;
 function getTravellerScore(){
   // Return cached in-memory score (loaded async on boot / after booking)
-  return window._tsCache||{points:0,stays:0,nights:0,eco:0,offbeat:0,pledges:0,history:[]};
+  return window._tsCache||{points:0,stays:0,nights:0,eco:0,offbeat:0,pledges:0,history:[],photo_url:null};
 }
 async function loadTravellerScore(phone){
   const key=_tsKey(phone);_tsCachedKey=key;
   const {data}=await _sb.from('traveller_scores').select('*').eq('user_key',key).maybeSingle();
-  if(data){window._tsCache={points:data.points,stays:data.stays,nights:data.nights,eco:data.eco,offbeat:data.offbeat,pledges:data.pledges,history:data.history||[]};}
-  else{window._tsCache={points:0,stays:0,nights:0,eco:0,offbeat:0,pledges:0,history:[]};}
+  if(data){window._tsCache={points:data.points,stays:data.stays,nights:data.nights,eco:data.eco,offbeat:data.offbeat,pledges:data.pledges,history:data.history||[],photo_url:data.photo_url||null};}
+  else{window._tsCache={points:0,stays:0,nights:0,eco:0,offbeat:0,pledges:0,history:[],photo_url:null};}
   return window._tsCache;
 }
 async function saveTravellerScore(ts,phone,guestNameHint){
@@ -6380,6 +6395,34 @@ async function saveTravellerScore(ts,phone,guestNameHint){
   if(guestNameHint) upsertData.guest_name=guestNameHint;
   if(phone) upsertData.phone_hint=phone;
   await _sb.from('traveller_scores').upsert(upsertData,{onConflict:'user_key'});
+}
+
+// Profile photo shown next to the traveller's name in "My Profile".
+// Uploads to the same public storage bucket the e-pass photo uses, then
+// saves the URL directly onto traveller_scores (still open to client
+// writes, unlike `bookings`).
+async function handleProfilePhotoUpload(event){
+  const file = event.target.files[0];
+  if(!file || !_tProfile?.phone) return;
+  const btn = document.getElementById('profilePhotoIcon');
+  if(btn) btn.textContent = '…';
+  try{
+    const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+    const path = `profile-${_tsKey(_tProfile.phone)}-${Date.now()}.${ext}`;
+    const {error: upErr} = await _sb.storage.from('epass-photos').upload(path, file, {upsert:true});
+    if(upErr) throw upErr;
+    const {data:pub} = _sb.storage.from('epass-photos').getPublicUrl(path);
+    const url = pub.publicUrl;
+    await _sb.from('traveller_scores').upsert(
+      {user_key:_tsKey(_tProfile.phone), phone_hint:_tProfile.phone, photo_url:url},
+      {onConflict:'user_key'}
+    );
+    if(window._tsCache) window._tsCache.photo_url = url;
+    showTravellerDashboard();
+  }catch(err){
+    console.warn('Could not save profile photo:', err.message);
+    if(btn) btn.textContent = '📷';
+  }
 }
 function onlyNums(el){el.value=el.value.replace(/[^0-9]/g,'');}
 
