@@ -4,5 +4,8 @@
     { "source": "/destination/:slug", "destination": "/api/destination/:slug" },
     { "source": "/blog", "destination": "/api/blog-index" },
     { "source": "/blog/:slug", "destination": "/api/blog/:slug" }
+  ],
+  "crons": [
+    { "path": "/api/complete-stays?secret=khduendjedeeidnytrfg", "schedule": "0 3 * * *" }
   ]
 }
