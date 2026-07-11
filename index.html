@@ -1491,7 +1491,7 @@ function hTab(tab, btn){
     <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Let travellers know how busy your area is right now. This helps guests plan better and builds trust in PahariPath data.</p>
     <div class="h-card">
       <div class="fg"><label>Your Destination</label>
-        <select class="fi" id="hostCrowdPlace">
+        <select class="fi" id="hostCrowdPlace" onchange="const p=ALL.find(x=>x.id==this.value);document.getElementById('hostCrowdRange').value=p?p.crowd:50;document.getElementById('hostCrowdVal').textContent=(p?p.crowd:50)+'%';document.getElementById('hostCrowdNote').value=p?.crowdNote||'';">
           <option value="">— Select your destination —</option>
           ${ALL.map(p=>`<option value="${p.id}" ${_hostStay&&p.name===_hostStay.loc.split(',')[1]?.trim()?'selected':''}>${p.name} — ${p.district}</option>`).join('')}
         </select>
@@ -1505,6 +1505,7 @@ function hTab(tab, btn){
         </div>
       </div>
       <div class="fg"><label>Notes (optional)</label><input class="fi" id="hostCrowdNote" placeholder="e.g. Weekend festival, road blocked, school holidays…"/></div>
+      <p style="font-size:11px;color:var(--stone);margin:-8px 0 4px">Leave blank and save to clear a previous note (e.g. once a road reopens).</p>
       <button onclick="hostSaveCrowd()" style="background:var(--pine);color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb);width:100%">Update Crowd Level ✓</button>
     </div>
     <div class="h-card" style="background:#f0f6f2">
@@ -1547,14 +1548,15 @@ function hTab(tab, btn){
 async function hostSaveCrowd(){
   const pid = parseInt(document.getElementById('hostCrowdPlace')?.value||'0');
   const val = parseInt(document.getElementById('hostCrowdRange')?.value||'50');
+  const note = (document.getElementById('hostCrowdNote')?.value||'').trim();
   if(!pid){toast('Please select your destination');return;}
-  const {error}=await _sb.from('crowd_overrides').upsert({place_id:pid,crowd_value:val,updated_at:new Date().toISOString()},{onConflict:'place_id'});
+  const {error}=await _sb.from('crowd_overrides').upsert({place_id:pid,crowd_value:val,note:note||null,updated_at:new Date().toISOString()},{onConflict:'place_id'});
   if(error){toast('Error: '+error.message);return;}
-  const p=ALL.find(x=>x.id===pid);if(p)p.crowd=val;
+  const p=ALL.find(x=>x.id===pid);if(p){p.crowd=val;p.crowdNote=note||null;}
   CROWD_OVR[pid]=val;
   if(typeof renderCrowd==='function')renderCrowd();
   if(typeof renderMap==='function')renderMap();
-  toast(`✓ Crowd level updated to ${val}% — live for all travellers now`);
+  toast(`✓ Crowd level updated to ${val}%${note?' with a note':''} — live for all travellers now`);
 }
 
 async function hostSetAvailability(status){
@@ -1609,7 +1611,7 @@ async function loadCrowdOverrides(){
     data.forEach(r=>{
       CROWD_OVR[r.place_id]=r.crowd_value;
       const p=ALL.find(x=>x.id===r.place_id);
-      if(p) p.crowd=r.crowd_value;
+      if(p){ p.crowd=r.crowd_value; p.crowdNote=r.note||null; }
     });
   }
 }
@@ -2035,6 +2037,7 @@ function renderCrowd(){
           <span style="color:var(--stone)">${c}% busy</span>
           <span class="cp ${pClass(c)}">${cLabel(c)}</span>
         </div>
+        ${p.crowdNote?`<div style="margin-top:5px;font-size:10.5px;color:#a8710a;background:#fdf3e3;border-radius:6px;padding:3px 7px;display:inline-block">⚠️ ${p.crowdNote}</div>`:''}
       </div>
     </div>`;
   }).join('');
