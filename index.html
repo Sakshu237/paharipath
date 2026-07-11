@@ -5570,6 +5570,11 @@ async function showTravellerDashboard(){
 
   // Load latest score
   if(_tProfile?.phone) await loadTravellerScore(_tProfile.phone);
+  // Guard against opening this before the page's initial stay data has
+  // finished loading — happens more on mobile, where a slower connection
+  // gives a bigger window for someone to tap "My Profile" before ppInit()
+  // finishes. Without this, host contact / stay photos silently don't show.
+  if(!STAYS || STAYS.length===0) await loadStays();
   const ts = getTravellerScore();
   const title = getTravellerTitle(ts.points);
   const nextTier = TRAVELLER_TITLES.find(t=>t.min>ts.points);
