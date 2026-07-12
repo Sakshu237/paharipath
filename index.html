@@ -1124,6 +1124,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 </div>
 
 <div class="toast" id="toastEl"></div>
+<button onclick="openSupportMo()" title="Help & Support" style="position:fixed;bottom:24px;right:20px;z-index:400;width:52px;height:52px;border-radius:50%;background:var(--pine);color:#fff;border:none;box-shadow:0 4px 16px rgba(0,0,0,.25);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">🎧</button>
 
 <!-- STAY PHOTO LIGHTBOX -->
 <div class="slx" id="stayLightbox">
@@ -4301,6 +4302,19 @@ async function submitReview(){
   if(typeof showTravellerDashboard==='function') showTravellerDashboard();
 }
 
+async function cancelBookingInline(bookingId){
+  const phone=(_tProfile&&_tProfile.phone)||'';
+  if(!phone){toast('Please log in to manage this booking');return;}
+  if(!confirm('Cancel this booking? This cannot be undone.')) return;
+  const res = await fetch('/api/bookings', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'cancel', bookingRef:bookingId, phone}),
+  }).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(res.error){toast(res.error);return;}
+  toast('Booking cancelled');
+  if(typeof showTravellerDashboard==='function') showTravellerDashboard();
+}
+
 // ═══ CUSTOMER CARE / SUPPORT ═══
 function openSupportMo(){
   document.getElementById('moTitle').textContent='Help & Support';
@@ -6232,10 +6246,11 @@ async function showTravellerDashboard(){
       <div style="background:rgba(74,124,95,.06);padding:9px 14px;font-size:11.5px;display:flex;align-items:center;gap:7px;color:${step.c}">
         <span>${step.i}</span><span style="flex:1">${step.t}</span>
       </div>
-      ${stay?.contact||b.status==='completed'?`<div style="padding:0 14px 12px;display:flex;gap:8px;flex-wrap:wrap">
+      ${stay?.contact||b.status==='completed'||b.status==='confirmed'?`<div style="padding:0 14px 12px;display:flex;gap:8px;flex-wrap:wrap">
         ${stay?.contact?`<a href="https://wa.me/91${stay.contact}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;text-decoration:none">💬 Message Host</a>`:''}
         ${b.status==='completed'&&!myReviewedRefs.has(b.id)?`<button onclick="openReviewMo('${b.id}','${(b.stay_name||stay?.name||'your stay').replace(/'/g,"\\'")}')" style="background:var(--pine);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--fb)">⭐ Leave a Review</button>`:''}
         ${b.status==='completed'&&myReviewedRefs.has(b.id)?`<span style="font-size:11.5px;color:var(--stone);padding:6px 0">✓ Review submitted — thank you!</span>`:''}
+        ${b.status==='confirmed'?`<button onclick="cancelBookingInline('${b.id}')" style="background:none;color:#c0392b;border:1px solid #e0b3b3;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--fb)">✕ Cancel Booking</button>`:''}
       </div>`:''}
     </div>`;
   };
@@ -6731,6 +6746,7 @@ async function processPayment() {
     }
 
   BOOKINGS.unshift({...bookingRow, stay: bookingRow.stay_name});
+  window._lastBookingWhatsappUrl = createRes.data.whatsappUrl || null;
 
   // Points are awarded server-side, and ONLY once the check-in date
   // has actually arrived — this closes the "book then cancel" exploit,
@@ -6832,6 +6848,8 @@ async function processPayment() {
           <div class="epass-footer-l">paharipath.in · Issued ${new Date().toLocaleDateString('en-IN')}<br>Valid ID required at check-in</div>
         </div>
       </div>
+
+      ${window._lastBookingWhatsappUrl ? `<a href="${window._lastBookingWhatsappUrl}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;padding:12px;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none;margin-top:14px">💬 Save Confirmation to WhatsApp</a>` : ''}
 
      <!-- ═══ PAHADI PROGRESS (unified) ═══ -->
       ${pahadiLeveledUp ? `<div style="background:linear-gradient(135deg,#fff8e8,#fffdf0);border:2px solid #d4a017;border-radius:14px;padding:16px 18px;margin-top:14px;text-align:center">
