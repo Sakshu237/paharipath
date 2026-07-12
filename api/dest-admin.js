@@ -12,17 +12,46 @@
 //   action: 'journey-set'    — force a Plan My Journey verdict for a destination
 //   action: 'journey-clear'  — remove the override, go back to the formula
 
+// /api/dest-admin.js
+// Consolidated endpoint for "Destinations control" AND "PAHADI Task control".
+// One file, routed by `action`, to stay under Vercel's Hobby 12-function cap
+// (same pattern as /api/crowd.js).
+//
+// REQUEST BODY (POST, JSON): { action, ...fields, access_token }
+//   -- Destinations (admin only) --
+//   action: 'add'            — create a brand-new destination
+//   action: 'update'         — edit fields on an existing destination (built-in or added)
+//   action: 'delete'         — remove a destination (soft-delete for built-ins)
+//   action: 'restore'        — undo a delete
+//   action: 'journey-set'    — force a Plan My Journey verdict for a destination
+//   action: 'journey-clear'  — remove the override, go back to the formula
+//   -- PAHADI Tasks (admin only, except task-propose which any logged-in host can call) --
+//   action: 'task-add'       — admin adds a task directly (goes live immediately)
+//   action: 'task-update'    — admin edits a task (built-in or added)
+//   action: 'task-delete'    — admin removes a task (soft-delete for built-ins)
+//   action: 'task-restore'   — undo a soft-delete on a built-in task
+//   action: 'task-propose'   — HOST submits a task idea for admin review (any logged-in user)
+//   action: 'task-review'    — admin approves or rejects a pending proposal
+
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 
-async function verifyAdmin(access_token, adminEmail) {
-  if (!access_token || !adminEmail) return null;
+// Any logged-in user (host or traveller) — just checks the token is valid.
+async function verifyUser(access_token) {
+  if (!access_token) return null;
   const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${access_token}` },
   });
   if (!userRes.ok) return null;
   const user = await userRes.json();
-  if (!user.email || user.email.toLowerCase() !== adminEmail.toLowerCase()) return null;
+  return user.email ? user : null;
+}
+
+// Must be logged in AND match ADMIN_EMAIL.
+async function verifyAdmin(access_token, adminEmail) {
+  const user = await verifyUser(access_token);
+  if (!user || !adminEmail) return null;
+  if (user.email.toLowerCase() !== adminEmail.toLowerCase()) return null;
   return user;
 }
 
@@ -30,6 +59,8 @@ function slugify(name) {
   return String(name || '').toLowerCase().trim()
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
+
+const HOST_ONLY_ACTIONS = new Set(['task-propose']);
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -50,10 +81,13 @@ module.exports = async (req, res) => {
   };
 
   const { action, access_token } = req.body || {};
-  const user = await verifyAdmin(access_token, adminEmail);
-  if (!user) {
-    res.status(403).json({ error: 'Only the admin account can manage destinations' });
-    return;
+  let user;
+  if (HOST_ONLY_ACTIONS.has(action)) {
+    user = await verifyUser(access_token);
+    if (!user) { res.status(403).json({ error: 'Please log in to submit a task idea' }); return; }
+  } else {
+    user = await verifyAdmin(access_token, adminEmail);
+    if (!user) { res.status(403).json({ error: 'Only the admin account can do that' }); return; }
   }
 
   try {
@@ -194,6 +228,154 @@ module.exports = async (req, res) => {
       const del = await fetch(`${SUPABASE_URL}/rest/v1/journey_overrides?place_id=eq.${id}`, { method: 'DELETE', headers: svcHeaders });
       if (!del.ok) { res.status(400).json({ error: 'Clear failed: ' + await del.text() }); return; }
       res.status(200).json({ success: true });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'task-add' — admin adds a task directly, goes live immediately
+    // fields: tierIdx, icon, taskText, points
+    // ═══════════════════════════════════════════════
+    if (action === 'task-add') {
+      const b = req.body;
+      const tierIdx = parseInt(b.tierIdx);
+      if (isNaN(tierIdx) || !b.taskText) { res.status(400).json({ error: 'Tier and task text are required' }); return; }
+      const payload = {
+        tier_idx: tierIdx, icon: b.icon || '⭐', task_text: b.taskText,
+        points: parseInt(b.points) || 20, source: 'admin', submitted_by: user.email,
+      };
+      const insRes = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_additions`, {
+        method: 'POST', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(payload),
+      });
+      if (!insRes.ok) { res.status(400).json({ error: 'Add failed: ' + await insRes.text() }); return; }
+      const [row] = await insRes.json();
+      res.status(200).json({ success: true, task: row });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'task-update' — edit a task (built-in via task_key, or added via dbId)
+    // fields: taskKey (for built-ins) OR dbId (for admin/host-added), icon, taskText, points
+    // ═══════════════════════════════════════════════
+    if (action === 'task-update') {
+      const b = req.body;
+      const fields = {};
+      if (b.icon !== undefined) fields.icon = b.icon;
+      if (b.taskText !== undefined) fields.task_text = b.taskText;
+      if (b.points !== undefined) fields.points = parseInt(b.points);
+
+      if (b.dbId) {
+        const upd = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_additions?id=eq.${parseInt(b.dbId)}`, {
+          method: 'PATCH', headers: svcHeaders, body: JSON.stringify(fields),
+        });
+        if (!upd.ok) { res.status(400).json({ error: 'Update failed: ' + await upd.text() }); return; }
+      } else if (b.taskKey) {
+        const upd = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_overrides?on_conflict=task_key`, {
+          method: 'POST', headers: { ...svcHeaders, Prefer: 'resolution=merge-duplicates' },
+          body: JSON.stringify({ task_key: b.taskKey, ...fields, updated_at: new Date().toISOString() }),
+        });
+        if (!upd.ok) { res.status(400).json({ error: 'Update failed: ' + await upd.text() }); return; }
+      } else {
+        res.status(400).json({ error: 'Missing taskKey or dbId' }); return;
+      }
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'task-delete' — soft-delete a built-in, hard-delete an added one
+    // fields: taskKey (for built-ins) OR dbId (for added)
+    // ═══════════════════════════════════════════════
+    if (action === 'task-delete') {
+      const b = req.body;
+      if (b.dbId) {
+        const del = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_additions?id=eq.${parseInt(b.dbId)}`, { method: 'DELETE', headers: svcHeaders });
+        if (!del.ok) { res.status(400).json({ error: 'Delete failed: ' + await del.text() }); return; }
+      } else if (b.taskKey) {
+        const ins = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_deletions?on_conflict=task_key`, {
+          method: 'POST', headers: { ...svcHeaders, Prefer: 'resolution=merge-duplicates' },
+          body: JSON.stringify({ task_key: b.taskKey, deleted_at: new Date().toISOString(), deleted_by: user.email }),
+        });
+        if (!ins.ok) { res.status(400).json({ error: 'Delete failed: ' + await ins.text() }); return; }
+      } else {
+        res.status(400).json({ error: 'Missing taskKey or dbId' }); return;
+      }
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'task-restore' — undo a soft-delete on a built-in task
+    // fields: taskKey
+    // ═══════════════════════════════════════════════
+    if (action === 'task-restore') {
+      const taskKey = req.body.taskKey;
+      if (!taskKey) { res.status(400).json({ error: 'Missing taskKey' }); return; }
+      const del = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_deletions?task_key=eq.${encodeURIComponent(taskKey)}`, { method: 'DELETE', headers: svcHeaders });
+      if (!del.ok) { res.status(400).json({ error: 'Restore failed: ' + await del.text() }); return; }
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'task-propose' — HOST submits a task idea for review
+    // fields: tierIdx, icon, taskText, points
+    // ═══════════════════════════════════════════════
+    if (action === 'task-propose') {
+      const b = req.body;
+      const tierIdx = parseInt(b.tierIdx);
+      if (isNaN(tierIdx) || !b.taskText) { res.status(400).json({ error: 'Tier and task text are required' }); return; }
+      const payload = {
+        tier_idx: tierIdx, icon: b.icon || '⭐', task_text: b.taskText,
+        points: parseInt(b.points) || 20, host_email: user.email, status: 'pending',
+      };
+      const insRes = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_proposals`, {
+        method: 'POST', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(payload),
+      });
+      if (!insRes.ok) { res.status(400).json({ error: 'Submit failed: ' + await insRes.text() }); return; }
+      res.status(200).json({ success: true, message: 'Submitted for admin review' });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'task-review' — admin approves or rejects a pending proposal
+    // fields: proposalId, decision ('approve'|'reject')
+    // ═══════════════════════════════════════════════
+    if (action === 'task-review') {
+      const proposalId = parseInt(req.body.proposalId);
+      const decision = req.body.decision;
+      if (!proposalId || !['approve', 'reject'].includes(decision)) { res.status(400).json({ error: 'Missing or invalid fields' }); return; }
+
+      const getRes = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_proposals?id=eq.${proposalId}&select=*`, { headers: svcHeaders });
+      const [proposal] = await getRes.json();
+      if (!proposal) { res.status(404).json({ error: 'Proposal not found' }); return; }
+
+      if (decision === 'approve') {
+        const insRes = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_additions`, {
+          method: 'POST', headers: svcHeaders,
+          body: JSON.stringify({
+            tier_idx: proposal.tier_idx, icon: proposal.icon, task_text: proposal.task_text,
+            points: proposal.points, source: 'host', submitted_by: proposal.host_email,
+          }),
+        });
+        if (!insRes.ok) { res.status(400).json({ error: 'Approve failed: ' + await insRes.text() }); return; }
+      }
+      const updRes = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_proposals?id=eq.${proposalId}`, {
+        method: 'PATCH', headers: svcHeaders,
+        body: JSON.stringify({ status: decision === 'approve' ? 'approved' : 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: user.email }),
+      });
+      if (!updRes.ok) { res.status(400).json({ error: 'Review save failed: ' + await updRes.text() }); return; }
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'task-proposals-list' — admin fetches the pending queue
+    // ═══════════════════════════════════════════════
+    if (action === 'task-proposals-list') {
+      const listRes = await fetch(`${SUPABASE_URL}/rest/v1/pahadi_task_proposals?status=eq.pending&order=created_at.desc`, { headers: svcHeaders });
+      if (!listRes.ok) { res.status(400).json({ error: 'Fetch failed: ' + await listRes.text() }); return; }
+      const proposals = await listRes.json();
+      res.status(200).json({ success: true, proposals });
       return;
     }
 
