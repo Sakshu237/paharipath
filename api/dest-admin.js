@@ -379,6 +379,38 @@ module.exports = async (req, res) => {
       return;
     }
 
+    // ═══════════════════════════════════════════════
+    // action: 'review-list' — admin fetches all reviews for a stay (or all stays)
+    // fields: stayId (optional)
+    // ═══════════════════════════════════════════════
+    if (action === 'review-list') {
+      const stayId = req.body.stayId;
+      const url = stayId
+        ? `${SUPABASE_URL}/rest/v1/stay_reviews?stay_id=eq.${parseInt(stayId)}&order=created_at.desc`
+        : `${SUPABASE_URL}/rest/v1/stay_reviews?order=created_at.desc&limit=200`;
+      const listRes = await fetch(url, { headers: svcHeaders });
+      if (!listRes.ok) { res.status(400).json({ error: 'Fetch failed: ' + await listRes.text() }); return; }
+      const reviews = await listRes.json();
+      res.status(200).json({ success: true, reviews });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'review-moderate' — admin hides or restores a review
+    // fields: reviewId, status ('published'|'hidden')
+    // ═══════════════════════════════════════════════
+    if (action === 'review-moderate') {
+      const reviewId = parseInt(req.body.reviewId);
+      const status = req.body.status;
+      if (!reviewId || !['published', 'hidden'].includes(status)) { res.status(400).json({ error: 'Missing or invalid fields' }); return; }
+      const upd = await fetch(`${SUPABASE_URL}/rest/v1/stay_reviews?id=eq.${reviewId}`, {
+        method: 'PATCH', headers: svcHeaders, body: JSON.stringify({ status }),
+      });
+      if (!upd.ok) { res.status(400).json({ error: 'Update failed: ' + await upd.text() }); return; }
+      res.status(200).json({ success: true });
+      return;
+    }
+
     res.status(400).json({ error: 'Unknown action' });
   } catch (err) {
     res.status(500).json({ error: 'Server error: ' + err.message });
