@@ -1709,6 +1709,7 @@ async function ppInit(){
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3d2b;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;z-index:9999;font-family:DM Sans,sans-serif';
   t.textContent='Loading PahariPath…';
   document.body.appendChild(t);
+  await loadDestinationEdits(); // must resolve before crowd overrides map onto ALL by id
   await Promise.all([loadStays(), loadCrowdOverrides(), loadZoneCaps(), loadNgoActivities(), loadHostFeedbacks(), loadPlaceMedia(), loadCoordOverrides()]);
   document.body.removeChild(t);
   const {data:{session}}=await _sb.auth.getSession();
@@ -2002,6 +2003,70 @@ async function adminDeleteMedia(pid,idx,type){
 }
 // Crowd overrides — loaded from Supabase on init, fallback to empty
 let CROWD_OVR = {};
+// Plan My Journey verdict overrides — { place_id: {verdict, reason} }
+let JOURNEY_OVR = {};
+// Destinations soft-deleted by admin (kept here so the admin panel can
+// still show + restore them, even though they're filtered out of ALL)
+let DEST_DELETIONS = [];
+
+// Merges live-editable destination data (new admin-added destinations,
+// field overrides on the 146 built-ins, soft-deletes, and journey
+// verdict overrides) into the ALL array. Safe to call more than once.
+async function loadDestinationEdits(){
+  try{
+    const [addRes, ovrRes, delRes, jrnRes] = await Promise.all([
+      _sb.from('destination_additions').select('*'),
+      _sb.from('destination_overrides').select('*'),
+      _sb.from('destination_deletions').select('*'),
+      _sb.from('journey_overrides').select('*').eq('active', true),
+    ]);
+
+    // Snapshot names/emoji of anything about to be deleted, for the
+    // admin "Deleted destinations" restore panel.
+    DEST_DELETIONS = (delRes.data||[]).map(r=>{
+      const orig = ALL.find(p=>p.id===r.place_id);
+      return { place_id:r.place_id, name: orig?orig.name:('#'+r.place_id), emoji: orig?orig.emoji:'📍', deleted_at:r.deleted_at };
+    });
+
+    // Apply field overrides onto the matching built-in destination.
+    (ovrRes.data||[]).forEach(r=>{
+      const p = ALL.find(x=>x.id===r.place_id);
+      if(!p) return;
+      if(r.name) p.name = r.name;
+      if(r.district) p.district = r.district;
+      if(r.description) p.desc = r.description;
+      if(r.emoji) p.emoji = r.emoji;
+      if(r.vibes) p.vibes = r.vibes;
+      if(r.best_time) p.bestTime = r.best_time;
+      if(r.altitude) p.altitude = r.altitude;
+      if(r.famous_for) p.famousFor = r.famous_for;
+      if(r.zone) p.zone = r.zone;
+    });
+
+    // Append any admin-added destinations (avoid duplicates on re-load).
+    (addRes.data||[]).forEach(r=>{
+      if(ALL.find(x=>x.id===r.id)) return;
+      ALL.push({
+        id:r.id, name:r.name, district:r.district, desc:r.description, emoji:r.emoji||'📍',
+        crowd:r.crowd||20, vibes:r.vibes||[], color:r.color||'#dde8d4',
+        bestTime:r.best_time, altitude:r.altitude, famousFor:r.famous_for, zone:r.zone,
+        mx:r.mx, my:r.my, lat:r.lat, lng:r.lng, slug:r.slug, isAdminAdded:true,
+      });
+    });
+
+    // Remove soft-deleted destinations from the live array.
+    const delIds = new Set((delRes.data||[]).map(r=>r.place_id));
+    if(delIds.size){
+      for(let i=ALL.length-1;i>=0;i--){ if(delIds.has(ALL[i].id)) ALL.splice(i,1); }
+    }
+
+    // Journey verdict overrides, keyed for O(1) lookup in planFC().
+    JOURNEY_OVR = {};
+    (jrnRes.data||[]).forEach(r=>{ JOURNEY_OVR[r.place_id] = { verdict:r.verdict, reason:r.reason||'' }; });
+  }catch(e){
+    console.warn('loadDestinationEdits failed, continuing with built-in data', e);
+  }
+}
 
 // ═══ IMAGE URL VALIDATION ═══
 // Catches the most common mistake — pasting a photo's page URL instead of
@@ -2979,7 +3044,14 @@ async function runFC(){
   if(seas==='snow')sf=alt>3000?{i:'🌨',l:'Heavy Snow',c:'d',d:`${p.altitude} — routes likely blocked`}:{i:'❄️',l:'Snow Likely',c:'w',d:`${p.altitude} — expect snowfall`};
   else if(alt>3500&&[10,11,0,1,2,3].includes(mo))sf={i:'❄️',l:'Snow Likely',c:'w',d:`High altitude — verify road access`};
   let ac='g',adv='';
-  if(seas==='rain'||ls.c==='d'){ac='d';adv=`⚠️ NOT RECOMMENDED for ${p.name} during monsoon. Landslide risk is high Jul–Sep. Postpone to October.`;}
+  const jOvr = JOURNEY_OVR[p.id];
+  if(jOvr){
+    // Admin override — beats the season/crowd formula entirely.
+    if(jOvr.verdict==='not_recommended'){ac='d';adv=`🚫 NOT RECOMMENDED for ${p.name} right now.${jOvr.reason?' '+jOvr.reason:''}`;}
+    else if(jOvr.verdict==='caution'){ac='w';adv=`🟡 Plan carefully for ${p.name}.${jOvr.reason?' '+jOvr.reason:''}`;}
+    else{ac='g';adv=`✅ Good to go for ${p.name}!${jOvr.reason?' '+jOvr.reason:''}`;}
+  }
+  else if(seas==='rain'||ls.c==='d'){ac='d';adv=`⚠️ NOT RECOMMENDED for ${p.name} during monsoon. Landslide risk is high Jul–Sep. Postpone to October.`;}
   else if(seas==='snow'&&alt>3000){ac='d';adv=`🚫 ${p.name} (${p.altitude}) likely INACCESSIBLE. Open ${p.bestTime}. Verify before travelling.`;}
   else if(crowd<40&&(seas==='good'||seas==='dry')){ac='g';adv=`✅ Excellent time to visit ${p.name}! Low crowd, ${w.l.toLowerCase()} weather. ${dy===0||dy===6?'Weekend — slightly busier than weekdays.':'Weekday — quietest possible.'} Perfect for a ${nights}-night trip.`;}
   else if(crowd>=70){ac='w';adv=`🟡 ${p.name} will be busy during this period. Start early (before 9am), book accommodation in advance, and consider nearby quieter alternatives.`;}
@@ -4493,7 +4565,7 @@ function adTab(tab,el){
   if(tab==='dash'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Dashboard</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:20px">
-      ${[{n:'146',l:'Destinations'},{n:STAYS.length,l:'Listed Stays'},{n:BOOKINGS.length,l:'Bookings'},{n:'₹'+(BOOKINGS.filter(b=>b.status==='confirmed').length*4500).toLocaleString(),l:'Revenue (est.)'},{n:'5',l:'Eco Permits Today'},{n:Math.round(ALL.reduce((a,p)=>a+p.crowd,0)/ALL.length)+'%',l:'Avg Crowd'}].map(s=>`<div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04)"><div style="font-family:var(--fd);font-size:26px;color:var(--pine)">${s.n}</div><div style="font-size:11px;color:var(--stone);margin-top:3px">${s.l}</div></div>`).join('')}
+      ${[{n:ALL.length,l:'Destinations'},{n:STAYS.length,l:'Listed Stays'},{n:BOOKINGS.length,l:'Bookings'},{n:'₹'+(BOOKINGS.filter(b=>b.status==='confirmed').length*4500).toLocaleString(),l:'Revenue (est.)'},{n:'5',l:'Eco Permits Today'},{n:Math.round(ALL.reduce((a,p)=>a+p.crowd,0)/ALL.length)+'%',l:'Avg Crowd'}].map(s=>`<div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04)"><div style="font-family:var(--fd);font-size:26px;color:var(--pine)">${s.n}</div><div style="font-size:11px;color:var(--stone);margin-top:3px">${s.l}</div></div>`).join('')}
     </div>
     <div class="adm-panel"><h3>Recent Bookings</h3><div class="bk-list">${BOOKINGS.slice(0,5).map(b=>`<div class="bk-item"><div><div class="bk-n">${b.guest} — ${b.stay}</div><div class="bk-m">Ref: ${b.id} · ${b.dates} · ${b.amount}${b.eco?` · 🌱 ₹${b.ecoAmount} offset (${b.ecoTrees} tree${b.ecoTrees!==1?'s':''})`:''}</div></div><span class="bst ${b.status==='confirmed'?'bs-c':'bs-p'}">${b.status}</span></div>`).join('')}</div></div>
     <div class="adm-panel"><h3>🚨 Crowd Alerts — Very Busy Now</h3>${ALL.filter(p=>p.crowd>=70).map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f0f0ee;flex-wrap:wrap"><span style="font-size:16px">${p.emoji}</span><span style="font-size:13px;font-weight:500;flex:1">${p.name}</span><span class="cp ph">${p.crowd}% — Very Crowded</span><button class="ab ab-d" onclick="toast('Alert sent for ${p.name}')">Alert visitors</button></div>`).join('')}</div>`;
@@ -4510,10 +4582,39 @@ function adTab(tab,el){
       <span class="ce-v" style="color:${cColor(p.crowd)}">${p.crowd}%</span></div></div>`).join('');
     loadCrowdLog();
   }else if(tab==='dest'){
-    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">All 146 Destinations</h2>
-    <div class="adm-panel" style="overflow-x:auto"><table class="dt"><thead><tr><th>#</th><th>Name</th><th>District</th><th>Altitude</th><th>Crowd</th><th>Zone</th><th>Vibes</th></tr></thead><tbody>
-    ${ALL.map(p=>`<tr><td style="opacity:.5">${p.id}</td><td><b>${p.emoji} ${p.name}</b></td><td>${p.district}</td><td>${p.altitude||'—'}</td><td><span class="cp ${pClass(p.crowd)}">${p.crowd}%</span></td><td>${p.zone}</td><td style="font-size:11px">${(p.vibes||[]).join(', ')}</td></tr>`).join('')}
-    </tbody></table></div>`;
+    const jLabel={good:'✅ Good',caution:'🟡 Caution',not_recommended:'🚫 Not recommended'};
+    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Manage Destinations (${ALL.length})</h2>
+    <div class="adm-panel">
+      <h3 id="destFormTitle">Add New Destination</h3>
+      <input type="hidden" id="editDestId" value=""/>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:12px">
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Name</label><input class="ai" id="dName" placeholder="e.g. Shoja"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">District</label><input class="ai" id="dDistrict" placeholder="e.g. Kullu"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Zone</label><input class="ai" id="dZone" placeholder="e.g. tirthan, spiti, kinnaur"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Altitude</label><input class="ai" id="dAltitude" placeholder="e.g. 2300m"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Best Time</label><input class="ai" id="dBestTime" placeholder="e.g. Mar–Jun, Sep–Nov"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Famous For</label><input class="ai" id="dFamousFor" placeholder="e.g. Jalori Pass views"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Emoji</label><input class="ai" id="dEmoji" placeholder="🏔️" style="font-size:18px" maxlength="2"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Starting Crowd %</label><input class="ai" id="dCrowd" type="number" min="0" max="100" placeholder="e.g. 20"/></div>
+      </div>
+      <div style="margin-bottom:12px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Description</label><textarea class="ai" id="dDesc" rows="2" style="width:100%;resize:vertical" placeholder="Short description shown on the destination card"></textarea></div>
+      <div style="margin-bottom:14px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Tags (comma-separated)</label><input class="ai" id="dVibes" placeholder="offbeat, trek, nature" style="width:100%"/></div>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <button class="ab ab-p" id="destSubmitBtn" onclick="adminSaveDest()">+ Add Destination</button>
+        <button class="ab" id="destCancelBtn" style="display:none;background:#f4f5f2;color:var(--stone);border:1px solid #ddd" onclick="adminCancelEditDest()">Cancel</button>
+      </div>
+    </div>
+    <div class="adm-panel" style="overflow-x:auto"><table class="dt"><thead><tr><th>#</th><th>Name</th><th>District</th><th>Altitude</th><th>Crowd</th><th>Zone</th><th>Tags</th><th>Plan My Journey</th><th>Actions</th></tr></thead><tbody id="destTbody">
+    ${ALL.map(p=>`<tr id="destrow-${p.id}"><td style="opacity:.5">${p.id}${p.isAdminAdded?' <span style="color:#1e6b3c" title="Added via admin">●</span>':''}</td><td><b>${p.emoji} ${p.name}</b></td><td>${p.district}</td><td>${p.altitude||'—'}</td><td><span class="cp ${pClass(p.crowd)}">${p.crowd}%</span></td><td>${p.zone||'—'}</td><td style="font-size:11px">${(p.vibes||[]).join(', ')||'—'}</td>
+      <td><select class="ai" style="font-size:11px;padding:4px 6px" onchange="adminSetJourney(${p.id},this.value)">
+        <option value="auto" ${!JOURNEY_OVR[p.id]?'selected':''}>Auto (formula)</option>
+        <option value="good" ${JOURNEY_OVR[p.id]?.verdict==='good'?'selected':''}>✅ Force Good</option>
+        <option value="caution" ${JOURNEY_OVR[p.id]?.verdict==='caution'?'selected':''}>🟡 Force Caution</option>
+        <option value="not_recommended" ${JOURNEY_OVR[p.id]?.verdict==='not_recommended'?'selected':''}>🚫 Force Not Recommended</option>
+      </select></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap"><button class="ab ab-p" style="font-size:11px;padding:5px 10px" onclick="adminEditDest(${p.id})">✏️ Edit</button><button class="ab ab-d" style="font-size:11px;padding:5px 10px" onclick="adminDeleteDest(${p.id},'${p.name.replace(/'/g,"\\'")}')">🗑 Delete</button></td></tr>`).join('')}
+    </tbody></table></div>
+    ${DEST_DELETIONS.length?`<div class="adm-panel"><h3>🗑 Deleted Destinations</h3>${DEST_DELETIONS.map(d=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0ee"><span>${d.emoji} ${d.name}</span><button class="ab" style="font-size:11px;padding:4px 10px;margin-left:auto" onclick="adminRestoreDest(${d.place_id})">↩️ Restore</button></div>`).join('')}</div>`:''}`;
   }else if(tab==='stays'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Manage Stays</h2>
     <div class="adm-panel">
@@ -5122,6 +5223,115 @@ async function adminDeleteStay(id){
   renderStays();
   adTab('stays',document.querySelector('.adm-ni:nth-child(5)'));
   toast('Stay deleted: '+s.name);
+}
+
+// ═══ DESTINATIONS ADMIN (add / edit / delete / tags / journey override) ═══
+async function _destAdminCall(body){
+  const {data:{session}} = await _sb.auth.getSession();
+  if(!session){toast('Session expired — please log in again');return null;}
+  const res = await fetch('/api/dest-admin', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({...body, access_token: session.access_token}),
+  });
+  const json = await res.json();
+  if(!res.ok){toast('Error: '+(json.error||'unknown error'));return null;}
+  return json;
+}
+
+function adminEditDest(id){
+  const p=ALL.find(x=>x.id===id);if(!p)return;
+  document.getElementById('editDestId').value=id;
+  document.getElementById('dName').value=p.name||'';
+  document.getElementById('dDistrict').value=p.district||'';
+  document.getElementById('dZone').value=p.zone||'';
+  document.getElementById('dAltitude').value=p.altitude||'';
+  document.getElementById('dBestTime').value=p.bestTime||'';
+  document.getElementById('dFamousFor').value=p.famousFor||'';
+  document.getElementById('dEmoji').value=p.emoji||'';
+  document.getElementById('dCrowd').value=p.crowd||'';
+  document.getElementById('dDesc').value=p.desc||'';
+  document.getElementById('dVibes').value=(p.vibes||[]).join(', ');
+  document.getElementById('destFormTitle').textContent='Edit '+p.name;
+  document.getElementById('destSubmitBtn').textContent='💾 Save Changes';
+  document.getElementById('destCancelBtn').style.display='inline-block';
+  document.querySelector('.adm-panel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function adminCancelEditDest(){
+  ['editDestId','dName','dDistrict','dZone','dAltitude','dBestTime','dFamousFor','dEmoji','dCrowd','dDesc','dVibes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('destFormTitle').textContent='Add New Destination';
+  document.getElementById('destSubmitBtn').textContent='+ Add Destination';
+  document.getElementById('destCancelBtn').style.display='none';
+}
+
+async function adminSaveDest(){
+  const id=document.getElementById('editDestId').value;
+  const name=document.getElementById('dName').value.trim();
+  const district=document.getElementById('dDistrict').value.trim();
+  if(!name||!district){toast('Name and district are required');return;}
+  const vibes=document.getElementById('dVibes').value.split(',').map(v=>v.trim()).filter(Boolean);
+  const fields={
+    name, district, zone:document.getElementById('dZone').value.trim(),
+    altitude:document.getElementById('dAltitude').value.trim(),
+    bestTime:document.getElementById('dBestTime').value.trim(),
+    famousFor:document.getElementById('dFamousFor').value.trim(),
+    emoji:document.getElementById('dEmoji').value.trim()||'📍',
+    crowd:parseInt(document.getElementById('dCrowd').value)||20,
+    desc:document.getElementById('dDesc').value.trim(),
+    vibes,
+  };
+
+  if(id){
+    const json=await _destAdminCall({action:'update', id:parseInt(id), ...fields});
+    if(!json)return;
+    const p=ALL.find(x=>x.id===parseInt(id));
+    if(p) Object.assign(p,fields);
+    toast('Destination updated ✓');
+  }else{
+    const json=await _destAdminCall({action:'add', ...fields});
+    if(!json)return;
+    const r=json.destination;
+    ALL.push({id:r.id,name:r.name,district:r.district,desc:r.description,emoji:r.emoji,crowd:r.crowd,vibes:r.vibes||[],color:r.color,bestTime:r.best_time,altitude:r.altitude,famousFor:r.famous_for,zone:r.zone,mx:r.mx,my:r.my,slug:r.slug,isAdminAdded:true});
+    toast('Destination added ✓ — live for all users now');
+  }
+  adminCancelEditDest();
+  adTab('dest',document.querySelector('.adm-ni[onclick*="dest"]'));
+  renderMap();renderPlaces(curFilter);
+}
+
+async function adminDeleteDest(id,name){
+  if(!confirm('Delete "'+name+'"? It will disappear from the live site immediately. You can restore it later from this tab.'))return;
+  const json=await _destAdminCall({action:'delete', id});
+  if(!json)return;
+  const idx=ALL.findIndex(x=>x.id===id);
+  if(idx>=0){ DEST_DELETIONS.push({place_id:id,name:ALL[idx].name,emoji:ALL[idx].emoji,deleted_at:new Date().toISOString()}); ALL.splice(idx,1); }
+  toast('Deleted: '+name);
+  adTab('dest',document.querySelector('.adm-ni[onclick*="dest"]'));
+  renderMap();renderPlaces(curFilter);
+}
+
+async function adminRestoreDest(id){
+  const json=await _destAdminCall({action:'restore', id});
+  if(!json)return;
+  toast('Restored ✓ — reloading destination data');
+  await loadDestinationEdits();
+  adTab('dest',document.querySelector('.adm-ni[onclick*="dest"]'));
+  renderMap();renderPlaces(curFilter);
+}
+
+async function adminSetJourney(id,val){
+  if(val==='auto'){
+    const json=await _destAdminCall({action:'journey-clear', id});
+    if(!json)return;
+    delete JOURNEY_OVR[id];
+    toast('Back to automatic — formula decides Plan My Journey for this place');
+    return;
+  }
+  const reason=prompt('Optional note shown to travellers (leave blank for none):','')||'';
+  const json=await _destAdminCall({action:'journey-set', id, verdict:val, reason});
+  if(!json)return;
+  JOURNEY_OVR[id]={verdict:val, reason};
+  toast('Plan My Journey override saved ✓');
 }
 
 // ═══ HOST FEEDBACK ═══
