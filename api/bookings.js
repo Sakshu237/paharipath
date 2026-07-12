@@ -203,6 +203,48 @@ module.exports = async (req, res) => {
       return;
     }
 
+    // ═══════════════════════════════════════════════════════
+    // action: 'submit-review' — guest reviews a stay AFTER checkout.
+    // Verified against a real, completed booking so only actual
+    // guests can leave a review (one per booking, enforced by a
+    // unique constraint on booking_ref).
+    // fields: bookingRef, phone, rating (1-5), comment
+    // ═══════════════════════════════════════════════════════
+    if (action === 'submit-review') {
+      const { bookingRef, phone, rating, comment } = req.body;
+      const ratingNum = parseInt(rating);
+      if (!bookingRef || !phone || !ratingNum || ratingNum < 1 || ratingNum > 5) {
+        res.status(400).json({ error: 'Missing or invalid fields' });
+        return;
+      }
+      const bookingRes = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&select=*`, { headers });
+      const bookings = await bookingRes.json();
+      const booking = Array.isArray(bookings) ? bookings[0] : null;
+      if (!booking) { res.status(404).json({ error: 'Booking not found' }); return; }
+      if (booking.guest_phone !== phone) { res.status(403).json({ error: 'This phone number does not match the booking on record' }); return; }
+      if (booking.status !== 'completed') { res.status(400).json({ error: 'You can review a stay after your check-out date has passed' }); return; }
+
+      const insRes = await fetch(`${SUPABASE_URL}/rest/v1/stay_reviews`, {
+        method: 'POST',
+        headers: { ...headers, Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          stay_id: booking.stay_id, booking_ref: bookingRef, guest_name: booking.guest,
+          guest_phone: phone, rating: ratingNum, comment: comment || '',
+        }),
+      });
+      if (!insRes.ok) {
+        const errText = await insRes.text();
+        if (errText.includes('duplicate') || errText.includes('unique')) {
+          res.status(400).json({ error: 'You already reviewed this stay' });
+        } else {
+          res.status(400).json({ error: 'Review save failed: ' + errText });
+        }
+        return;
+      }
+      res.status(200).json({ success: true });
+      return;
+    }
+
     res.status(400).json({ error: 'Unknown action' });
   } catch (err) {
     res.status(500).json({ error: 'Server error: ' + err.message });
