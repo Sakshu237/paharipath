@@ -1562,10 +1562,10 @@ async function hostSaveCrowd(){
   if(!p){toast('Destination not found');return;}
   const {data:{session}} = await _sb.auth.getSession();
   if(!session){toast('Session expired — please log in again');return;}
-  const res = await fetch('/api/update-crowd', {
+  const res = await fetch('/api/crowd', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({place_id:pid, place_name:p.name, crowd_value:val, note:note||null, access_token:session.access_token})
+    body: JSON.stringify({action:'submit', place_id:pid, place_name:p.name, crowd_value:val, note:note||null, access_token:session.access_token})
   });
   const json = await res.json();
   if(!res.ok){toast('Error: '+(json.error||'Could not submit update'));return;}
@@ -1627,10 +1627,10 @@ async function loadCrowdLog(){
   const {data:{session}} = await _sb.auth.getSession();
   if(!session){pendingPanel.innerHTML=histPanel.innerHTML='<span style="color:#b3261e">Not logged in.</span>';return;}
   try{
-    const res = await fetch('/api/crowd-log', {
+    const res = await fetch('/api/crowd', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({access_token:session.access_token})
+      body: JSON.stringify({action:'log', access_token:session.access_token})
     });
     const json = await res.json();
     if(!res.ok){pendingPanel.innerHTML=histPanel.innerHTML=`<span style="color:#b3261e">${json.error||'Could not load'}</span>`;return;}
@@ -1662,10 +1662,10 @@ async function loadCrowdLog(){
 async function reviewCrowdRequest(id,action){
   const {data:{session}} = await _sb.auth.getSession();
   if(!session){toast('Session expired — please log in again');return;}
-  const res = await fetch('/api/review-crowd', {
+  const res = await fetch('/api/crowd', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({request_id:id, action, access_token:session.access_token})
+    body: JSON.stringify({action:'review', request_id:id, review_action:action, access_token:session.access_token})
   });
   const json = await res.json();
   if(!res.ok){toast('Error: '+(json.error||'Could not review'));return;}
@@ -5457,10 +5457,10 @@ async function saveCrowd(){
   const {data:{session}} = await _sb.auth.getSession();
   if(!session){toast('Session expired — please log in again');return;}
   const updates = ALL.map(p=>({place_id:p.id,crowd_value:p.crowd}));
-  const res = await fetch('/api/admin-set-crowd', {
+  const res = await fetch('/api/crowd', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({updates, access_token:session.access_token})
+    body: JSON.stringify({action:'admin-set', updates, access_token:session.access_token})
   });
   const json = await res.json();
   if(!res.ok){toast('Error saving crowd: '+(json.error||'unknown error'));return;}
