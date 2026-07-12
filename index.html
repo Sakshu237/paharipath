@@ -899,6 +899,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <a href="/terms-of-service.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Terms of Service</a>
   <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
   <a href="#" onclick="openManageBooking()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Manage / Cancel Booking</a>
+  <a href="#" onclick="openSupportMo()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Help & Support</a>
   <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us</a></div><!-- /home -->
 
 <!-- ADMIN LOGIN -->
@@ -1003,6 +1004,8 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="adm-ni" onclick="adTab('crowd',this)">🚦 Crowd Levels</div>
       <div class="adm-ni" onclick="adTab('dest',this)">📍 Destinations</div>
       <div class="adm-ni" onclick="adTab('tasks',this)">🎯 PAHADI Tasks</div>
+      <div class="adm-ni" onclick="adTab('reviews',this)">⭐ Reviews</div>
+      <div class="adm-ni" onclick="adTab('support',this)">🎧 Support</div>
       <div class="adm-ni" onclick="adTab('stays',this)">🏡 Stays</div>
       <div class="adm-ni" onclick="adTab('book',this)">📋 Bookings</div>
       <div class="adm-ni" onclick="adTab('eco',this)">🌿 Eco Permits</div>
@@ -4164,9 +4167,9 @@ async function lookupMyBooking(){
   if(!ref){errEl.textContent='Please enter your booking reference';errEl.style.display='block';return;}
   if(!phone||!/^[6-9]\d{9}$/.test(phone)){errEl.textContent='Please enter a valid 10-digit mobile number';errEl.style.display='block';return;}
 
-  const res = await fetch('/api/lookup-booking', {
+  const res = await fetch('/api/bookings', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({bookingRef:ref, phone})
+    body: JSON.stringify({action:'lookup', bookingRef:ref, phone})
   }).then(r=>r.json()).catch(e=>({error:e.message}));
 
   if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}
@@ -4207,9 +4210,9 @@ async function cancelMyBooking(ref){
   const errEl=document.getElementById('mbCancelErr');
   if(!confirm('Cancel this booking? This cannot be undone.')) return;
 
-  const res = await fetch('/api/cancel-booking', {
+  const res = await fetch('/api/bookings', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({bookingRef:ref, phone})
+    body: JSON.stringify({action:'cancel', bookingRef:ref, phone})
   }).then(r=>r.json()).catch(e=>({error:e.message}));
 
   if(res.error){
@@ -4261,6 +4264,86 @@ function openPermitMo(name){
   document.body.style.overflow='hidden';
 }
 function closeMo(){document.getElementById('bookMo').classList.remove('open');document.body.style.overflow='';}
+
+// ═══ GUEST REVIEWS ═══
+function openReviewMo(bookingRef, stayName){
+  document.getElementById('moTitle').textContent='Review — '+stayName;
+  document.getElementById('moBody').innerHTML=`
+    <input type="hidden" id="revBookingRef" value="${bookingRef}"/>
+    <div style="text-align:center;margin-bottom:18px">
+      <div id="revStars" style="font-size:34px;letter-spacing:6px;cursor:pointer">${[1,2,3,4,5].map(n=>`<span onclick="setReviewStars(${n})" data-star="${n}" style="color:#ddd">★</span>`).join('')}</div>
+      <div style="font-size:12px;color:var(--stone);margin-top:4px">Tap to rate your stay at ${stayName}</div>
+    </div>
+    <textarea id="revComment" class="ai" rows="4" placeholder="What was your experience like? (optional)" style="width:100%;resize:vertical;margin-bottom:16px"></textarea>
+    <button onclick="submitReview()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit Review</button>`;
+  document.getElementById('bookMo').classList.add('open');
+  document.body.style.overflow='hidden';
+  window._reviewStars=0;
+}
+function setReviewStars(n){
+  window._reviewStars=n;
+  document.querySelectorAll('#revStars span').forEach(el=>{ el.style.color = parseInt(el.dataset.star)<=n ? '#e6a83c' : '#ddd'; });
+}
+async function submitReview(){
+  const bookingRef=document.getElementById('revBookingRef').value;
+  const comment=document.getElementById('revComment').value.trim();
+  const rating=window._reviewStars||0;
+  if(!rating){toast('Please select a star rating');return;}
+  const phone=(_tProfile&&_tProfile.phone)||'';
+  if(!phone){toast('Please log in to leave a review');return;}
+  const res = await fetch('/api/bookings', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'submit-review', bookingRef, phone, rating, comment}),
+  }).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(res.error){toast(res.error);return;}
+  toast('✓ Thanks for your review!');
+  closeMo();
+  if(typeof showTravellerDashboard==='function') showTravellerDashboard();
+}
+
+// ═══ CUSTOMER CARE / SUPPORT ═══
+function openSupportMo(){
+  document.getElementById('moTitle').textContent='Help & Support';
+  document.getElementById('moBody').innerHTML=`
+    <p style="font-size:13px;color:var(--stone);margin-bottom:16px">Tell us what's up — we typically respond within a day. For anything urgent about an active stay, WhatsApp your host directly for the fastest response.</p>
+    <div style="margin-bottom:12px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Your name</label><input class="ai" id="supName" style="width:100%"/></div>
+    <div style="margin-bottom:12px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Phone or email</label><input class="ai" id="supContact" style="width:100%"/></div>
+    <div style="margin-bottom:12px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">What's this about?</label>
+      <select class="ai" id="supCategory" style="width:100%">
+        <option value="booking">Booking issue</option>
+        <option value="payment">Payment / refund</option>
+        <option value="host">Host / property concern</option>
+        <option value="account">Account / PAHADI points</option>
+        <option value="general" selected>General question</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Booking reference (if applicable)</label><input class="ai" id="supBookingRef" style="width:100%" placeholder="e.g. PP-2847"/></div>
+    <div style="margin-bottom:16px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Message</label><textarea class="ai" id="supMessage" rows="4" style="width:100%;resize:vertical"></textarea></div>
+    <button onclick="submitSupportTicket()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Send Message</button>`;
+  document.getElementById('bookMo').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{
+    const n=document.getElementById('supName'), p=document.getElementById('supContact');
+    if(n&&!n.value&&_tProfile?.name) n.value=_tProfile.name;
+    if(p&&!p.value&&_tProfile?.phone) p.value=_tProfile.phone;
+  },100);
+}
+async function submitSupportTicket(){
+  const name=document.getElementById('supName').value.trim();
+  const contact=document.getElementById('supContact').value.trim();
+  const category=document.getElementById('supCategory').value;
+  const bookingRef=document.getElementById('supBookingRef').value.trim();
+  const message=document.getElementById('supMessage').value.trim();
+  if(!name||!contact||!message){toast('Please fill in your name, contact, and message');return;}
+  const res = await fetch('/api/support', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'submit', name, contact, category, bookingRef, message}),
+  }).then(r=>r.json()).catch(e=>({error:e.message}));
+  if(res.error){toast(res.error);return;}
+  toast('✓ '+(res.message||"We've got your message — we'll get back to you soon."));
+  closeMo();
+}
+
 
 function buildBookForm(s) {
   // Set default dates: tomorrow and day after
@@ -4693,6 +4776,64 @@ function adTab(tab,el){
         <button class="ab ab-d" style="font-size:11px;padding:5px 10px" onclick="adminReviewProposal(${p.id},'reject')">✕ Reject</button>
       </div>`).join('');
     });
+  }else if(tab==='reviews'){
+    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">⭐ Guest Reviews</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:16px">All reviews are public by default. Hide anything abusive, fake, or unfair — hidden reviews stop showing on the stay's page immediately.</p>
+    <div class="adm-panel"><div id="adminReviewsList"><div style="text-align:center;padding:40px;color:var(--stone)">Loading…</div></div></div>`;
+    (async()=>{
+      const {data:{session}} = await _sb.auth.getSession();
+      const res = await fetch('/api/dest-admin', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'review-list', access_token:session?.access_token}) });
+      const json = await res.json();
+      const el = document.getElementById('adminReviewsList');
+      if(!el) return;
+      if(!res.ok){ el.innerHTML=`<div style="padding:20px;text-align:center;color:#b3261e">Error: ${json.error||'Could not load reviews'}</div>`; return; }
+      const reviews = json.reviews||[];
+      if(!reviews.length){ el.innerHTML='<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">No reviews yet.</div>'; return; }
+      el.innerHTML = reviews.map(r=>{
+        const stay = STAYS.find(s=>s.id===r.stay_id);
+        return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0ee">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--ink)">${stay?stay.name:'Stay #'+r.stay_id} <span style="color:#e6a83c;font-weight:400">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span></div>
+            <div style="font-size:11px;color:var(--stone);margin:2px 0">${r.guest_name||'Guest'} · ${new Date(r.created_at).toLocaleDateString()} · Ref: ${r.booking_ref}</div>
+            ${r.comment?`<div style="font-size:12.5px;color:#555;margin-top:4px;font-style:italic">"${r.comment}"</div>`:''}
+          </div>
+          <button class="ab ${r.status==='hidden'?'ab-p':'ab-d'}" style="font-size:11px;padding:5px 10px;white-space:nowrap" onclick="adminModerateReview(${r.id},'${r.status==='hidden'?'published':'hidden'}')">${r.status==='hidden'?'👁 Restore':'🚫 Hide'}</button>
+        </div>`;
+      }).join('');
+    })();
+  }else if(tab==='support'){
+    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">🎧 Support Tickets</h2>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      ${['open','in_progress','resolved','all'].map(s=>`<button class="ab ${window._supStatus===s||(!window._supStatus&&s==='open')?'ab-p':''}" style="font-size:12px;padding:6px 12px;${window._supStatus===s||(!window._supStatus&&s==='open')?'':'background:#f4f5f2;color:var(--stone);border:1px solid #ddd'}" onclick="window._supStatus='${s}';adTab('support',document.querySelector('.adm-ni[onclick*=support]'))">${s==='in_progress'?'In Progress':s.charAt(0).toUpperCase()+s.slice(1)}</button>`).join('')}
+    </div>
+    <div class="adm-panel"><div id="adminSupportList"><div style="text-align:center;padding:40px;color:var(--stone)">Loading…</div></div></div>`;
+    (async()=>{
+      const {data:{session}} = await _sb.auth.getSession();
+      const statusFilter = window._supStatus&&window._supStatus!=='all' ? window._supStatus : null;
+      const res = await fetch('/api/support', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'list', status:statusFilter, access_token:session?.access_token}) });
+      const json = await res.json();
+      const el = document.getElementById('adminSupportList');
+      if(!el) return;
+      if(!res.ok){ el.innerHTML=`<div style="padding:20px;text-align:center;color:#b3261e">Error: ${json.error||'Could not load tickets'}</div>`; return; }
+      const tickets = json.tickets||[];
+      if(!tickets.length){ el.innerHTML='<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">No tickets here.</div>'; return; }
+      el.innerHTML = tickets.map(t=>`<div style="padding:12px 0;border-bottom:1px solid #f0f0ee">
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">${t.name} <span style="font-weight:400;color:var(--stone);font-size:11px">· ${t.contact}</span></div>
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--pine)">${t.category}</span>
+        </div>
+        <div style="font-size:11px;color:var(--stone);margin:2px 0">${new Date(t.created_at).toLocaleString()}${t.booking_ref?' · Ref: '+t.booking_ref:''}</div>
+        <div style="font-size:13px;color:#333;margin-top:6px">${t.message}</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+          <select class="ai" style="font-size:11px;padding:4px 8px" onchange="adminUpdateTicketStatus(${t.id},this.value)">
+            <option value="open" ${t.status==='open'?'selected':''}>Open</option>
+            <option value="in_progress" ${t.status==='in_progress'?'selected':''}>In Progress</option>
+            <option value="resolved" ${t.status==='resolved'?'selected':''}>Resolved</option>
+          </select>
+          <a href="https://wa.me/91${(t.contact||'').replace(/[^0-9]/g,'')}" target="_blank" style="font-size:11px;color:#1e6b3c;text-decoration:none">💬 Reply on WhatsApp</a>
+        </div>
+      </div>`).join('');
+    })();
   }else if(tab==='stays'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Manage Stays</h2>
     <div class="adm-panel">
@@ -5467,6 +5608,26 @@ async function adminReviewProposal(proposalId,decision){
   adTab('tasks',document.querySelector('.adm-ni[onclick*="tasks"]'));
 }
 
+// ═══ REVIEWS & SUPPORT ADMIN ═══
+async function adminModerateReview(reviewId,status){
+  const json=await _destAdminCall({action:'review-moderate', reviewId, status});
+  if(!json)return;
+  toast(status==='hidden'?'Review hidden':'Review restored');
+  adTab('reviews',document.querySelector('.adm-ni[onclick*="reviews"]'));
+}
+
+async function adminUpdateTicketStatus(ticketId,status){
+  const {data:{session}} = await _sb.auth.getSession();
+  if(!session){toast('Session expired — please log in again');return;}
+  const res = await fetch('/api/support', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'update', ticketId, status, access_token:session.access_token}),
+  });
+  const json = await res.json();
+  if(!res.ok){toast('Error: '+(json.error||'Could not update'));return;}
+  toast('Ticket updated ✓');
+}
+
 // ═══ HOST FEEDBACK ═══
 async function submitHostFeedback(){
   const guestName=(document.getElementById('fbGuestName')?.value||'').trim();
@@ -6011,10 +6172,10 @@ async function showTravellerDashboard(){
   let myBookings = [];
   if(_tProfile?.phone){
     try{
-      const bkRes = await fetch('/api/my-bookings', {
+      const bkRes = await fetch('/api/bookings', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({phone:_tProfile.phone})
+        body: JSON.stringify({action:'my-bookings', phone:_tProfile.phone})
       });
       const bkJson = await bkRes.json();
       if(!bkRes.ok) console.warn('Could not load bookings:', bkJson.error);
@@ -6022,6 +6183,13 @@ async function showTravellerDashboard(){
     }catch(err){
       console.warn('Could not load bookings:', err.message);
     }
+  }
+  let myReviewedRefs = new Set();
+  if(_tProfile?.phone){
+    try{
+      const {data} = await _sb.from('stay_reviews').select('booking_ref').eq('guest_phone', _tProfile.phone);
+      if(data) myReviewedRefs = new Set(data.map(r=>r.booking_ref));
+    }catch(e){ /* non-fatal — review button just won't hide pre-emptively */ }
   }
   const _today = new Date().toISOString().slice(0,10);
   const upcomingBk = myBookings.filter(b=>b.checkin_date && b.checkin_date>=_today && b.status!=='cancelled');
@@ -6064,8 +6232,10 @@ async function showTravellerDashboard(){
       <div style="background:rgba(74,124,95,.06);padding:9px 14px;font-size:11.5px;display:flex;align-items:center;gap:7px;color:${step.c}">
         <span>${step.i}</span><span style="flex:1">${step.t}</span>
       </div>
-      ${stay?.contact?`<div style="padding:0 14px 12px">
-        <a href="https://wa.me/91${stay.contact}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;text-decoration:none">💬 Message Host</a>
+      ${stay?.contact||b.status==='completed'?`<div style="padding:0 14px 12px;display:flex;gap:8px;flex-wrap:wrap">
+        ${stay?.contact?`<a href="https://wa.me/91${stay.contact}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;text-decoration:none">💬 Message Host</a>`:''}
+        ${b.status==='completed'&&!myReviewedRefs.has(b.id)?`<button onclick="openReviewMo('${b.id}','${(b.stay_name||stay?.name||'your stay').replace(/'/g,"\\'")}')" style="background:var(--pine);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--fb)">⭐ Leave a Review</button>`:''}
+        ${b.status==='completed'&&myReviewedRefs.has(b.id)?`<span style="font-size:11.5px;color:var(--stone);padding:6px 0">✓ Review submitted — thank you!</span>`:''}
       </div>`:''}
     </div>`;
   };
@@ -6545,10 +6715,10 @@ async function processPayment() {
     // writing to Supabase directly from the browser — this is what
     // lets rate limiting actually be enforced (by phone AND by IP),
     // rather than relying on a client-side check anyone could bypass.
-    const createRes = await fetch('/api/create-booking', {
+    const createRes = await fetch('/api/bookings', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(bookingRow)
+      body: JSON.stringify({action:'create', booking: bookingRow})
     }).then(r=>r.json().then(data=>({status:r.status, data}))).catch(e=>({status:0, data:{error:e.message}}));
 
     if(createRes.data.error){
