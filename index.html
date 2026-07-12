@@ -1487,30 +1487,38 @@ function hTab(tab, btn){
     </div>` : '<div class="h-card" style="text-align:center;padding:40px;color:var(--stone)">No listing found. <button onclick="showPartnerForm()" style="background:var(--pine);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-left:10px">Apply Now</button></div>'}`;
   }
   else if(tab==='crowd'){
-    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">🚦 Update Crowd Level</h2>
-    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Let travellers know how busy your area is right now. This helps guests plan better and builds trust in PahariPath data.</p>
+    // Only ever show the host's own destination(s) — never the full list.
+    // This is a UX guard; the real enforcement happens server-side in
+    // /api/update-crowd.js, which independently re-checks ownership and
+    // can't be bypassed by editing this dropdown via dev tools.
+    const myPlaces = _hostStay ? ALL.filter(p=>p.name===_hostStay.loc.split(',')[1]?.trim()) : [];
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">🚦 Submit a Crowd Update</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Let PahariPath know how busy your area is right now. Submissions are reviewed by the PahariPath team before going live, to keep data trustworthy for every guest.</p>
+    ${myPlaces.length===0?`
+    <div class="h-card" style="text-align:center;padding:30px;color:var(--stone)">
+      We couldn't automatically match your listing to a destination on the map. Contact <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a> to get this linked — for data trust reasons, hosts can only submit crowd updates for their own confirmed destination.
+    </div>`:`
     <div class="h-card">
       <div class="fg"><label>Your Destination</label>
         <select class="fi" id="hostCrowdPlace" onchange="const p=ALL.find(x=>x.id==this.value);document.getElementById('hostCrowdRange').value=p?p.crowd:50;document.getElementById('hostCrowdVal').textContent=(p?p.crowd:50)+'%';document.getElementById('hostCrowdNote').value=p?.crowdNote||'';">
-          <option value="">— Select your destination —</option>
-          ${ALL.map(p=>`<option value="${p.id}" ${_hostStay&&p.name===_hostStay.loc.split(',')[1]?.trim()?'selected':''}>${p.name} — ${p.district}</option>`).join('')}
+          ${myPlaces.map((p,i)=>`<option value="${p.id}" ${i===0?'selected':''}>${p.name} — ${p.district}</option>`).join('')}
         </select>
       </div>
       <div class="fg">
-        <label>Current Crowd Level: <strong id="hostCrowdVal">50%</strong></label>
-        <input type="range" id="hostCrowdRange" min="0" max="100" value="50" oninput="document.getElementById('hostCrowdVal').textContent=this.value+'%'"
+        <label>Reported Crowd Level: <strong id="hostCrowdVal">${myPlaces[0].crowd}%</strong></label>
+        <input type="range" id="hostCrowdRange" min="0" max="100" value="${myPlaces[0].crowd}" oninput="document.getElementById('hostCrowdVal').textContent=this.value+'%'"
           style="width:100%;margin-top:8px;accent-color:var(--pine)"/>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--stone);margin-top:4px">
           <span>🟢 Empty</span><span>🟡 Moderate</span><span>🔴 Very Crowded</span>
         </div>
       </div>
-      <div class="fg"><label>Notes (optional)</label><input class="fi" id="hostCrowdNote" placeholder="e.g. Weekend festival, road blocked, school holidays…"/></div>
-      <p style="font-size:11px;color:var(--stone);margin:-8px 0 4px">Leave blank and save to clear a previous note (e.g. once a road reopens).</p>
-      <button onclick="hostSaveCrowd()" style="background:var(--pine);color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb);width:100%">Update Crowd Level ✓</button>
-    </div>
+      <div class="fg"><label>Notes (optional)</label><input class="fi" id="hostCrowdNote" value="${myPlaces[0].crowdNote||''}" placeholder="e.g. Weekend festival, road blocked, school holidays…"/></div>
+      <p style="font-size:11px;color:var(--stone);margin:-8px 0 4px">This won't change until PahariPath approves it — usually reviewed same-day.</p>
+      <button onclick="hostSaveCrowd()" style="background:var(--pine);color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb);width:100%">Submit for Review ✓</button>
+    </div>`}
     <div class="h-card" style="background:#f0f6f2">
       <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:8px">Why this matters</div>
-      <p style="font-size:13px;color:var(--stone);line-height:1.7">Your crowd updates directly change what travellers see on the PahariPath map and destination cards. Accurate data means guests arrive with the right expectations — and leave better reviews.</p>
+      <p style="font-size:13px;color:var(--stone);line-height:1.7">Accurate crowd data is core to PahariPath — it's what helps guests choose where to go and arrive with the right expectations. Every submission is reviewed and tracked against your host account before it reaches travellers.</p>
     </div>`;
   }
 
@@ -1550,13 +1558,21 @@ async function hostSaveCrowd(){
   const val = parseInt(document.getElementById('hostCrowdRange')?.value||'50');
   const note = (document.getElementById('hostCrowdNote')?.value||'').trim();
   if(!pid){toast('Please select your destination');return;}
-  const {error}=await _sb.from('crowd_overrides').upsert({place_id:pid,crowd_value:val,note:note||null,updated_at:new Date().toISOString()},{onConflict:'place_id'});
-  if(error){toast('Error: '+error.message);return;}
-  const p=ALL.find(x=>x.id===pid);if(p){p.crowd=val;p.crowdNote=note||null;}
-  CROWD_OVR[pid]=val;
-  if(typeof renderCrowd==='function')renderCrowd();
-  if(typeof renderMap==='function')renderMap();
-  toast(`✓ Crowd level updated to ${val}%${note?' with a note':''} — live for all travellers now`);
+  const p=ALL.find(x=>x.id===pid);
+  if(!p){toast('Destination not found');return;}
+  const {data:{session}} = await _sb.auth.getSession();
+  if(!session){toast('Session expired — please log in again');return;}
+  const res = await fetch('/api/update-crowd', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({place_id:pid, place_name:p.name, crowd_value:val, note:note||null, access_token:session.access_token})
+  });
+  const json = await res.json();
+  if(!res.ok){toast('Error: '+(json.error||'Could not submit update'));return;}
+  // NOTE: this does NOT update ALL/CROWD_OVR or re-render the crowd
+  // meter/map — the change isn't live yet. It only goes live once
+  // approved from the admin dashboard.
+  toast(`✓ Submitted for review — ${p.name} will update to ${val}% once approved by PahariPath`);
 }
 
 async function hostSetAvailability(status){
@@ -1604,6 +1620,60 @@ async function loadBookings(){
   if(!error&&data) BOOKINGS=data.map(b=>({...b,stay:b.stay_name,guest:b.guest}));
 }
 
+async function loadCrowdLog(){
+  const pendingPanel = document.getElementById('crowdPendingPanel');
+  const histPanel = document.getElementById('crowdLogPanel');
+  if(!pendingPanel||!histPanel) return;
+  const {data:{session}} = await _sb.auth.getSession();
+  if(!session){pendingPanel.innerHTML=histPanel.innerHTML='<span style="color:#b3261e">Not logged in.</span>';return;}
+  try{
+    const res = await fetch('/api/crowd-log', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({access_token:session.access_token})
+    });
+    const json = await res.json();
+    if(!res.ok){pendingPanel.innerHTML=histPanel.innerHTML=`<span style="color:#b3261e">${json.error||'Could not load'}</span>`;return;}
+    const all = json.requests||[];
+    const pending = all.filter(r=>r.status==='pending');
+    const history = all.filter(r=>r.status!=='pending');
+
+    pendingPanel.innerHTML = pending.length===0 ? 'Nothing pending — you\'re all caught up.' : pending.map(r=>`
+      <div style="padding:10px 0;border-bottom:1px solid #f0f0ee">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div><b style="color:var(--ink)">${r.place_name||'Place #'+r.place_id}</b> → ${r.crowd_value}%${r.note?` — "${r.note}"`:''}</div>
+          <div style="white-space:nowrap;color:var(--stone)">${r.host_email} · ${new Date(r.created_at).toLocaleString('en-IN')}</div>
+        </div>
+        <div style="margin-top:6px;display:flex;gap:8px">
+          <button onclick="reviewCrowdRequest(${r.id},'approve')" style="background:var(--pine);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">✓ Approve</button>
+          <button onclick="reviewCrowdRequest(${r.id},'reject')" style="background:#fff;color:#b3261e;border:1px solid #b3261e;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">✕ Reject</button>
+        </div>
+      </div>`).join('');
+
+    histPanel.innerHTML = history.length===0 ? 'No reviewed submissions yet.' : history.map(r=>`
+      <div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0ee;flex-wrap:wrap">
+        <div><span style="color:${r.status==='approved'?'#1a6b3a':'#b3261e'};font-weight:600">${r.status==='approved'?'✓':'✕'} ${r.status}</span> — <b>${r.place_name||'Place #'+r.place_id}</b> → ${r.crowd_value}%${r.note?` — "${r.note}"`:''}</div>
+        <div style="white-space:nowrap">${r.host_email} · reviewed ${new Date(r.reviewed_at).toLocaleString('en-IN')}</div>
+      </div>`).join('');
+  }catch(err){
+    pendingPanel.innerHTML=histPanel.innerHTML=`<span style="color:#b3261e">${err.message}</span>`;
+  }
+}
+async function reviewCrowdRequest(id,action){
+  const {data:{session}} = await _sb.auth.getSession();
+  if(!session){toast('Session expired — please log in again');return;}
+  const res = await fetch('/api/review-crowd', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({request_id:id, action, access_token:session.access_token})
+  });
+  const json = await res.json();
+  if(!res.ok){toast('Error: '+(json.error||'Could not review'));return;}
+  toast(action==='approve' ? '✓ Approved — now live for travellers' : 'Rejected');
+  if(action==='approve') await loadCrowdOverrides();
+  renderCrowd();renderMap();
+  loadCrowdLog();
+}
 async function loadCrowdOverrides(){
   const {data,error}=await _sb.from('crowd_overrides').select('*');
   if(!error&&data){
@@ -4429,13 +4499,16 @@ function adTab(tab,el){
     <div class="adm-panel"><h3>🚨 Crowd Alerts — Very Busy Now</h3>${ALL.filter(p=>p.crowd>=70).map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f0f0ee;flex-wrap:wrap"><span style="font-size:16px">${p.emoji}</span><span style="font-size:13px;font-weight:500;flex:1">${p.name}</span><span class="cp ph">${p.crowd}% — Very Crowded</span><button class="ab ab-d" onclick="toast('Alert sent for ${p.name}')">Alert visitors</button></div>`).join('')}</div>`;
   }else if(tab==='crowd'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">Crowd Level Editor</h2>
-    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Drag sliders to update live crowd data. In production, changes push to Supabase and update map pins in real-time.</p>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Drag sliders to update live crowd data directly — this is your own override, not subject to review.</p>
     <div class="adm-panel"><div class="ce-grid" id="ceGrid"></div>
-    <button class="ab ab-p" style="margin-top:16px" onclick="saveCrowd()">💾 Save All Changes</button></div>`;
+    <button class="ab ab-p" style="margin-top:16px" onclick="saveCrowd()">💾 Save All Changes</button></div>
+    <div class="adm-panel"><h3>🔔 Pending Host Submissions — needs your approval</h3><div id="crowdPendingPanel" style="font-size:13px;color:var(--stone)">Loading…</div></div>
+    <div class="adm-panel"><h3>📋 Review History</h3><div id="crowdLogPanel" style="font-size:13px;color:var(--stone)">Loading…</div></div>`;
     document.getElementById('ceGrid').innerHTML=ALL.map(p=>`
       <div class="ce-item"><div class="ce-n">${p.emoji} ${p.name}</div>
       <div class="ce-row"><input type="range" min="0" max="100" value="${p.crowd}" oninput="updateCrowd(${p.id},this.value,this.nextElementSibling)"/>
       <span class="ce-v" style="color:${cColor(p.crowd)}">${p.crowd}%</span></div></div>`).join('');
+    loadCrowdLog();
   }else if(tab==='dest'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">All 146 Destinations</h2>
     <div class="adm-panel" style="overflow-x:auto"><table class="dt"><thead><tr><th>#</th><th>Name</th><th>District</th><th>Altitude</th><th>Crowd</th><th>Zone</th><th>Vibes</th></tr></thead><tbody>
@@ -5381,9 +5454,16 @@ function updateCrowd(id,val,el){
   const p=ALL.find(x=>x.id===id);if(p)p.crowd=num;
 }
 async function saveCrowd(){
-  const upserts=ALL.map(p=>({place_id:p.id,crowd_value:p.crowd}));
-  const {error}=await _sb.from('crowd_overrides').upsert(upserts,{onConflict:'place_id'});
-  if(error){toast('Error saving crowd: '+error.message);return;}
+  const {data:{session}} = await _sb.auth.getSession();
+  if(!session){toast('Session expired — please log in again');return;}
+  const updates = ALL.map(p=>({place_id:p.id,crowd_value:p.crowd}));
+  const res = await fetch('/api/admin-set-crowd', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({updates, access_token:session.access_token})
+  });
+  const json = await res.json();
+  if(!res.ok){toast('Error saving crowd: '+(json.error||'unknown error'));return;}
   ALL.forEach(p=>{CROWD_OVR[p.id]=p.crowd;});
   renderCrowd();renderMap();renderPlaces(curFilter);
   toast('Crowd levels saved ✓ — live for all users now');
