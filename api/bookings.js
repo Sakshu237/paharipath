@@ -12,16 +12,57 @@
 // saved function slot. Not worth the risk to your points system.
 //
 // REQUEST BODY (POST, JSON): { action, ...fields }
-//   action: 'create'      — create a new booking (rate-limited)
-//   action: 'cancel'      — guest cancels their own booking
-//   action: 'lookup'      — guest looks up their booking by ref+phone
-//   action: 'my-bookings' — traveller dashboard fetches all their bookings
+//   action: 'create'         — create a new booking (rate-limited)
+//   action: 'cancel'         — guest cancels their own booking
+//   action: 'lookup'         — guest looks up their booking by ref+phone
+//   action: 'my-bookings'    — traveller dashboard fetches all their bookings
+//   action: 'submit-review'  — guest reviews a stay after checkout
 
 const { tsKey, calcPoints } = require('./_lib/points');
+const nodemailer = require('nodemailer');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const MAX_ATTEMPTS = 5;
 const WINDOW_MINUTES = 10;
+
+// Sends a booking confirmation email via your existing Zoho Mail
+// (hello@paharipath.in). Needs EMAIL_USER + EMAIL_PASS env vars set
+// in Vercel (an app-specific password from Zoho, not your login
+// password). Never throws — a failed email should never fail a
+// booking, so callers just fire-and-forget this.
+async function sendConfirmationEmail(booking) {
+  if (!booking.guest_email || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) return;
+  try {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.zoho.in',
+      port: 465,
+      secure: true,
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    });
+    await transporter.sendMail({
+      from: '"PahariPath" <' + process.env.EMAIL_USER + '>',
+      to: booking.guest_email,
+      subject: `Booking Confirmed — ${booking.stay_name} (Ref: ${booking.id})`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1a1a">
+          <h2 style="color:#2d5a3d">Your stay is confirmed 🏔️</h2>
+          <p>Hi ${booking.guest || 'traveller'}, here's your booking summary:</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0">
+            <tr><td style="padding:6px 0;color:#666">Stay</td><td style="padding:6px 0;font-weight:600">${booking.stay_name}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">Dates</td><td style="padding:6px 0;font-weight:600">${booking.dates || '—'}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">Nights</td><td style="padding:6px 0;font-weight:600">${booking.nights || '—'}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">Guests</td><td style="padding:6px 0;font-weight:600">${booking.guests || 1}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">Amount</td><td style="padding:6px 0;font-weight:600">${booking.amount || '—'}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-weight:600">${booking.id}</td></tr>
+          </table>
+          <p style="font-size:13px;color:#666">Need to manage or cancel this booking? Visit paharipath.in and use "Manage / Cancel Booking" in the footer with this reference and your phone number.</p>
+          <p style="font-size:13px;color:#666">Questions? Just reply to this email or reach us at hello@paharipath.in</p>
+        </div>`,
+    });
+  } catch (err) {
+    console.warn('Confirmation email failed:', err.message);
+  }
+}
 
 async function countRecentAttempts(key, headers) {
   const since = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
@@ -102,7 +143,20 @@ module.exports = async (req, res) => {
         body: JSON.stringify({ user_key: tsKey(booking.guest_phone), guest_name: booking.guest, phone_hint: booking.guest_phone }),
       });
 
-      res.status(200).json({ success: true, ref: booking.id });
+      sendConfirmationEmail(booking); // fire-and-forget, never blocks the response
+
+      const waText = encodeURIComponent(
+        `✅ Booking Confirmed — PahariPath\n\n` +
+        `Stay: ${booking.stay_name}\n` +
+        `Dates: ${booking.dates || '—'}\n` +
+        `Nights: ${booking.nights || '—'} · Guests: ${booking.guests || 1}\n` +
+        `Amount: ${booking.amount || '—'}\n` +
+        `Reference: ${booking.id}\n\n` +
+        `Manage or cancel anytime at paharipath.in`
+      );
+      const whatsappUrl = `https://wa.me/91${booking.guest_phone}?text=${waText}`;
+
+      res.status(200).json({ success: true, ref: booking.id, whatsappUrl });
       return;
     }
 
