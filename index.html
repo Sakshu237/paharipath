@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>PahariPath — Discover Real Himachal Pradesh</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a3d2b'/%3E%3Cpolygon points='16,20 22,8 28,20' fill='%234a7c5f' opacity='0.5'/%3E%3Cpolygon points='13,20 19,6 25,20' fill='%234a7c5f' opacity='0.85'/%3E%3Cpolygon points='8,20 16,4 24,20' fill='%23f5f2ec'/%3E%3Cpolygon points='16,4 19.5,10 12.5,10' fill='%231a3d2b'/%3E%3Cpath d='M6,21.5 Q16,18.5 26,21.5' fill='none' stroke='%23c9a84c' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#1a3d2b"/>
 <meta name="description" content="Discover 146+ offbeat destinations in Himachal Pradesh with live crowd tracking. Find peaceful valleys, quiet villages, and real Pahadi experiences. Book directly with local hosts."/>
 <meta name="keywords" content="Himachal Pradesh travel, offbeat HP, live crowd tracker, Spiti Valley, Parvati Valley, Kinnaur, Tirthan Valley, local homestays, responsible travel India"/>
 <meta name="author" content="PahariPath"/>
@@ -742,6 +744,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
           <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
           <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
           <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
+          <button class="map-filter-btn" id="offlineMapBtn" onclick="downloadOfflineMap()" title="Cache map tiles for use with no signal">📥 Download Offline Map</button>
         </div>
       </div>
     </div>
@@ -4127,9 +4130,9 @@ async function lookupMyBooking(){
   if(!ref){errEl.textContent='Please enter your booking reference';errEl.style.display='block';return;}
   if(!phone||!/^[6-9]\d{9}$/.test(phone)){errEl.textContent='Please enter a valid 10-digit mobile number';errEl.style.display='block';return;}
 
-  const res = await fetch('/api/lookup-booking', {
+  const res = await fetch('/api/bookings', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({bookingRef:ref, phone})
+    body: JSON.stringify({action:'lookup', bookingRef:ref, phone})
   }).then(r=>r.json()).catch(e=>({error:e.message}));
 
   if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}
@@ -4170,9 +4173,9 @@ async function cancelMyBooking(ref){
   const errEl=document.getElementById('mbCancelErr');
   if(!confirm('Cancel this booking? This cannot be undone.')) return;
 
-  const res = await fetch('/api/cancel-booking', {
+  const res = await fetch('/api/bookings', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({bookingRef:ref, phone})
+    body: JSON.stringify({action:'cancel', bookingRef:ref, phone})
   }).then(r=>r.json()).catch(e=>({error:e.message}));
 
   if(res.error){
@@ -5872,16 +5875,16 @@ async function showTravellerDashboard(){
   const title = getTravellerTitle(ts.points);
   const nextTier = TRAVELLER_TITLES.find(t=>t.min>ts.points);
   // Fetch this traveller's bookings via the server endpoint — bookings
-  // is locked down against direct anon reads (see /api/my-bookings.js),
+  // is locked down against direct anon reads (see /api/bookings.js — action: 'my-bookings'),
   // so a direct _sb.from('bookings') query here would silently return
   // nothing. This is the actual source of "bookings not showing."
   let myBookings = [];
   if(_tProfile?.phone){
     try{
-      const bkRes = await fetch('/api/my-bookings', {
+      const bkRes = await fetch('/api/bookings', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({phone:_tProfile.phone})
+        body: JSON.stringify({action:'my-bookings', phone:_tProfile.phone})
       });
       const bkJson = await bkRes.json();
       if(!bkRes.ok) console.warn('Could not load bookings:', bkJson.error);
@@ -6296,7 +6299,7 @@ function toggleEcoOffset(pricePerNight) {
 // ═══ UPDATED PROCESS PAYMENT ═══
 async function processPayment() {
   // Soft client-side pre-check for instant feedback — the REAL rate
-  // limit is now enforced server-side in /api/create-booking (this
+  // limit is now enforced server-side in /api/bookings (action: 'create') (this
   // localStorage check alone was bypassable via incognito mode, so it
   // no longer does the actual blocking, just gives faster feedback for
   // the common case).
@@ -6412,10 +6415,10 @@ async function processPayment() {
     // writing to Supabase directly from the browser — this is what
     // lets rate limiting actually be enforced (by phone AND by IP),
     // rather than relying on a client-side check anyone could bypass.
-    const createRes = await fetch('/api/create-booking', {
+    const createRes = await fetch('/api/bookings', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(bookingRow)
+      body: JSON.stringify({action:'create', booking:bookingRow})
     }).then(r=>r.json().then(data=>({status:r.status, data}))).catch(e=>({status:0, data:{error:e.message}}));
 
     if(createRes.data.error){
@@ -7189,6 +7192,49 @@ async function submitPartnerForm(){
     document.getElementById('partnerMo').style.display='none';
   }
 }
+</script>
+<script>
+// Service Worker registration — enables offline access after a first
+// visit with signal, and reduces server load on repeat visits since
+// cached assets load from the device instead of hitting the network.
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('SW registration failed:', err));
+  });
+  navigator.serviceWorker.addEventListener('message', (event)=>{
+    if(event.data && event.data.type==='HP_TILES_CACHED'){
+      const btn = document.getElementById('offlineMapBtn');
+      if(btn) btn.textContent = `✓ Offline map ready (${event.data.count} tiles)`;
+      toast(`✓ Offline map cached — ${event.data.count} tiles saved for use with no signal`);
+    }
+  });
+}
+async function downloadOfflineMap(){
+  const btn = document.getElementById('offlineMapBtn');
+  if(!('serviceWorker' in navigator)){ toast('Offline maps need a browser that supports Service Workers'); return; }
+  const reg = await navigator.serviceWorker.ready.catch(()=>null);
+  if(!reg || !reg.active){ toast('Still setting up offline support — try again in a moment'); return; }
+  if(btn) btn.textContent = '📥 Downloading… (uses mobile data)';
+  reg.active.postMessage('PRECACHE_HP_TILES');
+}
+// Offline/online banner — tells people what's going on instead of the
+// page silently failing or a browser error screen appearing.
+function _ppShowOfflineBanner(){
+  let b=document.getElementById('offlineBanner');
+  if(b) return;
+  b=document.createElement('div');
+  b.id='offlineBanner';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;background:#a8710a;color:#fff;text-align:center;padding:8px 12px;font-size:13px;font-family:var(--fb,sans-serif);z-index:99999;box-shadow:0 2px 8px rgba(0,0,0,.15)';
+  b.textContent='📴 You\'re offline — showing saved data. Some features (bookings, live crowd updates) will resume once you reconnect.';
+  document.body.prepend(b);
+}
+function _ppHideOfflineBanner(){
+  const b=document.getElementById('offlineBanner');
+  if(b) b.remove();
+}
+window.addEventListener('offline', _ppShowOfflineBanner);
+window.addEventListener('online', _ppHideOfflineBanner);
+if(!navigator.onLine) _ppShowOfflineBanner();
 </script>
 </body>
 </html>
