@@ -885,6 +885,14 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <button class="nb ol" onclick="toast('Partner listing — email hello@paharipath.in')">List Your Property</button>
   </div>
 </div>
+<div id="socialProofBar" style="max-width:900px;margin:0 auto;padding:0 20px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center"></div>
+<div style="max-width:420px;margin:0 auto 32px;padding:0 20px;text-align:center">
+  <div style="font-size:13px;font-weight:600;color:var(--pine);margin-bottom:8px">Get offbeat Himachal picks in your inbox</div>
+  <div style="display:flex;gap:8px">
+    <input type="email" id="newsletterEmail" placeholder="you@email.com" style="flex:1;padding:10px 14px;border-radius:8px;border:1px solid #ddd;font-size:13px"/>
+    <button onclick="subscribeNewsletter()" style="background:var(--pine);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);white-space:nowrap">Subscribe</button>
+  </div>
+</div>
 <footer>
   <div class="ft-logo" style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0"><polygon points="18,24 25,10 32,24" fill="rgba(255,255,255,0.15)"/><polygon points="14,24 22,8 30,24" fill="rgba(255,255,255,0.25)"/><polygon points="7,25 18,4 29,25" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.2" stroke-linejoin="round"/><polygon points="7,25 18,4 29,25" fill="rgba(255,255,255,0.75)"/><polygon points="18,4 22,12 14,12" fill="#1a3d2b" opacity="0.5"/><path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg><div><div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;line-height:1.1">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span></div><div style="font-family:sans-serif;font-size:9px;letter-spacing:2px;color:#c9a84c;line-height:1;margin-top:2px">HIMACHAL · OFFBEAT</div></div></div>
   <p>Promoting offbeat travel · Supporting local communities · Preserving Pahari culture</p>
@@ -1751,6 +1759,8 @@ async function ppInit(){
   document.body.appendChild(t);
   await loadDestinationEdits(); // must resolve before crowd overrides map onto ALL by id
   await loadPahadiTaskEdits();
+  await loadWishlist();
+  loadSocialProofStats(); // fire-and-forget, non-blocking — homepage renders fine before this resolves
   await Promise.all([loadStays(), loadCrowdOverrides(), loadZoneCaps(), loadNgoActivities(), loadHostFeedbacks(), loadPlaceMedia(), loadCoordOverrides()]);
   document.body.removeChild(t);
   const {data:{session}}=await _sb.auth.getSession();
@@ -2042,6 +2052,10 @@ async function adminDeleteMedia(pid,idx,type){
   toast('Removed');
   loadAdminMedia();
 }
+// Platform support WhatsApp number — REPLACE with your real number (with
+// country code, no +, no spaces, e.g. '919876543210') before deploying.
+const PAHARIPATH_SUPPORT_WHATSAPP = '919317110366';
+
 // Crowd overrides — loaded from Supabase on init, fallback to empty
 let CROWD_OVR = {};
 // Plan My Journey verdict overrides — { place_id: {verdict, reason} }
@@ -2719,7 +2733,7 @@ function renderStays(){
       </div>
       <div class="s-body">
         <span class="s-type ${s.eco?'eco-type':''}">${s.type}</span>
-        <div class="s-name">${s.name}</div>
+        <div class="s-name">${s.name}${s.verified?' <span style="color:#1e6b3c;font-size:12px" title="Verified Host">✓</span>':''}</div>
         <div class="s-loc">📍 ${s.loc}</div>
         <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">⭐ ${s.rating}</span></div>
         <div class="s-contact">📞 ${s.contact}</div>
@@ -2753,10 +2767,11 @@ function renderStayCard(s){
       }
       ${isFull?'<div style="position:absolute;top:8px;right:8px;background:#c0392b;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.03em">FULLY BOOKED</div>':''}
       ${isPaused?'<div style="position:absolute;top:8px;right:8px;background:#6b7c6e;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.03em">UNAVAILABLE</div>':''}
+      <button onclick="event.stopPropagation();toggleWishlist(${s.id},this)" data-wl="${s.id}" style="position:absolute;top:8px;left:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center">${WISHLIST_IDS.has(s.id)?'❤️':'🤍'}</button>
     </div>
     <div class="s-body">
       <span class="s-type ${s.eco?'eco-type':''}">${s.type}</span>
-      <div class="s-name">${s.name}</div>
+      <div class="s-name">${s.name}${s.verified?' <span style="color:#1e6b3c;font-size:12px" title="Verified Host">✓</span>':''}</div>
       <div class="s-loc">📍 ${s.loc}</div>
       <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">⭐ ${s.rating}</span></div>
       <div class="s-contact">📞 ${s.contact}</div>
@@ -3691,7 +3706,7 @@ function openPOIPopup(pin){
       <div style="font-size:36px">${type.icon}</div>
       <div>
         <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">${pin.name}</div>
-        <div style="font-size:12px;color:var(--stone);margin-top:2px">${type.label} · Added by community</div>
+        <div style="font-size:12px;color:var(--stone);margin-top:2px">${type.label} · Added by community <span style="color:#1e6b3c;font-weight:600">✓ Verified by PahariPath</span></div>
       </div>
     </div>
     ${pin.description?`<p style="font-size:13px;color:var(--stone);line-height:1.7;margin-bottom:14px">${pin.description}</p>`:''}
@@ -4198,7 +4213,7 @@ async function lookupMyBooking(){
     </div>
     ${canCancel ? `
       <div id="mbCancelErr" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px"></div>
-      <button onclick="cancelMyBooking('${b.id}')" style="width:100%;padding:13px;background:#c0392b;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Cancel This Booking</button>
+      <button onclick="cancelMyBooking('${b.id}','${b.checkin_date||''}','${(b.amount||'').replace(/'/g,"")}')" style="width:100%;padding:13px;background:#c0392b;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Cancel This Booking</button>
       <p style="font-size:11px;color:var(--stone);text-align:center;margin-top:10px">If your stay hasn't started yet, this is free and any points already credited are unaffected since none have been awarded yet.</p>
     ` : b.status==='cancelled' ? `<div style="text-align:center;font-size:13px;color:var(--stone)">This booking has already been cancelled.</div>`
       : `<div style="text-align:center;font-size:13px;color:var(--stone)">This stay has already been completed and can no longer be cancelled. Contact hello@paharipath.in for help.</div>`}
@@ -4206,10 +4221,33 @@ async function lookupMyBooking(){
   `;
 }
 
-async function cancelMyBooking(ref){
+// Mirrors calcCancellationFee() in api/bookings.js — used only to show
+// the guest the right message BEFORE they confirm. The server always
+// recomputes this itself as the source of truth.
+function calcCancellationFeeClient(checkinDateStr){
+  if(!checkinDateStr) return {feePercent:0, hoursLeft:null};
+  const checkin = new Date(checkinDateStr+'T12:00:00');
+  const hoursLeft = (checkin.getTime()-Date.now())/(1000*60*60);
+  let feePercent;
+  if(hoursLeft>=48) feePercent=0;
+  else if(hoursLeft<=3) feePercent=100;
+  else feePercent=Math.round(100*(48-hoursLeft)/(48-3));
+  return {feePercent, hoursLeft};
+}
+function cancellationConfirmMessage(checkinDateStr, amountStr){
+  const {feePercent} = calcCancellationFeeClient(checkinDateStr);
+  const amountNum = parseInt((amountStr||'0').replace(/[^0-9]/g,''))||0;
+  const feeAmt = Math.round(amountNum*feePercent/100);
+  const refundAmt = amountNum-feeAmt;
+  if(feePercent===0) return `Cancel this booking? Check-in is more than 48 hours away, so this is a FREE cancellation — full refund of ₹${amountNum.toLocaleString()}.`;
+  if(feePercent>=100) return `Cancel this booking? Check-in is within 3 hours (or has passed) — NO REFUND will be given per policy. Continue?`;
+  return `Cancel this booking? A ${feePercent}% cancellation fee applies since it's within 48 hours of check-in — you'll be refunded ₹${refundAmt.toLocaleString()} of ₹${amountNum.toLocaleString()} (₹${feeAmt.toLocaleString()} fee). Continue?`;
+}
+
+async function cancelMyBooking(ref, checkinDateStr, amountStr){
   const phone=(document.getElementById('mbPhone')?.value||'').trim();
   const errEl=document.getElementById('mbCancelErr');
-  if(!confirm('Cancel this booking? This cannot be undone.')) return;
+  if(!confirm(cancellationConfirmMessage(checkinDateStr, amountStr))) return;
 
   const res = await fetch('/api/bookings', {
     method:'POST', headers:{'Content-Type':'application/json'},
@@ -4222,9 +4260,12 @@ async function cancelMyBooking(ref){
     return;
   }
 
-  toast(res.pointsReversed>0
-    ? `✓ Booking cancelled. ${res.pointsReversed} points have been reversed.`
-    : '✓ Booking cancelled — no points were affected since none had been credited yet.');
+  const refundMsg = res.feePercent===0
+    ? `Full refund of ₹${(res.refundAmount||0).toLocaleString()} due.`
+    : res.feePercent>=100
+      ? 'No refund applies per the cancellation policy.'
+      : `₹${(res.refundAmount||0).toLocaleString()} refund due (${res.feePercent}% fee applied).`;
+  toast(`✓ Booking cancelled. ${refundMsg}${res.pointsReversed>0?' '+res.pointsReversed+' points reversed.':''}`);
   document.getElementById('manageBookingMo').classList.remove('open');
   document.getElementById('manageBookingMo').style.display='none';
 }
@@ -4302,16 +4343,21 @@ async function submitReview(){
   if(typeof showTravellerDashboard==='function') showTravellerDashboard();
 }
 
-async function cancelBookingInline(bookingId){
+async function cancelBookingInline(bookingId, checkinDateStr, amountStr){
   const phone=(_tProfile&&_tProfile.phone)||'';
   if(!phone){toast('Please log in to manage this booking');return;}
-  if(!confirm('Cancel this booking? This cannot be undone.')) return;
+  if(!confirm(cancellationConfirmMessage(checkinDateStr, amountStr))) return;
   const res = await fetch('/api/bookings', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({action:'cancel', bookingRef:bookingId, phone}),
   }).then(r=>r.json()).catch(e=>({error:e.message}));
   if(res.error){toast(res.error);return;}
-  toast('Booking cancelled');
+  const refundMsg = res.feePercent===0
+    ? `Full refund of ₹${(res.refundAmount||0).toLocaleString()} due.`
+    : res.feePercent>=100
+      ? 'No refund applies per the cancellation policy.'
+      : `₹${(res.refundAmount||0).toLocaleString()} refund due (${res.feePercent}% fee applied).`;
+  toast(`Booking cancelled. ${refundMsg}`);
   if(typeof showTravellerDashboard==='function') showTravellerDashboard();
 }
 
@@ -4319,7 +4365,9 @@ async function cancelBookingInline(bookingId){
 function openSupportMo(){
   document.getElementById('moTitle').textContent='Help & Support';
   document.getElementById('moBody').innerHTML=`
-    <p style="font-size:13px;color:var(--stone);margin-bottom:16px">Tell us what's up — we typically respond within a day. For anything urgent about an active stay, WhatsApp your host directly for the fastest response.</p>
+    <a href="https://wa.me/${PAHARIPATH_SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hi PahariPath, I need help with ')}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;padding:12px;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:16px">💬 Chat with us on WhatsApp</a>
+    <div style="text-align:center;font-size:11px;color:var(--stone);margin:-10px 0 16px">— or send a message below —</div>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:16px">Tell us what's up — we typically respond within a day.</p>
     <div style="margin-bottom:12px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Your name</label><input class="ai" id="supName" style="width:100%"/></div>
     <div style="margin-bottom:12px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Phone or email</label><input class="ai" id="supContact" style="width:100%"/></div>
     <div style="margin-bottom:12px"><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">What's this about?</label>
@@ -4869,6 +4917,7 @@ function adTab(tab,el){
       </div>
       <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
         <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="sEco"/> 🌱 Eco Certified</label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="sVerified"/> ✓ Verified Host</label>
         <button class="ab ab-p" id="staySubmitBtn" onclick="adminSaveStay()">+ Add Stay</button>
         <button class="ab" id="stayCancelBtn" style="display:none;background:#f4f5f2;color:var(--stone);border:1px solid #ddd" onclick="adminCancelEditStay()">Cancel</button>
       </div>
@@ -5374,6 +5423,7 @@ async function adminSaveStay(){
   const rating=parseFloat(document.getElementById('sRating')?.value||'4.5').toFixed(1);
   const placeid=parseInt(document.getElementById('sPlaceid')?.value||'0')||0;
   const eco=document.getElementById('sEco')?.checked||false;
+  const verified=document.getElementById('sVerified')?.checked||false;
   const emoji=(document.getElementById('sEmoji')?.value||'🏡').trim()||'🏡';
   const status=document.getElementById('sStatus')?.value||'active';
 
@@ -5387,14 +5437,14 @@ async function adminSaveStay(){
 
   if(editId){
     const id=parseInt(editId);
-    const {error}=await _sb.from('stays').update({name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,emoji,status}).eq('id',id);
+    const {error}=await _sb.from('stays').update({name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,verified,emoji,status}).eq('id',id);
     if(error){toast('Error updating stay: '+error.message);return;}
     const idx=STAYS.findIndex(s=>s.id===id);
-    if(idx>=0) STAYS[idx]={...STAYS[idx],name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,emoji,status};
+    if(idx>=0) STAYS[idx]={...STAYS[idx],name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,verified,emoji,status};
     toast('Stay updated: '+name+' ✓');
   } else {
     const newColor=colors[STAYS.length%colors.length];
-    const {data,error}=await _sb.from('stays').insert({name,loc,type,eco,pn,price,rating:String(rating),emoji,color:newColor,contact,nights:2,placeid,status}).select().single();
+    const {data,error}=await _sb.from('stays').insert({name,loc,type,eco,verified,pn,price,rating:String(rating),emoji,color:newColor,contact,nights:2,placeid,status}).select().single();
     if(error){toast('Error adding stay: '+error.message);return;}
     STAYS.push(data);
     toast('Stay added: '+name+' ✓');
@@ -5415,6 +5465,7 @@ function adminEditStay(id){
   document.getElementById('sRating').value=s.rating||'4.5';
   document.getElementById('sPlaceid').value=s.placeid||'';
   document.getElementById('sEco').checked=!!s.eco;
+  document.getElementById('sVerified').checked=!!s.verified;
   document.getElementById('sEmoji').value=s.emoji||'🏡';
   document.getElementById('sStatus').value=s.status||'active';
   document.getElementById('stayFormTitle').textContent='Edit Stay — '+s.name;
@@ -5438,6 +5489,7 @@ function adminCancelEditStay(){
   document.getElementById('sRating').value='';
   document.getElementById('sPlaceid').value='';
   document.getElementById('sEco').checked=false;
+  document.getElementById('sVerified').checked=false;
   document.getElementById('sEmoji').value='🏡';
   document.getElementById('sStatus').value='active';
   document.getElementById('stayFormTitle').textContent='Add New Stay';
@@ -6098,6 +6150,67 @@ function togglePassVis() {
 }
 
 // ═══ TRAVELLER PROFILE SYSTEM ═══
+async function loadSocialProofStats(){
+  try{
+    const {data,count} = await _sb.from('traveller_scores').select('nights,stays',{count:'exact'});
+    const totalTravellers = count||0;
+    const totalNights = (data||[]).reduce((s,r)=>s+(r.nights||0),0);
+    const el = document.getElementById('socialProofBar');
+    if(!el) return;
+    const stats = [
+      {n: ALL.length+'+', l:'Destinations Mapped'},
+      {n: totalTravellers+'+', l:'Travellers Joined'},
+      {n: totalNights+'+', l:'Nights Booked'},
+    ];
+    el.innerHTML = stats.map(s=>`<div><div style="font-family:var(--fd);font-size:26px;font-weight:700;color:var(--pine)">${s.n}</div><div style="font-size:10.5px;color:var(--stone);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">${s.l}</div></div>`).join('');
+  }catch(e){ console.warn('loadSocialProofStats failed', e); }
+}
+
+async function subscribeNewsletter(){
+  const el=document.getElementById('newsletterEmail');
+  const email=(el?.value||'').trim();
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Enter a valid email address');return;}
+  const {error} = await _sb.from('newsletter_subscribers').insert({email});
+  if(error){
+    if(error.message?.includes('duplicate')||error.code==='23505') toast("You're already subscribed ✓");
+    else toast('Could not subscribe — try again');
+    return;
+  }
+  if(el) el.value='';
+  toast('✓ Subscribed! Watch your inbox for offbeat picks.');
+}
+
+// ═══ WISHLIST ═══
+let WISHLIST_IDS = new Set();
+async function loadWishlist(){
+  WISHLIST_IDS = new Set();
+  const saved = localStorage.getItem('pp_traveller');
+  if(!saved) return;
+  try{
+    const prof = JSON.parse(saved);
+    if(!prof.phone) return;
+    const {data} = await _sb.from('wishlist').select('stay_id').eq('phone', prof.phone);
+    if(data) WISHLIST_IDS = new Set(data.map(r=>r.stay_id));
+  }catch(e){ /* non-fatal — hearts just default to empty */ }
+}
+async function toggleWishlist(stayId, btnEl){
+  const saved = localStorage.getItem('pp_traveller');
+  if(!saved){ toast('Log in to save stays to your wishlist'); openTravellerProfile(); return; }
+  let prof; try{ prof=JSON.parse(saved); }catch(e){ toast('Please log in again'); return; }
+  if(!prof.phone){ toast('Log in to save stays to your wishlist'); return; }
+  if(WISHLIST_IDS.has(stayId)){
+    await _sb.from('wishlist').delete().eq('phone',prof.phone).eq('stay_id',stayId);
+    WISHLIST_IDS.delete(stayId);
+    if(btnEl) btnEl.textContent='🤍';
+    toast('Removed from wishlist');
+  }else{
+    await _sb.from('wishlist').insert({phone:prof.phone, stay_id:stayId});
+    WISHLIST_IDS.add(stayId);
+    if(btnEl) btnEl.textContent='❤️';
+    toast('Saved to wishlist ✓');
+  }
+}
+
 let _tProfile = null; // logged in traveller
 
 async function openTravellerProfile(){
@@ -6137,6 +6250,7 @@ async function travellerLogin(){
   // Save name to Supabase
   await _sb.from('traveller_scores').upsert({user_key:_tsKey(phone), guest_name:name, phone_hint:phone},{onConflict:'user_key'});
   localStorage.setItem('pp_traveller', JSON.stringify({name, phone}));
+  await loadWishlist();
   showTravellerDashboard();
   toast(`Welcome back, ${name}! 🏔️`);
 }
@@ -6157,6 +6271,7 @@ async function travellerRegister(){
   _tProfile = {name, phone, email, city};
   localStorage.setItem('pp_traveller', JSON.stringify({name, phone, email, city}));
   await loadTravellerScore(phone);
+  await loadWishlist();
   showTravellerDashboard();
   toast(`Welcome to PahariPath, ${name}! 🎉`);
 }
@@ -6250,7 +6365,7 @@ async function showTravellerDashboard(){
         ${stay?.contact?`<a href="https://wa.me/91${stay.contact}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;text-decoration:none">💬 Message Host</a>`:''}
         ${b.status==='completed'&&!myReviewedRefs.has(b.id)?`<button onclick="openReviewMo('${b.id}','${(b.stay_name||stay?.name||'your stay').replace(/'/g,"\\'")}')" style="background:var(--pine);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--fb)">⭐ Leave a Review</button>`:''}
         ${b.status==='completed'&&myReviewedRefs.has(b.id)?`<span style="font-size:11.5px;color:var(--stone);padding:6px 0">✓ Review submitted — thank you!</span>`:''}
-        ${b.status==='confirmed'?`<button onclick="cancelBookingInline('${b.id}')" style="background:none;color:#c0392b;border:1px solid #e0b3b3;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--fb)">✕ Cancel Booking</button>`:''}
+        ${b.status==='confirmed'?`<button onclick="cancelBookingInline('${b.id}','${b.checkin_date||''}','${(b.amount||'').replace(/'/g,"")}')" style="background:none;color:#c0392b;border:1px solid #e0b3b3;padding:6px 14px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--fb)">✕ Cancel Booking</button>`:''}
       </div>`:''}
     </div>`;
   };
@@ -6291,6 +6406,22 @@ async function showTravellerDashboard(){
         ${pastBk.length?`<div style="font-size:11px;font-weight:600;color:var(--stone);margin:${upcomingBk.length?'12px':'0'} 0 8px">Past / Other</div>${pastBk.map(bkRow).join('')}`:''}
       `}
     </div>
+
+    <!-- My Wishlist -->
+    ${(()=>{
+      const savedStays = STAYS.filter(s=>WISHLIST_IDS.has(s.id));
+      if(!savedStays.length) return '';
+      return `<div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:14px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">❤️ My Wishlist (${savedStays.length})</div>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
+          ${savedStays.map(s=>`<div onclick="document.getElementById('travellerMo').classList.remove('open');document.getElementById('travellerMo').style.display='none';openStayDetail(${s.id})" style="flex-shrink:0;width:140px;cursor:pointer">
+            <div style="height:80px;border-radius:8px;background:${s.color};display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden">${getStayPhotos(s.id)[0]?`<img src="${getStayPhotos(s.id)[0]}" style="width:100%;height:100%;object-fit:cover"/>`:s.emoji}</div>
+            <div style="font-size:12px;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+            <div style="font-size:11px;color:var(--pine);font-weight:600">${s.price}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    })()}
 
     <!-- Stats -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
@@ -7554,7 +7685,7 @@ async function submitPartnerForm(){
   if(error){
     // Table may not exist yet — fallback to WhatsApp
     const msg=`Hi PahariPath! I want to list my property:%0A*${name}* at ${loc}%0AHost: ${owner}%0APhone: ${phone}%0APrice: ₹${price}/night%0AType: ${type}%0AEco: ${eco?'Yes':'No'}%0A${desc}`;
-    window.open('https://wa.me/91XXXXXXXXXX?text='+msg,'_blank');
+    window.open('https://wa.me/919317110366?text='+msg,'_blank');
     toast('Redirecting to WhatsApp to complete your application');
   } else {
     toast('✓ Application submitted! We will contact you within 48 hours.');
