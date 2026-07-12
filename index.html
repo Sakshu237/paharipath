@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>PahariPath — Discover Real Himachal Pradesh</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a3d2b'/%3E%3Cpolygon points='16,20 22,8 28,20' fill='%234a7c5f' opacity='0.5'/%3E%3Cpolygon points='13,20 19,6 25,20' fill='%234a7c5f' opacity='0.85'/%3E%3Cpolygon points='8,20 16,4 24,20' fill='%23f5f2ec'/%3E%3Cpolygon points='16,4 19.5,10 12.5,10' fill='%231a3d2b'/%3E%3Cpath d='M6,21.5 Q16,18.5 26,21.5' fill='none' stroke='%23c9a84c' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"/>
-<link rel="manifest" href="/manifest.json"/>
-<meta name="theme-color" content="#1a3d2b"/>
 <meta name="description" content="Discover 146+ offbeat destinations in Himachal Pradesh with live crowd tracking. Find peaceful valleys, quiet villages, and real Pahadi experiences. Book directly with local hosts."/>
 <meta name="keywords" content="Himachal Pradesh travel, offbeat HP, live crowd tracker, Spiti Valley, Parvati Valley, Kinnaur, Tirthan Valley, local homestays, responsible travel India"/>
 <meta name="author" content="PahariPath"/>
@@ -744,7 +742,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
           <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
           <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
           <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
-          <button class="map-filter-btn" id="offlineMapBtn" onclick="downloadOfflineMap()" title="Cache map tiles for use with no signal">📥 Download Offline Map</button>
         </div>
       </div>
     </div>
@@ -955,6 +952,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <button class="htab" onclick="hTab('crowd',this)">🚦 Crowd Update</button>
       <button class="htab" onclick="hTab('itinerary',this)">🗺️ Itinerary</button>
       <button class="htab" onclick="hTab('earnings',this)">💰 Earnings</button>
+      <button class="htab" onclick="hTab('suggest',this)">💡 Suggest a Task</button>
     </div>
 
     <!-- Host content -->
@@ -1004,6 +1002,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="adm-ni act" onclick="adTab('dash',this)">📊 Dashboard</div>
       <div class="adm-ni" onclick="adTab('crowd',this)">🚦 Crowd Levels</div>
       <div class="adm-ni" onclick="adTab('dest',this)">📍 Destinations</div>
+      <div class="adm-ni" onclick="adTab('tasks',this)">🎯 PAHADI Tasks</div>
       <div class="adm-ni" onclick="adTab('stays',this)">🏡 Stays</div>
       <div class="adm-ni" onclick="adTab('book',this)">📋 Bookings</div>
       <div class="adm-ni" onclick="adTab('eco',this)">🌿 Eco Permits</div>
@@ -1554,6 +1553,22 @@ function hTab(tab, btn){
       <p style="font-size:12px;color:var(--stone);margin-top:14px">For payout queries: <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a></p>
     </div>`;
   }
+  else if(tab==='suggest'){
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">💡 Suggest a PAHADI Task</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Know something guests should be doing to earn points? Suggest it here — PahariPath reviews every idea before it goes live for travellers.</p>
+    <div class="h-card">
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--stone);display:block;margin-bottom:6px">Which PAHADI tier is this for?</label>
+      <select class="ai" id="hSuggestTier" style="width:100%;margin-bottom:14px">
+        ${PAHADI_LADDER.map((t,i)=>`<option value="${i}">${t.letter} — ${t.name}</option>`).join('')}
+      </select>
+      <div style="display:grid;grid-template-columns:80px 1fr 100px;gap:12px;margin-bottom:16px;align-items:end">
+        <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:6px">Icon</label><input class="ai" id="hSuggestIcon" placeholder="⭐" maxlength="2"/></div>
+        <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:6px">Task idea</label><input class="ai" id="hSuggestText" placeholder="e.g. Try a local homestay meal" style="width:100%"/></div>
+        <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:6px">Points</label><input class="ai" id="hSuggestPoints" type="number" min="1" placeholder="30"/></div>
+      </div>
+      <button onclick="hostSubmitTaskProposal()" style="background:var(--pine);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit for Review</button>
+    </div>`;
+  }
 }
 
 async function hostSaveCrowd(){
@@ -1576,6 +1591,24 @@ async function hostSaveCrowd(){
   // meter/map — the change isn't live yet. It only goes live once
   // approved from the admin dashboard.
   toast(`✓ Submitted for review — ${p.name} will update to ${val}% once approved by PahariPath`);
+}
+
+async function hostSubmitTaskProposal(){
+  const tierIdx = parseInt(document.getElementById('hSuggestTier')?.value||'0');
+  const icon = (document.getElementById('hSuggestIcon')?.value||'').trim()||'⭐';
+  const taskText = (document.getElementById('hSuggestText')?.value||'').trim();
+  const points = parseInt(document.getElementById('hSuggestPoints')?.value)||20;
+  if(!taskText){toast('Please describe the task idea');return;}
+  const {data:{session}} = await _sb.auth.getSession();
+  if(!session){toast('Session expired — please log in again');return;}
+  const res = await fetch('/api/dest-admin', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'task-propose', tierIdx, icon, taskText, points, access_token:session.access_token}),
+  });
+  const json = await res.json();
+  if(!res.ok){toast('Error: '+(json.error||'Could not submit'));return;}
+  ['hSuggestIcon','hSuggestText','hSuggestPoints'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  toast('✓ Submitted — PahariPath will review your task idea');
 }
 
 async function hostSetAvailability(status){
@@ -1713,6 +1746,7 @@ async function ppInit(){
   t.textContent='Loading PahariPath…';
   document.body.appendChild(t);
   await loadDestinationEdits(); // must resolve before crowd overrides map onto ALL by id
+  await loadPahadiTaskEdits();
   await Promise.all([loadStays(), loadCrowdOverrides(), loadZoneCaps(), loadNgoActivities(), loadHostFeedbacks(), loadPlaceMedia(), loadCoordOverrides()]);
   document.body.removeChild(t);
   const {data:{session}}=await _sb.auth.getSession();
@@ -4130,9 +4164,9 @@ async function lookupMyBooking(){
   if(!ref){errEl.textContent='Please enter your booking reference';errEl.style.display='block';return;}
   if(!phone||!/^[6-9]\d{9}$/.test(phone)){errEl.textContent='Please enter a valid 10-digit mobile number';errEl.style.display='block';return;}
 
-  const res = await fetch('/api/bookings', {
+  const res = await fetch('/api/lookup-booking', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'lookup', bookingRef:ref, phone})
+    body: JSON.stringify({bookingRef:ref, phone})
   }).then(r=>r.json()).catch(e=>({error:e.message}));
 
   if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}
@@ -4173,9 +4207,9 @@ async function cancelMyBooking(ref){
   const errEl=document.getElementById('mbCancelErr');
   if(!confirm('Cancel this booking? This cannot be undone.')) return;
 
-  const res = await fetch('/api/bookings', {
+  const res = await fetch('/api/cancel-booking', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'cancel', bookingRef:ref, phone})
+    body: JSON.stringify({bookingRef:ref, phone})
   }).then(r=>r.json()).catch(e=>({error:e.message}));
 
   if(res.error){
@@ -4618,6 +4652,47 @@ function adTab(tab,el){
       <td style="display:flex;gap:6px;flex-wrap:wrap"><button class="ab ab-p" style="font-size:11px;padding:5px 10px" onclick="adminEditDest(${p.id})">✏️ Edit</button><button class="ab ab-d" style="font-size:11px;padding:5px 10px" onclick="adminDeleteDest(${p.id},'${p.name.replace(/'/g,"\\'")}')">🗑 Delete</button></td></tr>`).join('')}
     </tbody></table></div>
     ${DEST_DELETIONS.length?`<div class="adm-panel"><h3>🗑 Deleted Destinations</h3>${DEST_DELETIONS.map(d=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0ee"><span>${d.emoji} ${d.name}</span><button class="ab" style="font-size:11px;padding:4px 10px;margin-left:auto" onclick="adminRestoreDest(${d.place_id})">↩️ Restore</button></div>`).join('')}</div>`:''}`;
+  }else if(tab==='tasks'){
+    if(typeof curTaskTier==='undefined'||curTaskTier===null) window.curTaskTier=0;
+    const tierBtns = PAHADI_LADDER.map((t,i)=>`<button class="ab ${curTaskTier===i?'ab-p':''}" style="font-size:12px;padding:6px 12px;${curTaskTier===i?'':'background:#f4f5f2;color:var(--stone);border:1px solid #ddd'}" onclick="curTaskTier=${i};adTab('tasks',document.querySelector('.adm-ni[onclick*=tasks]'))">${t.letter} ${t.name}</button>`).join('');
+    const tierTasks = (PAHADI_NEXT_TASKS[curTaskTier]||[]).filter(t=>!t._deleted);
+    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">🎯 PAHADI Tasks</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:16px">Edit what travellers need to do to reach each tier. Host-submitted ideas need your approval below before they go live.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">${tierBtns}</div>
+    <div class="adm-panel">
+      <h3>Add Task to "${PAHADI_LADDER[curTaskTier].name}"</h3>
+      <div style="display:grid;grid-template-columns:80px 1fr 100px;gap:12px;margin-bottom:12px;align-items:end">
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Icon</label><input class="ai" id="tIcon" placeholder="⭐" maxlength="2"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Task text</label><input class="ai" id="tText" placeholder="e.g. Visit 2 offbeat destinations" style="width:100%"/></div>
+        <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:4px">Points</label><input class="ai" id="tPoints" type="number" min="1" placeholder="30"/></div>
+      </div>
+      <button class="ab ab-p" onclick="adminAddTask()">+ Add Task</button>
+    </div>
+    <div class="adm-panel">
+      <h3>Tasks in "${PAHADI_LADDER[curTaskTier].name}" (${tierTasks.length})</h3>
+      ${tierTasks.map(t=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0ee">
+        <div style="font-size:18px">${t.i}</div>
+        <div style="flex:1;font-size:13px">${t.t}${t._source==='host'?' <span style="font-size:10px;color:#1e6b3c;font-weight:600">HOST IDEA</span>':''}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--pine)">+${t.p}</div>
+        <button class="ab" style="font-size:11px;padding:5px 10px;background:#f4f5f2;color:var(--stone);border:1px solid #ddd" onclick="adminEditTask('${t._key||''}',${t._dbId||'null'},${JSON.stringify(t.i)},${JSON.stringify(t.t)},${t.p})">✏️ Edit</button>
+        <button class="ab ab-d" style="font-size:11px;padding:5px 10px" onclick="adminDeleteTask('${t._key||''}',${t._dbId||'null'},${JSON.stringify(t.t)})">🗑</button>
+      </div>`).join('') || '<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">No tasks in this tier yet.</div>'}
+    </div>
+    <div class="adm-panel">
+      <h3>📥 Pending Host Proposals</h3>
+      <div id="taskProposalsList"><div style="text-align:center;padding:30px;color:var(--stone)">Loading…</div></div>
+    </div>`;
+    loadTaskProposals().then(()=>{
+      const el=document.getElementById('taskProposalsList');
+      if(!el)return;
+      if(!TASK_PROPOSALS.length){ el.innerHTML='<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">✓ No pending proposals</div>'; return; }
+      el.innerHTML=TASK_PROPOSALS.map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0ee;flex-wrap:wrap">
+        <div style="font-size:18px">${p.icon}</div>
+        <div style="flex:1;min-width:180px;font-size:13px">${p.task_text}<div style="font-size:11px;color:var(--stone);margin-top:2px">Tier: ${PAHADI_LADDER[p.tier_idx]?.name||p.tier_idx} · +${p.points}pts · from ${p.host_email}</div></div>
+        <button class="ab ab-p" style="font-size:11px;padding:5px 10px" onclick="adminReviewProposal(${p.id},'approve')">✓ Approve</button>
+        <button class="ab ab-d" style="font-size:11px;padding:5px 10px" onclick="adminReviewProposal(${p.id},'reject')">✕ Reject</button>
+      </div>`).join('');
+    });
   }else if(tab==='stays'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Manage Stays</h2>
     <div class="adm-panel">
@@ -5337,6 +5412,61 @@ async function adminSetJourney(id,val){
   toast('Plan My Journey override saved ✓');
 }
 
+// ═══ PAHADI TASKS ADMIN ═══
+async function adminAddTask(){
+  const icon=document.getElementById('tIcon').value.trim()||'⭐';
+  const taskText=document.getElementById('tText').value.trim();
+  const points=parseInt(document.getElementById('tPoints').value)||20;
+  if(!taskText){toast('Task text is required');return;}
+  const json=await _destAdminCall({action:'task-add', tierIdx:curTaskTier, icon, taskText, points});
+  if(!json)return;
+  const r=json.task;
+  PAHADI_NEXT_TASKS[curTaskTier].push({i:r.icon,t:r.task_text,p:r.points,_dbId:r.id,_source:r.source});
+  toast('Task added ✓');
+  adTab('tasks',document.querySelector('.adm-ni[onclick*="tasks"]'));
+}
+
+async function adminEditTask(taskKey,dbId,curIcon,curText,curPoints){
+  const icon=prompt('Icon:',curIcon)??curIcon;
+  const taskText=prompt('Task text:',curText)??curText;
+  const pointsStr=prompt('Points:',curPoints)??String(curPoints);
+  const points=parseInt(pointsStr)||curPoints;
+  const body={action:'task-update', icon, taskText, points};
+  if(dbId) body.dbId=dbId; else body.taskKey=taskKey;
+  const json=await _destAdminCall(body);
+  if(!json)return;
+  let t;
+  if(dbId) t=PAHADI_NEXT_TASKS.flat().find(x=>x._dbId===dbId);
+  else t=PAHADI_NEXT_TASKS.flat().find(x=>x._key===taskKey);
+  if(t){ t.i=icon; t.t=taskText; t.p=points; }
+  toast('Task updated ✓');
+  adTab('tasks',document.querySelector('.adm-ni[onclick*="tasks"]'));
+}
+
+async function adminDeleteTask(taskKey,dbId,taskText){
+  if(!confirm('Delete "'+taskText+'"? Travellers will stop seeing it immediately.'))return;
+  const body={action:'task-delete'};
+  if(dbId) body.dbId=dbId; else body.taskKey=taskKey;
+  const json=await _destAdminCall(body);
+  if(!json)return;
+  if(dbId){
+    PAHADI_NEXT_TASKS[curTaskTier]=PAHADI_NEXT_TASKS[curTaskTier].filter(t=>t._dbId!==dbId);
+  }else{
+    const t=PAHADI_NEXT_TASKS[curTaskTier].find(x=>x._key===taskKey);
+    if(t) t._deleted=true;
+  }
+  toast('Task deleted');
+  adTab('tasks',document.querySelector('.adm-ni[onclick*="tasks"]'));
+}
+
+async function adminReviewProposal(proposalId,decision){
+  const json=await _destAdminCall({action:'task-review', proposalId, decision});
+  if(!json)return;
+  toast(decision==='approve'?'Approved — now live for travellers ✓':'Rejected');
+  if(decision==='approve') await loadPahadiTaskEdits();
+  adTab('tasks',document.querySelector('.adm-ni[onclick*="tasks"]'));
+}
+
 // ═══ HOST FEEDBACK ═══
 async function submitHostFeedback(){
   const guestName=(document.getElementById('fbGuestName')?.value||'').trim();
@@ -5875,16 +6005,16 @@ async function showTravellerDashboard(){
   const title = getTravellerTitle(ts.points);
   const nextTier = TRAVELLER_TITLES.find(t=>t.min>ts.points);
   // Fetch this traveller's bookings via the server endpoint — bookings
-  // is locked down against direct anon reads (see /api/bookings.js — action: 'my-bookings'),
+  // is locked down against direct anon reads (see /api/my-bookings.js),
   // so a direct _sb.from('bookings') query here would silently return
   // nothing. This is the actual source of "bookings not showing."
   let myBookings = [];
   if(_tProfile?.phone){
     try{
-      const bkRes = await fetch('/api/bookings', {
+      const bkRes = await fetch('/api/my-bookings', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({action:'my-bookings', phone:_tProfile.phone})
+        body: JSON.stringify({phone:_tProfile.phone})
       });
       const bkJson = await bkRes.json();
       if(!bkRes.ok) console.warn('Could not load bookings:', bkJson.error);
@@ -6299,7 +6429,7 @@ function toggleEcoOffset(pricePerNight) {
 // ═══ UPDATED PROCESS PAYMENT ═══
 async function processPayment() {
   // Soft client-side pre-check for instant feedback — the REAL rate
-  // limit is now enforced server-side in /api/bookings (action: 'create') (this
+  // limit is now enforced server-side in /api/create-booking (this
   // localStorage check alone was bypassable via incognito mode, so it
   // no longer does the actual blocking, just gives faster feedback for
   // the common case).
@@ -6415,10 +6545,10 @@ async function processPayment() {
     // writing to Supabase directly from the browser — this is what
     // lets rate limiting actually be enforced (by phone AND by IP),
     // rather than relying on a client-side check anyone could bypass.
-    const createRes = await fetch('/api/bookings', {
+    const createRes = await fetch('/api/create-booking', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'create', booking:bookingRow})
+      body: JSON.stringify(bookingRow)
     }).then(r=>r.json().then(data=>({status:r.status, data}))).catch(e=>({status:0, data:{error:e.message}}));
 
     if(createRes.data.error){
@@ -6760,6 +6890,58 @@ const PAHADI_NEXT_TASKS = [
   [{i:'⭐',t:'Feature in a PahariPath story',p:50}],
 ];
 
+// Pending host-submitted task proposals — populated for admin only, via loadTaskProposals().
+let TASK_PROPOSALS = [];
+
+// Merges live-editable task data (admin/host-approved additions, field
+// overrides on the built-in tasks, and soft-deletes) into PAHADI_NEXT_TASKS.
+// Safe to call more than once.
+async function loadPahadiTaskEdits(){
+  try{
+    const [addRes, ovrRes, delRes] = await Promise.all([
+      _sb.from('pahadi_task_additions').select('*'),
+      _sb.from('pahadi_task_overrides').select('*'),
+      _sb.from('pahadi_task_deletions').select('*'),
+    ]);
+    const ovrMap = {}; (ovrRes.data||[]).forEach(r=>{ ovrMap[r.task_key] = r; });
+    const delSet = new Set((delRes.data||[]).map(r=>r.task_key));
+
+    // Tag every built-in task with its stable key, apply overrides + deletions.
+    PAHADI_NEXT_TASKS.forEach((tierTasks,ti)=>{
+      tierTasks.forEach((tk,idx)=>{
+        const key = ti+'-'+idx;
+        tk._key = key; tk._builtin = true;
+        tk._deleted = delSet.has(key);
+        const ov = ovrMap[key];
+        if(ov){ if(ov.icon) tk.i=ov.icon; if(ov.task_text) tk.t=ov.task_text; if(ov.points!=null) tk.p=ov.points; }
+      });
+    });
+
+    // Append admin/host-approved additions (avoid duplicates on re-load).
+    (addRes.data||[]).forEach(r=>{
+      if(!PAHADI_NEXT_TASKS[r.tier_idx]) PAHADI_NEXT_TASKS[r.tier_idx]=[];
+      if(PAHADI_NEXT_TASKS[r.tier_idx].find(t=>t._dbId===r.id)) return;
+      PAHADI_NEXT_TASKS[r.tier_idx].push({ i:r.icon, t:r.task_text, p:r.points, _dbId:r.id, _source:r.source });
+    });
+  }catch(e){
+    console.warn('loadPahadiTaskEdits failed, continuing with built-in tasks', e);
+  }
+}
+
+async function loadTaskProposals(){
+  try{
+    const {data:{session}} = await _sb.auth.getSession();
+    if(!session) return;
+    const res = await fetch('/api/dest-admin', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'task-proposals-list', access_token: session.access_token }),
+    });
+    const json = await res.json();
+    if(res.ok) TASK_PROPOSALS = json.proposals||[];
+  }catch(e){ console.warn('loadTaskProposals failed', e); }
+}
+
+
 function getPahadiIdx(pts){
   let idx=-1;
   for(let i=0;i<PAHADI_LADDER.length;i++){ if(pts>=PAHADI_LADDER[i].threshold) idx=i; }
@@ -6786,7 +6968,7 @@ function renderNextTasksHTML(pts){
   const idx = getPahadiIdx(pts);
   const nextIdx = idx+1;
   if(nextIdx >= PAHADI_LADDER.length) return '';
-  const tasks = PAHADI_NEXT_TASKS[nextIdx] || [];
+  const tasks = (PAHADI_NEXT_TASKS[nextIdx] || []).filter(tk=>!tk._deleted);
   const nextLetter = PAHADI_LADDER[nextIdx].letter;
   const nextName = PAHADI_LADDER[nextIdx].name;
   return `<div style="background:rgba(255,255,255,.05);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,.08);margin-bottom:14px">
@@ -7192,49 +7374,6 @@ async function submitPartnerForm(){
     document.getElementById('partnerMo').style.display='none';
   }
 }
-</script>
-<script>
-// Service Worker registration — enables offline access after a first
-// visit with signal, and reduces server load on repeat visits since
-// cached assets load from the device instead of hitting the network.
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('SW registration failed:', err));
-  });
-  navigator.serviceWorker.addEventListener('message', (event)=>{
-    if(event.data && event.data.type==='HP_TILES_CACHED'){
-      const btn = document.getElementById('offlineMapBtn');
-      if(btn) btn.textContent = `✓ Offline map ready (${event.data.count} tiles)`;
-      toast(`✓ Offline map cached — ${event.data.count} tiles saved for use with no signal`);
-    }
-  });
-}
-async function downloadOfflineMap(){
-  const btn = document.getElementById('offlineMapBtn');
-  if(!('serviceWorker' in navigator)){ toast('Offline maps need a browser that supports Service Workers'); return; }
-  const reg = await navigator.serviceWorker.ready.catch(()=>null);
-  if(!reg || !reg.active){ toast('Still setting up offline support — try again in a moment'); return; }
-  if(btn) btn.textContent = '📥 Downloading… (uses mobile data)';
-  reg.active.postMessage('PRECACHE_HP_TILES');
-}
-// Offline/online banner — tells people what's going on instead of the
-// page silently failing or a browser error screen appearing.
-function _ppShowOfflineBanner(){
-  let b=document.getElementById('offlineBanner');
-  if(b) return;
-  b=document.createElement('div');
-  b.id='offlineBanner';
-  b.style.cssText='position:fixed;top:0;left:0;right:0;background:#a8710a;color:#fff;text-align:center;padding:8px 12px;font-size:13px;font-family:var(--fb,sans-serif);z-index:99999;box-shadow:0 2px 8px rgba(0,0,0,.15)';
-  b.textContent='📴 You\'re offline — showing saved data. Some features (bookings, live crowd updates) will resume once you reconnect.';
-  document.body.prepend(b);
-}
-function _ppHideOfflineBanner(){
-  const b=document.getElementById('offlineBanner');
-  if(b) b.remove();
-}
-window.addEventListener('offline', _ppShowOfflineBanner);
-window.addEventListener('online', _ppHideOfflineBanner);
-if(!navigator.onLine) _ppShowOfflineBanner();
 </script>
 </body>
 </html>
