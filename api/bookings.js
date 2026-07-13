@@ -19,49 +19,49 @@
 //   action: 'submit-review'  — guest reviews a stay after checkout
 
 const { tsKey, calcPoints } = require('./_lib/points');
-const nodemailer = require('nodemailer');
+const { sendEmail } = require('./_lib/email');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 const MAX_ATTEMPTS = 5;
 const WINDOW_MINUTES = 10;
 
+// Verifies a host's Supabase Auth session and returns their email —
+// used so a host can only ever see bookings for their own stay.
+async function verifyHostEmail(access_token) {
+  if (!access_token) return null;
+  const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${access_token}` },
+  });
+  if (!userRes.ok) return null;
+  const user = await userRes.json();
+  return user.email || null;
+}
+
 // Sends a booking confirmation email via your existing Zoho Mail
-// (hello@paharipath.in). Needs EMAIL_USER + EMAIL_PASS env vars set
-// in Vercel (an app-specific password from Zoho, not your login
-// password). Never throws — a failed email should never fail a
-// booking, so callers just fire-and-forget this.
+// (hello@paharipath.in). Never throws — a failed email should never
+// fail a booking, so callers just fire-and-forget this.
 async function sendConfirmationEmail(booking) {
-  if (!booking.guest_email || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) return;
-  try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.zoho.in',
-      port: 465,
-      secure: true,
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-    });
-    await transporter.sendMail({
-      from: '"PahariPath" <' + process.env.EMAIL_USER + '>',
-      to: booking.guest_email,
-      subject: `Booking Confirmed — ${booking.stay_name} (Ref: ${booking.id})`,
-      html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1a1a">
-          <h2 style="color:#2d5a3d">Your stay is confirmed 🏔️</h2>
-          <p>Hi ${booking.guest || 'traveller'}, here's your booking summary:</p>
-          <table style="width:100%;border-collapse:collapse;margin:16px 0">
-            <tr><td style="padding:6px 0;color:#666">Stay</td><td style="padding:6px 0;font-weight:600">${booking.stay_name}</td></tr>
-            <tr><td style="padding:6px 0;color:#666">Dates</td><td style="padding:6px 0;font-weight:600">${booking.dates || '—'}</td></tr>
-            <tr><td style="padding:6px 0;color:#666">Nights</td><td style="padding:6px 0;font-weight:600">${booking.nights || '—'}</td></tr>
-            <tr><td style="padding:6px 0;color:#666">Guests</td><td style="padding:6px 0;font-weight:600">${booking.guests || 1}</td></tr>
-            <tr><td style="padding:6px 0;color:#666">Amount</td><td style="padding:6px 0;font-weight:600">${booking.amount || '—'}</td></tr>
-            <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-weight:600">${booking.id}</td></tr>
-          </table>
-          <p style="font-size:13px;color:#666">Need to manage or cancel this booking? Visit paharipath.in and use "Manage / Cancel Booking" in the footer with this reference and your phone number.</p>
-          <p style="font-size:13px;color:#666">Questions? Just reply to this email or reach us at hello@paharipath.in</p>
-        </div>`,
-    });
-  } catch (err) {
-    console.warn('Confirmation email failed:', err.message);
-  }
+  if (!booking.guest_email) return;
+  await sendEmail({
+    to: booking.guest_email,
+    subject: `Booking Confirmed — ${booking.stay_name} (Ref: ${booking.id})`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1a1a">
+        <h2 style="color:#2d5a3d">Your stay is confirmed 🏔️</h2>
+        <p>Hi ${booking.guest || 'traveller'}, here's your booking summary:</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:6px 0;color:#666">Stay</td><td style="padding:6px 0;font-weight:600">${booking.stay_name}</td></tr>
+          <tr><td style="padding:6px 0;color:#666">Dates</td><td style="padding:6px 0;font-weight:600">${booking.dates || '—'}</td></tr>
+          <tr><td style="padding:6px 0;color:#666">Nights</td><td style="padding:6px 0;font-weight:600">${booking.nights || '—'}</td></tr>
+          <tr><td style="padding:6px 0;color:#666">Guests</td><td style="padding:6px 0;font-weight:600">${booking.guests || 1}</td></tr>
+          <tr><td style="padding:6px 0;color:#666">Amount</td><td style="padding:6px 0;font-weight:600">${booking.amount || '—'}</td></tr>
+          <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-weight:600">${booking.id}</td></tr>
+        </table>
+        <p style="font-size:13px;color:#666">Need to manage or cancel this booking? Visit paharipath.in and use "Manage / Cancel Booking" in the footer with this reference and your phone number.</p>
+        <p style="font-size:13px;color:#666">Questions? Just reply to this email or reach us at hello@paharipath.in</p>
+      </div>`,
+  });
 }
 
 async function countRecentAttempts(key, headers) {
@@ -75,6 +75,23 @@ async function countRecentAttempts(key, headers) {
 }
 async function logAttempt(key, headers) {
   await fetch(`${SUPABASE_URL}/rest/v1/rate_limit_log`, { method: 'POST', headers, body: JSON.stringify({ rl_key: key }) });
+}
+
+// Cancellation policy: free 48h+ before check-in, sliding scale down
+// to a 100% fee inside 3 hours. Assumes a noon check-in time since
+// bookings only store a date, not a check-in time.
+//   ≥48h left  → 0% fee (full refund)
+//   3h–48h left → fee scales linearly from 0% to 100%
+//   ≤3h left, or already checked in → 100% fee (no refund)
+function calcCancellationFee(checkinDateStr) {
+  if (!checkinDateStr) return { feePercent: 0, hoursLeft: null };
+  const checkin = new Date(checkinDateStr + 'T12:00:00');
+  const hoursLeft = (checkin.getTime() - Date.now()) / (1000 * 60 * 60);
+  let feePercent;
+  if (hoursLeft >= 48) feePercent = 0;
+  else if (hoursLeft <= 3) feePercent = 100;
+  else feePercent = Math.round(100 * (48 - hoursLeft) / (48 - 3));
+  return { feePercent, hoursLeft };
 }
 
 module.exports = async (req, res) => {
@@ -176,6 +193,11 @@ module.exports = async (req, res) => {
       if (booking.status === 'cancelled') { res.status(200).json({ success: true, pointsReversed: 0, message: 'Already cancelled' }); return; }
       if (booking.status === 'completed') { res.status(400).json({ error: 'This stay has already been completed and cannot be cancelled' }); return; }
 
+      const { feePercent } = calcCancellationFee(booking.checkin_date);
+      const amountNum = parseInt((booking.amount || '0').replace(/[^0-9]/g, '')) || 0;
+      const feeAmount = Math.round(amountNum * feePercent / 100);
+      const refundAmount = amountNum - feeAmount;
+
       let pointsReversed = 0;
       if (booking.points_awarded) {
         const { pts, nights, pledgeCount } = calcPoints(booking);
@@ -207,10 +229,14 @@ module.exports = async (req, res) => {
       await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}`, {
         method: 'PATCH',
         headers,
-        body: JSON.stringify({ status: 'cancelled', cancelled_at: new Date().toISOString(), points_reversed: pointsReversed > 0, points_awarded: false }),
+        body: JSON.stringify({
+          status: 'cancelled', cancelled_at: new Date().toISOString(),
+          points_reversed: pointsReversed > 0, points_awarded: false,
+          cancellation_fee_percent: feePercent, refund_amount: refundAmount, cancellation_fee_amount: feeAmount,
+        }),
       });
 
-      res.status(200).json({ success: true, pointsReversed });
+      res.status(200).json({ success: true, pointsReversed, feePercent, refundAmount, feeAmount, amountNum });
       return;
     }
 
@@ -254,6 +280,31 @@ module.exports = async (req, res) => {
       );
       const bookings = await bookingsRes.json();
       res.status(200).json({ bookings: Array.isArray(bookings) ? bookings : [] });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // action: 'host-bookings' — host views confirmed booking dates
+    // for their own stay, to avoid double-blocking dates in their
+    // calendar. Verified against their real login session.
+    // fields: stayId, access_token
+    // ═══════════════════════════════════════════════════════
+    if (action === 'host-bookings') {
+      const stayId = parseInt(req.body.stayId);
+      const hostEmail = await verifyHostEmail(req.body.access_token);
+      if (!hostEmail) { res.status(403).json({ error: 'Please log in again' }); return; }
+      if (!stayId) { res.status(400).json({ error: 'Missing stayId' }); return; }
+
+      const stayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=host_email`, { headers });
+      const [stay] = await stayRes.json();
+      if (!stay || stay.host_email !== hostEmail) { res.status(403).json({ error: 'This is not your listing' }); return; }
+
+      const bkRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/bookings?stay_id=eq.${stayId}&status=in.(confirmed,completed)&select=id,guest,checkin_date,checkout_date,status`,
+        { headers }
+      );
+      const bookings = await bkRes.json();
+      res.status(200).json({ success: true, bookings: Array.isArray(bookings) ? bookings : [] });
       return;
     }
 
