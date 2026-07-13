@@ -35,6 +35,7 @@
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
+const { sendEmail } = require('./_lib/email');
 
 // Any logged-in user (host or traveller) — just checks the token is valid.
 async function verifyUser(access_token) {
@@ -407,6 +408,94 @@ module.exports = async (req, res) => {
         method: 'PATCH', headers: svcHeaders, body: JSON.stringify({ status }),
       });
       if (!upd.ok) { res.status(400).json({ error: 'Update failed: ' + await upd.text() }); return; }
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'host-app-list' — admin fetches partner applications
+    // fields: status (optional: 'pending'|'approved'|'rejected')
+    // ═══════════════════════════════════════════════
+    if (action === 'host-app-list') {
+      const status = req.body.status;
+      const url = status
+        ? `${SUPABASE_URL}/rest/v1/partner_applications?status=eq.${encodeURIComponent(status)}&order=created_at.desc`
+        : `${SUPABASE_URL}/rest/v1/partner_applications?order=created_at.desc&limit=200`;
+      const listRes = await fetch(url, { headers: svcHeaders });
+      if (!listRes.ok) { res.status(400).json({ error: 'Fetch failed: ' + await listRes.text() }); return; }
+      const applications = await listRes.json();
+      res.status(200).json({ success: true, applications });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'host-app-approve' — creates a real login for the host,
+    // a live stays listing, and emails them their credentials.
+    // fields: applicationId
+    // ═══════════════════════════════════════════════
+    if (action === 'host-app-approve') {
+      const appId = parseInt(req.body.applicationId);
+      if (!appId) { res.status(400).json({ error: 'Missing applicationId' }); return; }
+      const getRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}&select=*`, { headers: svcHeaders });
+      const [app] = await getRes.json();
+      if (!app) { res.status(404).json({ error: 'Application not found' }); return; }
+      if (!app.email) { res.status(400).json({ error: 'This application has no email on file — cannot create a host login. Contact them to get one, then retry.' }); return; }
+
+      const tempPassword = Math.random().toString(36).slice(-6) + Math.random().toString(36).slice(-4).toUpperCase() + '!1';
+      const createUserRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+        method: 'POST', headers: svcHeaders,
+        body: JSON.stringify({ email: app.email, password: tempPassword, email_confirm: true }),
+      });
+      const createdUser = await createUserRes.json();
+      if (!createUserRes.ok && !String(createdUser.msg || createdUser.error_description || '').includes('already registered')) {
+        res.status(400).json({ error: 'Could not create host login: ' + (createdUser.msg || createUserRes.statusText) });
+        return;
+      }
+
+      const colors = ['#d5e8d0', '#e4dcc8', '#d4e6da', '#e0dce8', '#dcd8e8', '#d4dce8', '#d8e4d4'];
+      const stayPayload = {
+        name: app.property_name, loc: app.location, type: app.property_type || 'Homestay',
+        eco: !!app.eco_friendly, pn: app.price_per_night || 0, price: '₹' + (app.price_per_night || 0).toLocaleString() + '/night',
+        rating: '4.5', emoji: '🏡', color: colors[appId % colors.length], contact: app.phone,
+        nights: 2, placeid: 0, status: 'active', host_email: app.email, verified: false,
+      };
+      const insStayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays`, {
+        method: 'POST', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(stayPayload),
+      });
+      if (!insStayRes.ok) { res.status(400).json({ error: 'Host login created, but stay listing failed: ' + await insStayRes.text() }); return; }
+      const [newStay] = await insStayRes.json();
+
+      await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}`, {
+        method: 'PATCH', headers: svcHeaders,
+        body: JSON.stringify({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: user.email }),
+      });
+
+      await sendEmail({
+        to: app.email,
+        subject: 'Welcome to PahariPath — your host account is ready',
+        html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+          <h2 style="color:#2d5a3d">You're approved, ${app.owner_name}! 🎉</h2>
+          <p>${app.property_name} is now live on PahariPath. Here's your host login:</p>
+          <p><b>Email:</b> ${app.email}<br/><b>Temporary password:</b> ${tempPassword}</p>
+          <p style="font-size:13px;color:#666">Log in at paharipath.in → Host Login, and change your password from your host dashboard after your first login.</p>
+        </div>`,
+      });
+
+      res.status(200).json({ success: true, stay: newStay });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'host-app-reject' — fields: applicationId, notes
+    // ═══════════════════════════════════════════════
+    if (action === 'host-app-reject') {
+      const appId = parseInt(req.body.applicationId);
+      if (!appId) { res.status(400).json({ error: 'Missing applicationId' }); return; }
+      const upd = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}`, {
+        method: 'PATCH', headers: svcHeaders,
+        body: JSON.stringify({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: user.email, admin_notes: req.body.notes || '' }),
+      });
+      if (!upd.ok) { res.status(400).json({ error: 'Reject failed: ' + await upd.text() }); return; }
       res.status(200).json({ success: true });
       return;
     }
