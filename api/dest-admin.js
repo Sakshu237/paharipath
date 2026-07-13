@@ -48,12 +48,18 @@ async function verifyUser(access_token) {
   return user.email ? user : null;
 }
 
-// Must be logged in AND match ADMIN_EMAIL.
+// Must be logged in AND match ADMIN_EMAIL. Returns {user} on success,
+// or {errorReason} with a specific, actionable cause on failure —
+// so a mismatch is never a silent generic "not admin" error.
 async function verifyAdmin(access_token, adminEmail) {
+  if (!adminEmail) return { errorReason: 'ADMIN_EMAIL is not set on the server (Vercel env vars)' };
+  if (!access_token) return { errorReason: 'No login session was sent with this request — please log out and back in' };
   const user = await verifyUser(access_token);
-  if (!user || !adminEmail) return null;
-  if (user.email.toLowerCase() !== adminEmail.toLowerCase()) return null;
-  return user;
+  if (!user) return { errorReason: 'Your login session has expired — please log out and back in' };
+  if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+    return { errorReason: `Logged in as ${user.email}, which does not match the ADMIN_EMAIL set on the server` };
+  }
+  return { user };
 }
 
 function slugify(name) {
@@ -87,8 +93,9 @@ module.exports = async (req, res) => {
     user = await verifyUser(access_token);
     if (!user) { res.status(403).json({ error: 'Please log in to submit a task idea' }); return; }
   } else {
-    user = await verifyAdmin(access_token, adminEmail);
-    if (!user) { res.status(403).json({ error: 'Only the admin account can do that' }); return; }
+    const result = await verifyAdmin(access_token, adminEmail);
+    if (!result.user) { res.status(403).json({ error: result.errorReason || 'Only the admin account can do that' }); return; }
+    user = result.user;
   }
 
   try {
