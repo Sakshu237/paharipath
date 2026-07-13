@@ -9,14 +9,18 @@ const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 
 async function verifyAdmin(access_token, adminEmail) {
-  if (!access_token || !adminEmail) return null;
+  if (!adminEmail) return { errorReason: 'ADMIN_EMAIL is not set on the server (Vercel env vars)' };
+  if (!access_token) return { errorReason: 'No login session was sent with this request — please log out and back in' };
   const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${access_token}` },
   });
-  if (!userRes.ok) return null;
+  if (!userRes.ok) return { errorReason: 'Your login session has expired — please log out and back in' };
   const user = await userRes.json();
-  if (!user.email || user.email.toLowerCase() !== adminEmail.toLowerCase()) return null;
-  return user;
+  if (!user.email) return { errorReason: 'Could not read the account email from this session' };
+  if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+    return { errorReason: `Logged in as ${user.email}, which does not match the ADMIN_EMAIL set on the server` };
+  }
+  return { user };
 }
 
 module.exports = async (req, res) => {
@@ -63,8 +67,9 @@ module.exports = async (req, res) => {
     }
 
     // Everything past this point is admin-only.
-    const user = await verifyAdmin(req.body.access_token, adminEmail);
-    if (!user) { res.status(403).json({ error: 'Only the admin account can do that' }); return; }
+    const authResult = await verifyAdmin(req.body.access_token, adminEmail);
+    if (!authResult.user) { res.status(403).json({ error: authResult.errorReason || 'Only the admin account can do that' }); return; }
+    const user = authResult.user;
 
     // ═══════════════════════════════════════════════
     // action: 'list' — admin fetches tickets (optionally filtered by status)
