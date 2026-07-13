@@ -874,6 +874,26 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       </div>
       <p class="sec-note">Only local homestays &amp; eco stays. No resort chains. 🌱 = eco-certified.</p>
     </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px" id="stayFilterBar">
+      <select class="ai" id="fType" onchange="renderStays()" style="max-width:160px">
+        <option value="">All Property Types</option>
+        <option>Homestay</option><option>Eco Cottage</option><option>Eco Camp</option><option>Heritage Stay</option><option>Village Stay</option><option>Lodge</option>
+      </select>
+      <select class="ai" id="fPrice" onchange="renderStays()" style="max-width:160px">
+        <option value="">Any Price</option>
+        <option value="0-1500">Under ₹1,500</option>
+        <option value="1500-3000">₹1,500 – ₹3,000</option>
+        <option value="3000-5000">₹3,000 – ₹5,000</option>
+        <option value="5000-999999">₹5,000+</option>
+      </select>
+      <div style="position:relative">
+        <button onclick="const d=document.getElementById('amenityDropdown');d.style.display=d.style.display==='block'?'none':'block'" style="background:#fff;border:1px solid #ddd;padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--fb)">🧰 Amenities ${window._amenityFilter?.length?'('+window._amenityFilter.length+')':''}</button>
+        <div id="amenityDropdown" style="position:absolute;top:110%;left:0;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:50;min-width:180px;display:none">
+          ${['WiFi','Parking','Hot Water','Bonfire','Mountain View','Kitchen Access','Attached Bathroom','Power Backup'].map(a=>`<label style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;cursor:pointer"><input type="checkbox" value="${a}" onchange="toggleAmenityFilter('${a}')" ${window._amenityFilter?.includes(a)?'checked':''}/> ${a}</label>`).join('')}
+        </div>
+      </div>
+      ${(window._amenityFilter?.length||document.getElementById('fType')?.value||document.getElementById('fPrice')?.value)?`<button onclick="clearStayFilters()" style="background:none;border:none;color:var(--stone);font-size:12px;text-decoration:underline;cursor:pointer">Clear filters</button>`:''}
+    </div>
     <div class="sg" id="stgrid"></div>
   </div>
 </div>
@@ -958,6 +978,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <button class="htab" onclick="hTab('bookings',this)">📋 Bookings</button>
       <button class="htab" onclick="hTab('guests',this)">👥 Guests</button>
       <button class="htab" onclick="hTab('listing',this)">🏡 My Listing</button>
+      <button class="htab" onclick="hTab('calendar',this)">📅 Calendar</button>
       <button class="htab" onclick="hTab('crowd',this)">🚦 Crowd Update</button>
       <button class="htab" onclick="hTab('itinerary',this)">🗺️ Itinerary</button>
       <button class="htab" onclick="hTab('earnings',this)">💰 Earnings</button>
@@ -1014,6 +1035,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="adm-ni" onclick="adTab('tasks',this)">🎯 PAHADI Tasks</div>
       <div class="adm-ni" onclick="adTab('reviews',this)">⭐ Reviews</div>
       <div class="adm-ni" onclick="adTab('support',this)">🎧 Support</div>
+      <div class="adm-ni" onclick="adTab('hostapps',this)">🏠 Host Applications</div>
       <div class="adm-ni" onclick="adTab('stays',this)">🏡 Stays</div>
       <div class="adm-ni" onclick="adTab('book',this)">📋 Bookings</div>
       <div class="adm-ni" onclick="adTab('eco',this)">🌿 Eco Permits</div>
@@ -1132,6 +1154,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 </div>
 
 <div class="toast" id="toastEl"></div>
+<button onclick="openSOSMo()" title="Emergency SOS" style="position:fixed;bottom:84px;right:20px;z-index:400;width:52px;height:52px;border-radius:50%;background:#c0392b;color:#fff;border:none;box-shadow:0 4px 16px rgba(0,0,0,.25);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">🆘</button>
 <button onclick="openSupportMo()" title="Help & Support" style="position:fixed;bottom:24px;right:20px;z-index:400;width:52px;height:52px;border-radius:50%;background:var(--pine);color:#fff;border:none;box-shadow:0 4px 16px rgba(0,0,0,.25);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">🎧</button>
 
 <!-- STAY PHOTO LIGHTBOX -->
@@ -1565,6 +1588,26 @@ function hTab(tab, btn){
       <p style="font-size:12px;color:var(--stone);margin-top:14px">For payout queries: <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a></p>
     </div>`;
   }
+  else if(tab==='calendar'){
+    el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">📅 Calendar</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Block dates you're unavailable — travellers won't be able to book your listing on blocked dates. Confirmed bookings are shown below for reference.</p>
+    <div class="h-card" style="margin-bottom:16px">
+      <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+        <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:6px">Block a date</label><input class="ai" type="date" id="hBlockDate"/></div>
+        <div style="flex:1;min-width:140px"><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:6px">Reason (optional)</label><input class="ai" id="hBlockReason" placeholder="e.g. personal use" style="width:100%"/></div>
+        <button onclick="hostBlockDate()" style="background:var(--pine);color:#fff;border:none;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">Block Date</button>
+      </div>
+    </div>
+    <div class="h-card" style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">🚫 Blocked Dates</div>
+      <div id="hBlockedDatesList"><div style="text-align:center;padding:20px;color:var(--stone);font-size:13px">Loading…</div></div>
+    </div>
+    <div class="h-card">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);margin-bottom:10px">📋 Confirmed Bookings</div>
+      <div id="hConfirmedBookingsList"><div style="text-align:center;padding:20px;color:var(--stone);font-size:13px">Loading…</div></div>
+    </div>`;
+    loadHostCalendar();
+  }
   else if(tab==='suggest'){
     el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">💡 Suggest a PAHADI Task</h2>
     <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Know something guests should be doing to earn points? Suggest it here — PahariPath reviews every idea before it goes live for travellers.</p>
@@ -1603,6 +1646,50 @@ async function hostSaveCrowd(){
   // meter/map — the change isn't live yet. It only goes live once
   // approved from the admin dashboard.
   toast(`✓ Submitted for review — ${p.name} will update to ${val}% once approved by PahariPath`);
+}
+
+async function loadHostCalendar(){
+  if(!_hostStay?.id) return;
+  const [blockedRes, bkRes] = await Promise.all([
+    _sb.from('host_blocked_dates').select('*').eq('stay_id',_hostStay.id).order('blocked_date'),
+    (async()=>{
+      const {data:{session}} = await _sb.auth.getSession();
+      const r = await fetch('/api/bookings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'host-bookings', stayId:_hostStay.id, access_token:session?.access_token})});
+      return r.json();
+    })(),
+  ]);
+  const blockedEl = document.getElementById('hBlockedDatesList');
+  if(blockedEl){
+    const rows = blockedRes.data||[];
+    blockedEl.innerHTML = rows.length ? rows.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0ee;font-size:13px">
+      <span>${new Date(r.blocked_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}${r.reason?' — '+r.reason:''}</span>
+      <button onclick="hostUnblockDate(${r.id})" style="background:none;border:none;color:#c0392b;font-size:12px;cursor:pointer;font-weight:600">Remove</button>
+    </div>`).join('') : '<div style="font-size:13px;color:var(--stone)">No blocked dates.</div>';
+  }
+  const bkEl = document.getElementById('hConfirmedBookingsList');
+  if(bkEl){
+    const bookings = bkRes.bookings||[];
+    bkEl.innerHTML = bookings.length ? bookings.map(b=>`<div style="padding:6px 0;border-bottom:1px solid #f0f0ee;font-size:13px">
+      ${b.guest} — ${b.checkin_date?new Date(b.checkin_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—'} to ${b.checkout_date?new Date(b.checkout_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—'} <span style="color:var(--stone);font-size:11px">(${b.status})</span>
+    </div>`).join('') : '<div style="font-size:13px;color:var(--stone)">No confirmed bookings yet.</div>';
+  }
+}
+async function hostBlockDate(){
+  const date=document.getElementById('hBlockDate')?.value;
+  const reason=(document.getElementById('hBlockReason')?.value||'').trim();
+  if(!date){toast('Pick a date first');return;}
+  if(!_hostStay?.id){toast('No listing found on your account');return;}
+  const {error}=await _sb.from('host_blocked_dates').insert({stay_id:_hostStay.id, blocked_date:date, reason});
+  if(error){toast(error.message?.includes('duplicate')?'That date is already blocked':'Could not block date');return;}
+  document.getElementById('hBlockDate').value='';
+  document.getElementById('hBlockReason').value='';
+  toast('Date blocked ✓');
+  loadHostCalendar();
+}
+async function hostUnblockDate(id){
+  await _sb.from('host_blocked_dates').delete().eq('id',id);
+  toast('Date unblocked');
+  loadHostCalendar();
 }
 
 async function hostSubmitTaskProposal(){
@@ -2054,7 +2141,7 @@ async function adminDeleteMedia(pid,idx,type){
 }
 // Platform support WhatsApp number — REPLACE with your real number (with
 // country code, no +, no spaces, e.g. '919876543210') before deploying.
-const PAHARIPATH_SUPPORT_WHATSAPP = '919317110366';
+const PAHARIPATH_SUPPORT_WHATSAPP = '91XXXXXXXXXX';
 
 // Crowd overrides — loaded from Supabase on init, fallback to empty
 let CROWD_OVR = {};
@@ -2700,6 +2787,25 @@ function toggleSave(id,name,btn){
   saveSaved(saved);
 }
 
+function toggleAmenityFilter(a){
+  window._amenityFilter = window._amenityFilter || [];
+  const idx = window._amenityFilter.indexOf(a);
+  if(idx>=0) window._amenityFilter.splice(idx,1); else window._amenityFilter.push(a);
+  renderStays();
+  const btn=document.querySelector('#stayFilterBar button');
+  if(btn) btn.textContent=`🧰 Amenities ${window._amenityFilter.length?'('+window._amenityFilter.length+')':''}`;
+}
+function clearStayFilters(){
+  window._amenityFilter=[];
+  const t=document.getElementById('fType'), p=document.getElementById('fPrice');
+  if(t)t.value=''; if(p)p.value='';
+  renderStays();
+}
+document.addEventListener('click',(e)=>{
+  const dd=document.getElementById('amenityDropdown');
+  if(dd && dd.style.display==='block' && !e.target.closest('#stayFilterBar')) dd.style.display='none';
+});
+
 // ── RECENTLY VIEWED ──
 function addRecentlyViewed(id){
   try{
@@ -2710,7 +2816,23 @@ function addRecentlyViewed(id){
 }
 function getRecentlyViewed(){try{return JSON.parse(localStorage.getItem('pp_rv')||'[]')}catch(e){return [];}}
 function renderStays(){
-  document.getElementById('stgrid').innerHTML=STAYS.map(s=>{
+  const typeF = document.getElementById('fType')?.value || '';
+  const priceF = document.getElementById('fPrice')?.value || '';
+  const amenF = window._amenityFilter || [];
+  let filtered = STAYS;
+  if(typeF) filtered = filtered.filter(s=>s.type===typeF);
+  if(priceF){
+    const [lo,hi] = priceF.split('-').map(Number);
+    filtered = filtered.filter(s=>{ const pn=s.pn||0; return pn>=lo && pn<hi; });
+  }
+  if(amenF.length){
+    filtered = filtered.filter(s=>{ const sa=s.amenities||[]; return amenF.every(a=>sa.includes(a)); });
+  }
+  if(filtered.length===0 && (typeF||priceF||amenF.length)){
+    document.getElementById('stgrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--stone);font-size:14px">No stays match these filters. <a href="#" onclick="event.preventDefault();clearStayFilters()" style="color:var(--pine);text-decoration:underline">Clear filters</a></div>';
+    return;
+  }
+  document.getElementById('stgrid').innerHTML=filtered.map(s=>{
     const photos=getStayPhotos(s.id);
     const firstPhoto=photos[0]||'';
     const cnt=photos.length;
@@ -4361,6 +4483,50 @@ async function cancelBookingInline(bookingId, checkinDateStr, amountStr){
   if(typeof showTravellerDashboard==='function') showTravellerDashboard();
 }
 
+// ═══ EMERGENCY SOS ═══
+// Honest scope: this shares your live location via a pre-filled
+// WhatsApp message to your host and/or PahariPath support. It is
+// NOT connected to police, ambulance, or any emergency dispatch
+// service — for a life-threatening emergency, call 112 (India's
+// national emergency number) directly.
+function openSOSMo(){
+  document.getElementById('moTitle').textContent='🆘 Emergency SOS';
+  const activeBooking = (BOOKINGS||[]).find(b=>b.status==='confirmed') || (typeof myBookings!=='undefined' ? (myBookings||[]).find(b=>b.status==='confirmed') : null);
+  const hostStay = activeBooking ? STAYS.find(s=>s.name===activeBooking.stay_name || s.id===activeBooking.stay_id) : null;
+  document.getElementById('moBody').innerHTML=`
+    <div style="background:#fdeaea;border:1px solid #e8b3b3;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12.5px;color:#7a2020">
+      <b>For a life-threatening emergency, call 112 immediately</b> (India's national emergency number). This SOS button sends a WhatsApp message with your location — it does not contact police or ambulance directly.
+    </div>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:16px">Who should we alert?</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${hostStay?.contact?`<button onclick="sendSOS('host','${hostStay.contact}','${hostStay.name.replace(/'/g,"\\'")}')" style="background:#c0392b;color:#fff;border:none;padding:13px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">🏠 Alert My Host (${hostStay.name})</button>`:''}
+      <button onclick="sendSOS('support','${PAHARIPATH_SUPPORT_WHATSAPP}','PahariPath Support')" style="background:#c0392b;color:#fff;border:none;padding:13px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">🎧 Alert PahariPath Support</button>
+    </div>`;
+  document.getElementById('bookMo').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function sendSOS(target, number, label){
+  const name = (_tProfile&&_tProfile.name) || 'A traveller';
+  const phone = (_tProfile&&_tProfile.phone) || 'unknown number';
+  const buildAndSend = (locationText)=>{
+    const msg = encodeURIComponent(`🆘 EMERGENCY — ${name} (${phone}) needs help.\n${locationText}\nPlease respond as soon as possible.`);
+    window.open(`https://wa.me/${number.replace(/[^0-9]/g,'')}?text=${msg}`,'_blank');
+    closeMo();
+  };
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const {latitude,longitude}=pos.coords;
+        buildAndSend(`My location: https://maps.google.com/?q=${latitude},${longitude}`);
+      },
+      ()=>{ buildAndSend('(Location unavailable — please call to confirm where I am.)'); },
+      {timeout:5000}
+    );
+  } else {
+    buildAndSend('(Location sharing not supported on this device.)');
+  }
+}
+
 // ═══ CUSTOMER CARE / SUPPORT ═══
 function openSupportMo(){
   document.getElementById('moTitle').textContent='Help & Support';
@@ -4896,6 +5062,38 @@ function adTab(tab,el){
         </div>
       </div>`).join('');
     })();
+  }else if(tab==='hostapps'){
+    m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">🏠 Host Applications</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:16px">Approving creates the host's login automatically and emails them their credentials — nothing further needed from you.</p>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      ${['pending','approved','rejected'].map(s=>`<button class="ab ${(window._hostAppStatus||'pending')===s?'ab-p':''}" style="font-size:12px;padding:6px 12px;${(window._hostAppStatus||'pending')===s?'':'background:#f4f5f2;color:var(--stone);border:1px solid #ddd'}" onclick="window._hostAppStatus='${s}';adTab('hostapps',document.querySelector('.adm-ni[onclick*=hostapps]'))">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`).join('')}
+    </div>
+    <div class="adm-panel"><div id="adminHostAppsList"><div style="text-align:center;padding:40px;color:var(--stone)">Loading…</div></div></div>`;
+    (async()=>{
+      const {data:{session}} = await _sb.auth.getSession();
+      const res = await fetch('/api/dest-admin', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'host-app-list', status:window._hostAppStatus||'pending', access_token:session?.access_token}) });
+      const json = await res.json();
+      const el = document.getElementById('adminHostAppsList');
+      if(!el) return;
+      if(!res.ok){ el.innerHTML=`<div style="padding:20px;text-align:center;color:#b3261e">Error: ${json.error||'Could not load applications'}</div>`; return; }
+      const apps = json.applications||[];
+      if(!apps.length){ el.innerHTML='<div style="padding:20px;text-align:center;color:var(--stone);font-size:13px">Nothing here.</div>'; return; }
+      el.innerHTML = apps.map(a=>`<div style="padding:14px 0;border-bottom:1px solid #f0f0ee">
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div style="font-size:14px;font-weight:700;color:var(--ink)">${a.property_name} <span style="font-weight:400;color:var(--stone);font-size:12px">— ${a.location}</span></div>
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:${a.status==='approved'?'#1e6b3c':a.status==='rejected'?'#b3261e':'#c98a1c'}">${a.status}</span>
+        </div>
+        <div style="font-size:12px;color:var(--stone);margin:4px 0">${a.owner_name} · ${a.phone} · ${a.email||'⚠️ no email on file'} · ₹${(a.price_per_night||0).toLocaleString()}/night · ${a.property_type}${a.eco_friendly?' · 🌱 Eco':''}</div>
+        ${a.description?`<div style="font-size:12.5px;color:#555;margin:6px 0">${a.description}</div>`:''}
+        ${(a.property_photos||[]).length?`<div style="display:flex;gap:6px;margin:8px 0;overflow-x:auto">${a.property_photos.map(u=>`<img src="${u}" style="height:60px;width:80px;object-fit:cover;border-radius:6px;flex-shrink:0" onclick="window.open('${u}','_blank')"/>`).join('')}</div>`:''}
+        ${a.id_document_url?`<a href="${a.id_document_url}" target="_blank" style="font-size:11px;color:var(--pine)">📄 View ID / ownership document</a>`:''}
+        ${a.status==='pending'?`<div style="display:flex;gap:8px;margin-top:10px">
+          <button class="ab ab-p" style="font-size:11px;padding:5px 12px" onclick="adminApproveHostApp(${a.id})">✓ Approve & Create Login</button>
+          <button class="ab ab-d" style="font-size:11px;padding:5px 12px" onclick="adminRejectHostApp(${a.id})">✕ Reject</button>
+        </div>`:''}
+        ${a.admin_notes?`<div style="font-size:11px;color:var(--stone);margin-top:6px">Note: ${a.admin_notes}</div>`:''}
+      </div>`).join('');
+    })();
   }else if(tab==='stays'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:20px;font-family:var(--fd)">Manage Stays</h2>
     <div class="adm-panel">
@@ -4914,6 +5112,12 @@ function adTab(tab,el){
         <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Emoji</label><input class="ai" id="sEmoji" placeholder="🏡" style="font-size:20px" maxlength="2"/></div>
         <div><label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);display:block;margin-bottom:4px">Availability</label>
           <select class="ai" id="sStatus"><option value="active">✅ Open for booking</option><option value="full">🔴 Fully booked</option><option value="paused">⏸ Paused / Off market</option></select></div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:6px">Amenities</label>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          ${['WiFi','Parking','Hot Water','Bonfire','Mountain View','Kitchen Access','Attached Bathroom','Power Backup'].map(a=>`<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer"><input type="checkbox" class="sAmenity" value="${a}"/> ${a}</label>`).join('')}
+        </div>
       </div>
       <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
         <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="sEco"/> 🌱 Eco Certified</label>
@@ -5424,6 +5628,7 @@ async function adminSaveStay(){
   const placeid=parseInt(document.getElementById('sPlaceid')?.value||'0')||0;
   const eco=document.getElementById('sEco')?.checked||false;
   const verified=document.getElementById('sVerified')?.checked||false;
+  const amenities=Array.from(document.querySelectorAll('.sAmenity:checked')).map(el=>el.value);
   const emoji=(document.getElementById('sEmoji')?.value||'🏡').trim()||'🏡';
   const status=document.getElementById('sStatus')?.value||'active';
 
@@ -5437,14 +5642,14 @@ async function adminSaveStay(){
 
   if(editId){
     const id=parseInt(editId);
-    const {error}=await _sb.from('stays').update({name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,verified,emoji,status}).eq('id',id);
+    const {error}=await _sb.from('stays').update({name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,verified,amenities,emoji,status}).eq('id',id);
     if(error){toast('Error updating stay: '+error.message);return;}
     const idx=STAYS.findIndex(s=>s.id===id);
-    if(idx>=0) STAYS[idx]={...STAYS[idx],name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,verified,emoji,status};
+    if(idx>=0) STAYS[idx]={...STAYS[idx],name,loc,pn,price,contact,type,rating:String(rating),placeid,eco,verified,amenities,emoji,status};
     toast('Stay updated: '+name+' ✓');
   } else {
     const newColor=colors[STAYS.length%colors.length];
-    const {data,error}=await _sb.from('stays').insert({name,loc,type,eco,verified,pn,price,rating:String(rating),emoji,color:newColor,contact,nights:2,placeid,status}).select().single();
+    const {data,error}=await _sb.from('stays').insert({name,loc,type,eco,verified,amenities,pn,price,rating:String(rating),emoji,color:newColor,contact,nights:2,placeid,status}).select().single();
     if(error){toast('Error adding stay: '+error.message);return;}
     STAYS.push(data);
     toast('Stay added: '+name+' ✓');
@@ -5466,6 +5671,7 @@ function adminEditStay(id){
   document.getElementById('sPlaceid').value=s.placeid||'';
   document.getElementById('sEco').checked=!!s.eco;
   document.getElementById('sVerified').checked=!!s.verified;
+  document.querySelectorAll('.sAmenity').forEach(el=>{ el.checked=(s.amenities||[]).includes(el.value); });
   document.getElementById('sEmoji').value=s.emoji||'🏡';
   document.getElementById('sStatus').value=s.status||'active';
   document.getElementById('stayFormTitle').textContent='Edit Stay — '+s.name;
@@ -5490,6 +5696,7 @@ function adminCancelEditStay(){
   document.getElementById('sPlaceid').value='';
   document.getElementById('sEco').checked=false;
   document.getElementById('sVerified').checked=false;
+  document.querySelectorAll('.sAmenity').forEach(el=>{ el.checked=false; });
   document.getElementById('sEmoji').value='🏡';
   document.getElementById('sStatus').value='active';
   document.getElementById('stayFormTitle').textContent='Add New Stay';
@@ -5672,6 +5879,22 @@ async function adminReviewProposal(proposalId,decision){
   toast(decision==='approve'?'Approved — now live for travellers ✓':'Rejected');
   if(decision==='approve') await loadPahadiTaskEdits();
   adTab('tasks',document.querySelector('.adm-ni[onclick*="tasks"]'));
+}
+
+// ═══ HOST APPLICATIONS ADMIN ═══
+async function adminApproveHostApp(id){
+  if(!confirm('Approve this application? This creates a live host login and stay listing immediately.'))return;
+  const json=await _destAdminCall({action:'host-app-approve', applicationId:id});
+  if(!json)return;
+  toast('✓ Host approved — login created and emailed, stay is live');
+  adTab('hostapps',document.querySelector('.adm-ni[onclick*="hostapps"]'));
+}
+async function adminRejectHostApp(id){
+  const notes=prompt('Optional reason (not shown to the applicant automatically):','')||'';
+  const json=await _destAdminCall({action:'host-app-reject', applicationId:id, notes});
+  if(!json)return;
+  toast('Application rejected');
+  adTab('hostapps',document.querySelector('.adm-ni[onclick*="hostapps"]'));
 }
 
 // ═══ REVIEWS & SUPPORT ADMIN ═══
@@ -6255,6 +6478,81 @@ async function travellerLogin(){
   toast(`Welcome back, ${name}! 🏔️`);
 }
 
+// ═══ REFERRAL PROGRAM ═══
+// Capture ?ref=CODE from the URL on any landing page, remember it
+// until the visitor actually registers.
+(function captureReferralCode(){
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if(ref) localStorage.setItem('pp_pending_referral', ref.toUpperCase());
+  }catch(e){}
+})();
+
+async function shareReferralWhatsApp(){
+  if(!_tProfile?.phone){toast('Please log in first');return;}
+  const code = await getMyReferralCode(_tProfile.phone);
+  const link = `https://paharipath.in/?ref=${code}`;
+  const msg = encodeURIComponent(`Join me on PahariPath 🏔️ — discover offbeat Himachal Pradesh and book homestays directly with locals. Use my link and we both get 50 bonus points: ${link}`);
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+}
+async function copyReferralLink(){
+  if(!_tProfile?.phone){toast('Please log in first');return;}
+  const code = await getMyReferralCode(_tProfile.phone);
+  const link = `https://paharipath.in/?ref=${code}`;
+  try{
+    await navigator.clipboard.writeText(link);
+    toast('✓ Referral link copied!');
+  }catch(e){
+    toast('Your link: '+link);
+  }
+}
+
+async function getMyReferralCode(phone){
+  if(!phone) return null;
+  const {data} = await _sb.from('referral_codes').select('code').eq('phone',phone).maybeSingle();
+  if(data) return data.code;
+  const code = 'PP'+phone.slice(-4)+Math.random().toString(36).slice(2,4).toUpperCase();
+  const {error} = await _sb.from('referral_codes').insert({phone, code});
+  if(error){
+    // Race condition — someone else grabbed it first, or it already existed
+    const {data:retry} = await _sb.from('referral_codes').select('code').eq('phone',phone).maybeSingle();
+    return retry?.code || code;
+  }
+  return code;
+}
+
+// Called once, right after a NEW traveller registers.
+async function applyPendingReferral(newPhone){
+  const code = localStorage.getItem('pp_pending_referral');
+  if(!code) return;
+  localStorage.removeItem('pp_pending_referral');
+  try{
+    const {data:refRow} = await _sb.from('referral_codes').select('phone').eq('code',code).maybeSingle();
+    if(!refRow || refRow.phone===newPhone) return; // invalid code, or self-referral
+
+    const {error:insErr} = await _sb.from('referrals').insert({referrer_phone:refRow.phone, referee_phone:newPhone, code_used:code, bonus_awarded:true});
+    if(insErr) return; // already referred before (unique constraint), or table missing — fail silently
+
+    // Award +50 points to the new traveller (referee)
+    const refereeTs = await loadTravellerScore(newPhone);
+    refereeTs.points = (refereeTs.points||0)+50;
+    refereeTs.history = [...(refereeTs.history||[]), {type:'referral_bonus', points:50, note:'Welcome bonus for joining via referral', ts:Date.now()}];
+    await saveTravellerScore(refereeTs, newPhone);
+
+    // Award +50 points to the referrer
+    const referrerKey = _tsKey(refRow.phone);
+    const {data:referrerData} = await _sb.from('traveller_scores').select('*').eq('user_key',referrerKey).maybeSingle();
+    if(referrerData){
+      await _sb.from('traveller_scores').update({
+        points:(referrerData.points||0)+50,
+        history:[...(referrerData.history||[]), {type:'referral_bonus', points:50, note:'Bonus for referring a new traveller', ts:Date.now()}],
+      }).eq('user_key',referrerKey);
+    }
+    toast('🎉 You and your friend both earned +50 PAHADI points!');
+  }catch(e){ console.warn('Referral bonus failed', e); }
+}
+
 async function travellerRegister(){
   const name  = (document.getElementById('tRegName')?.value||'').trim();
   const phone = (document.getElementById('tRegPhone')?.value||'').trim();
@@ -6271,6 +6569,7 @@ async function travellerRegister(){
   _tProfile = {name, phone, email, city};
   localStorage.setItem('pp_traveller', JSON.stringify({name, phone, email, city}));
   await loadTravellerScore(phone);
+  await applyPendingReferral(phone);
   await loadWishlist();
   showTravellerDashboard();
   toast(`Welcome to PahariPath, ${name}! 🎉`);
@@ -6422,6 +6721,16 @@ async function showTravellerDashboard(){
         </div>
       </div>`;
     })()}
+
+    <!-- Refer a Friend -->
+    <div style="background:linear-gradient(135deg,#2d5a3d,#1e4530);border-radius:12px;padding:16px;margin-bottom:16px;color:#fff">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">🎁 Refer a Friend, Earn 50 Points Each</div>
+      <div style="font-size:12px;opacity:.85;margin-bottom:10px">Share your link — when a friend joins, you both get +50 PAHADI points.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="shareReferralWhatsApp()" style="background:#25D366;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--fb)">💬 Share on WhatsApp</button>
+        <button onclick="copyReferralLink()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:9px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--fb)">🔗 Copy Link</button>
+      </div>
+    </div>
 
     <!-- Stats -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
@@ -6595,6 +6904,13 @@ async function checkDateAvailability(stayId, pricePerNight){
     }
     if(data && data.length){
       warnEl.innerHTML='⚠️ This stay already has a confirmed booking for these dates. Please pick different dates, or <a href="#" onclick="event.preventDefault();waBookCurrent()" style="color:#9b2020;text-decoration:underline">message the host directly</a>.';
+      warnEl.style.display='block';
+      if(payBtn){payBtn.disabled=true;payBtn.style.opacity='.5';payBtn.style.cursor='not-allowed';}
+      return false;
+    }
+    const {data:blocked} = await _sb.from('host_blocked_dates').select('blocked_date').eq('stay_id',stayId).gte('blocked_date',ci).lt('blocked_date',co);
+    if(blocked && blocked.length){
+      warnEl.innerHTML='⚠️ The host has marked part of this date range as unavailable. Please pick different dates, or <a href="#" onclick="event.preventDefault();waBookCurrent()" style="color:#9b2020;text-decoration:underline">message the host directly</a>.';
       warnEl.style.display='block';
       if(payBtn){payBtn.disabled=true;payBtn.style.opacity='.5';payBtn.style.cursor='not-allowed';}
       return false;
@@ -7642,6 +7958,7 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
     <div class="fg"><label>Location (Village, District)</label><input class="fi" id="pLoc" placeholder="e.g. Gushaini, Kullu"/></div>
     <div class="fg"><label>Your Name</label><input class="fi" id="pOwner" placeholder="Host name"/></div>
     <div class="fg"><label>WhatsApp Number</label><input class="fi" id="pPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+    <div class="fg"><label>Email (used for your host login)</label><input class="fi" type="email" id="pEmail" placeholder="you@email.com"/></div>
     <div class="fg"><label>Price per night (₹)</label><input class="fi" type="number" id="pPrice" placeholder="e.g. 2000"/></div>
     <div class="fg"><label>Property Type</label>
       <select class="fi" id="pType">
@@ -7649,11 +7966,13 @@ setInterval(()=>{ renderStats(); renderCrowd(); renderMap();
       </select>
     </div>
     <div class="fg"><label>Tell us about your property</label><textarea class="fi" id="pDesc" rows="3" placeholder="What makes your property special? Views, activities, food..."></textarea></div>
+    <div class="fg"><label>Property Photos (2-5 images)</label><input class="fi" type="file" id="pPropertyPhotos" accept="image/*" multiple/></div>
+    <div class="fg"><label>ID / Ownership Proof (Aadhaar, property papers, etc.)</label><input class="fi" type="file" id="pIdDoc" accept="image/*,.pdf"/></div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <input type="checkbox" id="pEco" style="width:16px;height:16px"/>
       <label for="pEco" style="font-size:13px;color:var(--ink)">This is an eco-friendly property (solar, waste management, local food etc.)</label>
     </div>
-    <button onclick="submitPartnerForm()" style="width:100%;padding:14px;background:var(--pine);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit Listing Request</button>
+    <button onclick="submitPartnerForm()" id="pSubmitBtn" style="width:100%;padding:14px;background:var(--pine);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit Listing Request</button>
   </div>
 </div>
 
@@ -7675,17 +7994,50 @@ async function submitPartnerForm(){
   const loc=(document.getElementById('pLoc')?.value||'').trim();
   const owner=(document.getElementById('pOwner')?.value||'').trim();
   const phone=(document.getElementById('pPhone')?.value||'').trim();
+  const email=(document.getElementById('pEmail')?.value||'').trim();
   const price=document.getElementById('pPrice')?.value||'';
   const type=document.getElementById('pType')?.value||'Homestay';
   const desc=(document.getElementById('pDesc')?.value||'').trim();
   const eco=document.getElementById('pEco')?.checked||false;
-  if(!name||!loc||!owner||!phone){toast('Please fill all required fields');return;}
+  if(!name||!loc||!owner||!phone||!email){toast('Please fill all required fields, including email');return;}
   if(!/^[6-9]\d{9}$/.test(phone)){toast('Enter a valid 10-digit WhatsApp number');return;}
-  const {error}=await _sb.from('partner_applications').insert({property_name:name,location:loc,owner_name:owner,phone,price_per_night:parseInt(price)||0,property_type:type,description:desc,eco_friendly:eco});
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Enter a valid email address');return;}
+
+  const btn=document.getElementById('pSubmitBtn');
+  if(btn){btn.disabled=true;btn.textContent='Uploading...';}
+
+  // Upload property photos + ID document to Storage (best-effort — a
+  // failed upload shouldn't block the whole application).
+  let propertyPhotoUrls=[];
+  const photoFiles=document.getElementById('pPropertyPhotos')?.files;
+  if(photoFiles&&photoFiles.length){
+    for(let i=0;i<Math.min(photoFiles.length,5);i++){
+      const f=photoFiles[i];
+      const ext=(f.name.split('.').pop()||'jpg').toLowerCase();
+      const path=`app-${Date.now()}-${i}.${ext}`;
+      const {error}=await _sb.storage.from('host-verification').upload(path,f,{upsert:true});
+      if(!error){ const {data}=_sb.storage.from('host-verification').getPublicUrl(path); propertyPhotoUrls.push(data.publicUrl); }
+    }
+  }
+  let idDocUrl=null;
+  const idFile=document.getElementById('pIdDoc')?.files?.[0];
+  if(idFile){
+    const ext=(idFile.name.split('.').pop()||'jpg').toLowerCase();
+    const path=`id-${Date.now()}.${ext}`;
+    const {error}=await _sb.storage.from('host-verification').upload(path,idFile,{upsert:true});
+    if(!error){ const {data}=_sb.storage.from('host-verification').getPublicUrl(path); idDocUrl=data.publicUrl; }
+  }
+
+  const {error}=await _sb.from('partner_applications').insert({
+    property_name:name,location:loc,owner_name:owner,phone,email,price_per_night:parseInt(price)||0,
+    property_type:type,description:desc,eco_friendly:eco,status:'pending',
+    property_photos:propertyPhotoUrls, id_document_url:idDocUrl,
+  });
+  if(btn){btn.disabled=false;btn.textContent='Submit Listing Request';}
   if(error){
     // Table may not exist yet — fallback to WhatsApp
-    const msg=`Hi PahariPath! I want to list my property:%0A*${name}* at ${loc}%0AHost: ${owner}%0APhone: ${phone}%0APrice: ₹${price}/night%0AType: ${type}%0AEco: ${eco?'Yes':'No'}%0A${desc}`;
-    window.open('https://wa.me/919317110366?text='+msg,'_blank');
+    const msg=`Hi PahariPath! I want to list my property:%0A*${name}* at ${loc}%0AHost: ${owner}%0APhone: ${phone}%0AEmail: ${email}%0APrice: ₹${price}/night%0AType: ${type}%0AEco: ${eco?'Yes':'No'}%0A${desc}`;
+    window.open('https://wa.me/91XXXXXXXXXX?text='+msg,'_blank');
     toast('Redirecting to WhatsApp to complete your application');
   } else {
     toast('✓ Application submitted! We will contact you within 48 hours.');
