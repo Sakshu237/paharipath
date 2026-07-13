@@ -599,6 +599,8 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <div class="lp"><div class="ld"></div> Live</div>
 <button class="nb ol" onclick="openBookMo(1)">Book a Stay</button>
     <button class="nb" onclick="goTo('stays-bg')">Find Stays →</button>
+    <button class="nb" onclick="openSupportMo()" title="Help & Support" style="width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);border-radius:50%;font-size:16px">🎧</button>
+    <button class="nb" onclick="openSOSMo()" title="Emergency SOS" style="width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;background:#fdeaea;border:1.5px solid #e8b3b3;border-radius:50%;font-size:15px">🆘</button>
     <button class="ham" id="hamBtn" onclick="openMobMenu()" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -628,6 +630,8 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="mob-link" onclick="closeMobMenu();goTo('explore')"><span class="ml-icon">🏔️</span>Explore Places</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('stays-bg')"><span class="ml-icon">🏡</span>Find Stays</div>
       <a href="/blog" class="mob-link" style="text-decoration:none"><span class="ml-icon">📝</span>Blog</a>
+      <div class="mob-link" onclick="closeMobMenu();openSupportMo()"><span class="ml-icon">🎧</span>Help &amp; Support</div>
+      <div class="mob-link" onclick="closeMobMenu();openSOSMo()" style="color:#c0392b"><span class="ml-icon">🆘</span>Emergency SOS</div>
     </div>
     <div class="mob-footer">
       <button class="nb" onclick="closeMobMenu();goTo('stays-bg')" style="text-align:center">Find Stays →</button>
@@ -925,6 +929,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <a href="/blog" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Blog</a>
   <a href="/privacy-policy.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Privacy Policy</a>
   <a href="/terms-of-service.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Terms of Service</a>
+  <a href="/faq.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">FAQ</a>
   <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
   <a href="#" onclick="openManageBooking()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Manage / Cancel Booking</a>
   <a href="#" onclick="openSupportMo()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Help & Support</a>
@@ -1154,8 +1159,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 </div>
 
 <div class="toast" id="toastEl"></div>
-<button onclick="openSOSMo()" title="Emergency SOS" style="position:fixed;bottom:84px;right:20px;z-index:400;width:52px;height:52px;border-radius:50%;background:#c0392b;color:#fff;border:none;box-shadow:0 4px 16px rgba(0,0,0,.25);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">🆘</button>
-<button onclick="openSupportMo()" title="Help & Support" style="position:fixed;bottom:24px;right:20px;z-index:400;width:52px;height:52px;border-radius:50%;background:var(--pine);color:#fff;border:none;box-shadow:0 4px 16px rgba(0,0,0,.25);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">🎧</button>
 
 <!-- STAY PHOTO LIGHTBOX -->
 <div class="slx" id="stayLightbox">
@@ -7345,17 +7348,18 @@ async function processPayment() {
         <button class="pay-btn" style="flex:0 0 auto;padding:10px 18px;background:var(--mist);color:var(--pine);font-size:12px" onclick="closeMo()">Done ✓</button>
       </div>
       <div id="igCardView" style="display:none;margin-top:16px">
-        <div style="width:100%;aspect-ratio:4/5;border-radius:20px;overflow:hidden;position:relative;background:#0a1f14;box-shadow:0 12px 40px rgba(0,0,0,.25)">
-          ${window._epassPhotoUrl ? `<img src="${window._epassPhotoUrl}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"/>` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;background:linear-gradient(160deg,#0f2d1a,#1a3d2b)">🏔️</div>`}
-          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,31,20,.95) 0%,rgba(10,31,20,.1) 55%,transparent 70%)"></div>
-          <div style="position:absolute;top:16px;left:16px;font-family:var(--fd);font-size:13px;color:rgba(255,255,255,.85)">🏔️ PahariPath</div>
-          <div style="position:absolute;bottom:20px;left:20px;right:20px">
-            <div style="font-family:var(--fd);font-size:30px;color:#fff;font-weight:600">${name}</div>
-            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:#e8d49a;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;margin-top:8px">${pahadiNow.letter} ${pahadiNow.name}</div>
-            <div style="display:flex;gap:4px;margin-top:10px">${renderPahadiLettersHTML(tsNow)}</div>
+        <div style="width:100%;max-width:320px;margin:0 auto;aspect-ratio:9/16;border-radius:20px;overflow:hidden;position:relative;background:#0a1f14;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+          ${window._epassPhotoUrl ? `<img src="${window._epassPhotoUrl}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"/>` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:70px;background:linear-gradient(160deg,#0f2d1a,#1a3d2b)">🏔️</div>`}
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,31,20,.97) 0%,rgba(10,31,20,.55) 30%,rgba(10,31,20,.15) 55%,transparent 68%)"></div>
+          <div style="position:absolute;top:60px;left:0;right:0;text-align:center;font-family:var(--fd);font-size:15px;color:rgba(255,255,255,.9);letter-spacing:.02em">🏔️ PahariPath</div>
+          <div style="position:absolute;bottom:110px;left:24px;right:24px;text-align:center">
+            <div style="font-family:var(--fd);font-size:34px;color:#fff;font-weight:600;line-height:1.15">${name}</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:#e8d49a;font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;margin-top:12px">${pahadiNow.letter} ${pahadiNow.name}</div>
+            <div style="display:flex;gap:4px;margin-top:14px;justify-content:center">${renderPahadiLettersHTML(tsNow)}</div>
           </div>
+          <div style="position:absolute;bottom:36px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.04em">paharipath.in</div>
         </div>
-        <div style="font-size:11px;color:var(--stone);text-align:center;margin-top:10px">This public-safe card has no booking details — screenshot &amp; share anywhere</div>
+        <div style="font-size:11px;color:var(--stone);text-align:center;margin-top:10px">Sized for Instagram Stories — screenshot and it'll fit edge-to-edge, no cropping needed</div>
         <button class="btn-ghost" style="width:100%;padding:9px;margin-top:8px;border-radius:8px;border:1px solid rgba(74,124,95,.2);background:none;color:var(--stone);font-size:12px;cursor:pointer" onclick="document.getElementById('igCardView').style.display='none'">← Back to E-Pass</button>
       </div>
     </div>`;
