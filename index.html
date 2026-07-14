@@ -87,7 +87,7 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .nl a:hover,.nl a.act{color:var(--pine);background:rgba(74,124,95,.08)}
 .nr{display:flex;align-items:center;gap:10px}
 /* HAMBURGER */
-.ham{display:none;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;transition:background .15s}
+.ham{display:flex;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;transition:background .15s}
 .ham:hover{background:rgba(74,124,95,.08)}
 .ham span{display:block;height:2px;width:100%;background:var(--pine);border-radius:2px;transition:all .25s}
 .ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
@@ -599,8 +599,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <div class="lp"><div class="ld"></div> Live</div>
 <button class="nb ol" onclick="openBookMo(1)">Book a Stay</button>
     <button class="nb" onclick="goTo('stays-bg')">Find Stays →</button>
-    <button class="nb" onclick="openSupportMo()" title="Help & Support" style="width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);border-radius:50%;font-size:16px">🎧</button>
-    <button class="nb" onclick="openSOSMo()" title="Emergency SOS" style="width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;background:#fdeaea;border:1.5px solid #e8b3b3;border-radius:50%;font-size:15px">🆘</button>
     <button class="ham" id="hamBtn" onclick="openMobMenu()" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -630,6 +628,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="mob-link" onclick="closeMobMenu();goTo('explore')"><span class="ml-icon">🏔️</span>Explore Places</div>
       <div class="mob-link" onclick="closeMobMenu();goTo('stays-bg')"><span class="ml-icon">🏡</span>Find Stays</div>
       <a href="/blog" class="mob-link" style="text-decoration:none"><span class="ml-icon">📝</span>Blog</a>
+      <a href="/faq.html" class="mob-link" style="text-decoration:none"><span class="ml-icon">❓</span>FAQ</a>
       <div class="mob-link" onclick="closeMobMenu();openSupportMo()"><span class="ml-icon">🎧</span>Help &amp; Support</div>
       <div class="mob-link" onclick="closeMobMenu();openSOSMo()" style="color:#c0392b"><span class="ml-icon">🆘</span>Emergency SOS</div>
     </div>
@@ -891,12 +890,10 @@ input[type=range]{flex:1;accent-color:var(--pine)}
         <option value="5000-999999">₹5,000+</option>
       </select>
       <div style="position:relative">
-        <button onclick="const d=document.getElementById('amenityDropdown');d.style.display=d.style.display==='block'?'none':'block'" style="background:#fff;border:1px solid #ddd;padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--fb)">🧰 Amenities ${window._amenityFilter?.length?'('+window._amenityFilter.length+')':''}</button>
-        <div id="amenityDropdown" style="position:absolute;top:110%;left:0;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:50;min-width:180px;display:none">
-          ${['WiFi','Parking','Hot Water','Bonfire','Mountain View','Kitchen Access','Attached Bathroom','Power Backup'].map(a=>`<label style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;cursor:pointer"><input type="checkbox" value="${a}" onchange="toggleAmenityFilter('${a}')" ${window._amenityFilter?.includes(a)?'checked':''}/> ${a}</label>`).join('')}
-        </div>
+        <button onclick="const d=document.getElementById('amenityDropdown');d.style.display=d.style.display==='block'?'none':'block'" style="background:#fff;border:1px solid #ddd;padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--fb)">🧰 Amenities <span id="amenityCount"></span></button>
+        <div id="amenityDropdown" style="position:absolute;top:110%;left:0;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:50;min-width:180px;display:none"></div>
       </div>
-      ${(window._amenityFilter?.length||document.getElementById('fType')?.value||document.getElementById('fPrice')?.value)?`<button onclick="clearStayFilters()" style="background:none;border:none;color:var(--stone);font-size:12px;text-decoration:underline;cursor:pointer">Clear filters</button>`:''}
+      <span id="clearFiltersBtn"></span>
     </div>
     <div class="sg" id="stgrid"></div>
   </div>
@@ -2795,8 +2792,6 @@ function toggleAmenityFilter(a){
   const idx = window._amenityFilter.indexOf(a);
   if(idx>=0) window._amenityFilter.splice(idx,1); else window._amenityFilter.push(a);
   renderStays();
-  const btn=document.querySelector('#stayFilterBar button');
-  if(btn) btn.textContent=`🧰 Amenities ${window._amenityFilter.length?'('+window._amenityFilter.length+')':''}`;
 }
 function clearStayFilters(){
   window._amenityFilter=[];
@@ -2818,7 +2813,32 @@ function addRecentlyViewed(id){
   }catch(e){}
 }
 function getRecentlyViewed(){try{return JSON.parse(localStorage.getItem('pp_rv')||'[]')}catch(e){return [];}}
+const AMENITY_LIST = ['WiFi','Parking','Hot Water','Bonfire','Mountain View','Kitchen Access','Attached Bathroom','Power Backup'];
+function renderFilterBarUI(){
+  const amenF = window._amenityFilter || [];
+  const countEl = document.getElementById('amenityCount');
+  if(countEl) countEl.textContent = amenF.length ? `(${amenF.length})` : '';
+
+  const ddEl = document.getElementById('amenityDropdown');
+  if(ddEl && !ddEl.dataset.built){
+    ddEl.innerHTML = AMENITY_LIST.map(a=>`<label style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;cursor:pointer"><input type="checkbox" value="${a}" onchange="toggleAmenityFilter('${a}')"/> ${a}</label>`).join('');
+    ddEl.dataset.built='1';
+  }
+  if(ddEl){
+    ddEl.querySelectorAll('input[type=checkbox]').forEach(cb=>{ cb.checked = amenF.includes(cb.value); });
+  }
+
+  const clearEl = document.getElementById('clearFiltersBtn');
+  if(clearEl){
+    const typeF = document.getElementById('fType')?.value || '';
+    const priceF = document.getElementById('fPrice')?.value || '';
+    clearEl.innerHTML = (amenF.length||typeF||priceF)
+      ? `<button onclick="clearStayFilters()" style="background:none;border:none;color:var(--stone);font-size:12px;text-decoration:underline;cursor:pointer">Clear filters</button>`
+      : '';
+  }
+}
 function renderStays(){
+  renderFilterBarUI();
   const typeF = document.getElementById('fType')?.value || '';
   const priceF = document.getElementById('fPrice')?.value || '';
   const amenF = window._amenityFilter || [];
