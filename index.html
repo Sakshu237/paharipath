@@ -2977,8 +2977,45 @@ function openStayDetail(id){
           : `<button class="pay-btn" onclick="closeMo();openBookMo(${id})" style="flex:1">Book / Pay</button>`}
         <button class="pay-btn" onclick="waBook(${id})" style="flex:0 0 auto;background:#25D366;padding:14px 18px">WhatsApp</button>
       </div>
+      <div id="sdReviews" style="margin-top:22px;padding-top:18px;border-top:1px solid #eee">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--stone)">⭐ Guest Reviews</div>
+        <div style="text-align:center;padding:16px;color:var(--stone);font-size:12.5px">Loading reviews…</div>
+      </div>
     </div>`;
   document.getElementById('bookMo').classList.add('open');
+  loadStayReviews(id);
+}
+
+async function loadStayReviews(stayId){
+  const el = document.getElementById('sdReviews');
+  if(!el) return;
+  try{
+    const {data} = await _sb.from('stay_reviews').select('*').eq('stay_id',stayId).eq('status','published').order('created_at',{ascending:false});
+    const reviews = data||[];
+    if(!reviews.length){
+      el.innerHTML = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--stone);margin-bottom:8px">⭐ Guest Reviews</div><div style="font-size:12.5px;color:var(--stone)">No reviews yet — be the first to stay and share your experience!</div>`;
+      return;
+    }
+    const avg = (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1);
+    el.innerHTML = `
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--stone)">⭐ Guest Reviews</div>
+        <div style="font-size:13px;font-weight:700;color:var(--pine)">${avg} ★</div>
+        <div style="font-size:12px;color:var(--stone)">(${reviews.length} review${reviews.length===1?'':'s'})</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${reviews.slice(0,10).map(r=>`<div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;font-weight:600;color:var(--ink)">${(r.guest_name||'Guest').split(' ')[0]}</span>
+            <span style="color:#e6a83c;font-size:12px">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+          </div>
+          ${r.comment?`<div style="font-size:12.5px;color:#555;margin-top:2px">${r.comment}</div>`:''}
+          <div style="font-size:10.5px;color:var(--stone);margin-top:2px">${new Date(r.created_at).toLocaleDateString('en-IN',{month:'short',year:'numeric'})}</div>
+        </div>`).join('')}
+      </div>`;
+  }catch(e){
+    el.innerHTML = '';
+  }
 }
 
 // Full photo lightbox for stays
