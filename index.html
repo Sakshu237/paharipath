@@ -4976,7 +4976,12 @@ function adTab(tab,el){
       ${[{n:ALL.length,l:'Destinations'},{n:STAYS.length,l:'Listed Stays'},{n:BOOKINGS.length,l:'Bookings'},{n:'₹'+(BOOKINGS.filter(b=>b.status==='confirmed').length*4500).toLocaleString(),l:'Revenue (est.)'},{n:'5',l:'Eco Permits Today'},{n:Math.round(ALL.reduce((a,p)=>a+p.crowd,0)/ALL.length)+'%',l:'Avg Crowd'}].map(s=>`<div style="background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04)"><div style="font-family:var(--fd);font-size:26px;color:var(--pine)">${s.n}</div><div style="font-size:11px;color:var(--stone);margin-top:3px">${s.l}</div></div>`).join('')}
     </div>
     <div class="adm-panel"><h3>Recent Bookings</h3><div class="bk-list">${BOOKINGS.slice(0,5).map(b=>`<div class="bk-item"><div><div class="bk-n">${b.guest} — ${b.stay}</div><div class="bk-m">Ref: ${b.id} · ${b.dates} · ${b.amount}${b.eco?` · 🌱 ₹${b.ecoAmount} offset (${b.ecoTrees} tree${b.ecoTrees!==1?'s':''})`:''}</div></div><span class="bst ${b.status==='confirmed'?'bs-c':'bs-p'}">${b.status}</span></div>`).join('')}</div></div>
+    <div class="adm-panel">
+      <h3>🎯 Phase 2 Pricing Trigger</h3>
+      <div id="phase2TriggerBox" style="font-size:13px;color:var(--stone)">Loading…</div>
+    </div>
     <div class="adm-panel"><h3>🚨 Crowd Alerts — Very Busy Now</h3>${ALL.filter(p=>p.crowd>=70).map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f0f0ee;flex-wrap:wrap"><span style="font-size:16px">${p.emoji}</span><span style="font-size:13px;font-weight:500;flex:1">${p.name}</span><span class="cp ph">${p.crowd}% — Very Crowded</span><button class="ab ab-d" onclick="toast('Alert sent for ${p.name}')">Alert visitors</button></div>`).join('')}</div>`;
+    loadPhase2Trigger();
   }else if(tab==='crowd'){
     m.innerHTML=`<h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:8px;font-family:var(--fd)">Crowd Level Editor</h2>
     <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Drag sliders to update live crowd data directly — this is your own override, not subject to review.</p>
@@ -6302,6 +6307,42 @@ async function adminSaveZoneCaps(oldCaps){
   toast('Zone caps saved ✓ — live for all users now');
   adTab('eco',document.querySelector('.adm-ni:nth-child(7)'));
 }
+
+// ═══ ADMIN — PHASE 2 PRICING TRIGGER ═══
+async function loadPhase2Trigger(){
+  const el = document.getElementById('phase2TriggerBox');
+  if(!el) return;
+  try{
+    const { data, error } = await _sb.from('phase2_trigger_status').select('*').single();
+    if(error) throw error;
+    const bookings = data.completed_bookings;
+    const hosts = data.active_hosts;
+    const bookingsTarget = data.bookings_target;
+    const hostsTarget = data.hosts_target;
+    const bookingsPct = Math.min(100, Math.round((bookings/bookingsTarget)*100));
+    const hostsPct = Math.min(100, Math.round((hosts/hostsTarget)*100));
+    const hit = bookings>=bookingsTarget && hosts>=hostsTarget;
+    el.innerHTML = `
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="flex:1;min-width:150px">
+          <div style="font-size:12px;color:var(--stone)">Completed Bookings</div>
+          <div style="font-size:22px;font-weight:700;color:var(--pine)">${bookings} <span style="font-size:12px;font-weight:400;color:var(--stone)">/ ${bookingsTarget}</span></div>
+          <div style="height:6px;background:#eee;border-radius:3px;margin-top:4px;overflow:hidden"><div style="height:100%;background:#2d8a4e;width:${bookingsPct}%"></div></div>
+        </div>
+        <div style="flex:1;min-width:150px">
+          <div style="font-size:12px;color:var(--stone)">Active Hosts</div>
+          <div style="font-size:22px;font-weight:700;color:var(--pine)">${hosts} <span style="font-size:12px;font-weight:400;color:var(--stone)">/ ${hostsTarget}</span></div>
+          <div style="height:6px;background:#eee;border-radius:3px;margin-top:4px;overflow:hidden"><div style="height:100%;background:#4a7c5f;width:${hostsPct}%"></div></div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:${hit?'#1e6b3c':'var(--stone)'}">
+        ${hit ? '✅ Trigger met — time to plan pricing rollout.' : `Not yet — need ${Math.max(0,bookingsTarget-bookings)} more bookings and ${Math.max(0,hostsTarget-hosts)} more active hosts.`}
+      </div>`;
+  }catch(e){
+    el.innerHTML = '<span style="color:#b3261e">Could not load — check phase2_trigger_status view exists in Supabase.</span>';
+  }
+}
+
 function updateCrowd(id,val,el){
   const num=parseInt(val);el.textContent=num+'%';el.style.color=cColor(num);
   const p=ALL.find(x=>x.id===id);if(p)p.crowd=num;
