@@ -8,8 +8,9 @@
 //
 // Protected by a shared secret so randoms can't hit this URL and
 // force-run it. Set CRON_SECRET in Vercel env vars to any random
-// string, and configure vercel.json's cron path to include it, e.g.
-// "/api/complete-stays?secret=YOUR_SECRET_HERE".
+// string — Vercel automatically sends it as `Authorization: Bearer
+// <CRON_SECRET>` on every scheduled invocation, so the secret never
+// needs to appear in vercel.json or anywhere else in the repo.
 
 const { checkinHasPassed, awardPointsForBooking } = require('./_lib/points');
 
@@ -17,7 +18,7 @@ const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 
 module.exports = async (req, res) => {
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && req.query.secret !== cronSecret) {
+ if (cronSecret && req.headers.authorization !== `Bearer ${cronSecret}`) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
