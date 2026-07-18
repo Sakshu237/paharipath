@@ -8357,10 +8357,17 @@ async function submitPartnerForm(){
     window.open('https://wa.me/919317110366?text='+msg,'_blank');
     toast('Redirecting to WhatsApp to complete your application');
   } else {
-    toast('✓ Application submitted! We will contact you within 48 hours.');
+   toast('✓ Application submitted! We will contact you within 48 hours.');
     document.getElementById('partnerMo').classList.remove('open');
     document.getElementById('partnerMo').style.display='none';
   }
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js');
+  });
 }
 </script>
 </body>
