@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PahariPath — Discover Real Himachal Pradesh</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a3d2b'/%3E%3Cpolygon points='16,20 22,8 28,20' fill='%234a7c5f' opacity='0.5'/%3E%3Cpolygon points='13,20 19,6 25,20' fill='%234a7c5f' opacity='0.85'/%3E%3Cpolygon points='8,20 16,4 24,20' fill='%23f5f2ec'/%3E%3Cpolygon points='16,4 19.5,10 12.5,10' fill='%231a3d2b'/%3E%3Cpath d='M6,21.5 Q16,18.5 26,21.5' fill='none' stroke='%23c9a84c' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png"/>
+<meta name="description" content="Discover 146+ offbeat destinations in Himachal Pradesh with live crowd tracking. Find peaceful valleys, quiet villages, and real Pahadi experiences. Book directly with local hosts."/>
+<meta name="keywords" content="Himachal Pradesh travel, offbeat HP, live crowd tracker, Spiti Valley, Parvati Valley, Kinnaur, Tirthan Valley, local homestays, responsible travel India"/>
+<meta name="author" content="PahariPath"/>
+<meta name="language" content="en-IN"/>
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"/>
+<meta name="geo.placename" content="Himachal Pradesh, India"/>
+<meta name="geo.region" content="IN-HP"/>
+<meta name="google-site-verification" content="t5j3nu8Xf_Jo3JKft8ycFp2bGFd2LB9LqbLypwY-bP0"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="PahariPath"/>
+<meta property="og:locale" content="en_IN"/>
+<meta property="og:title" content="PahariPath — Discover Real Himachal Pradesh"/>
+<meta property="og:description" content="146+ offbeat HP destinations with live crowd data. Skip the tourist trail. Book local homestays directly."/>
+<meta property="og:image" content="https://paharipath.in/og-image.jpg"/>
+<meta property="og:url" content="https://paharipath.in/"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="PahariPath — Real Himachal Pradesh"/>
+<meta name="twitter:description" content="Live crowd tracking for 146+ HP destinations. Find quiet valleys and book local stays."/>
+<meta name="twitter:image" content="https://paharipath.in/og-image.jpg"/>
+<link rel="canonical" href="https://paharipath.in/"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "PahariPath",
+  "url": "https://paharipath.in",
+  "logo": "https://paharipath.in/icon-192.png",
+  "description": "Responsible travel discovery and booking platform for Himachal Pradesh — 146+ offbeat destinations with live crowd tracking and direct local homestay bookings.",
+  "email": "hello@paharipath.in",
+  "areaServed": {
+    "@type": "State",
+    "name": "Himachal Pradesh",
+    "containedInPlace": { "@type": "Country", "name": "India" }
+  },
+  "sameAs": []
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "PahariPath",
+  "url": "https://paharipath.in",
+  "description": "Discover 146+ offbeat destinations in Himachal Pradesh with live crowd tracking. Book directly with local hosts."
+}
+</script>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#1a3d2b"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="PahariPath"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://checkout.razorpay.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'"/>
+<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/></noscript>
+<script defer data-domain="paharipath.in" src="https://plausible.io/js/script.js"></script>
+<style>
+:root{
+  --pine:#1a3d2b;--moss:#2d5a40;--sage:#4a7c5f;--mist:#e8ede9;
+  --clay:#c4704a;--stone:#6b7c6e;--ink:#1c2420;--cream:#faf9f6;
+  --fd:'Cormorant Garamond',Georgia,serif;--fb:'DM Sans',sans-serif;
+  --radius:12px;--shadow:0 4px 24px rgba(26,61,43,.09);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--cream);color:var(--ink);overflow-x:hidden}
+/* NAV */
+nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:13px 40px;background:rgba(250,249,246,.96);backdrop-filter:blur(18px);border-bottom:1px solid rgba(74,124,95,.12)}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.logo-mark{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.logo-name{display:none}
+.nl{display:flex;gap:4px;list-style:none}
+.nl a{font-size:13px;color:var(--stone);text-decoration:none;padding:7px 13px;border-radius:8px;cursor:pointer;transition:all .15s}
+.nl a:hover,.nl a.act{color:var(--pine);background:rgba(74,124,95,.08)}
+.nr{display:flex;align-items:center;gap:10px}
+/* HAMBURGER */
+.ham{display:flex;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;transition:background .15s}
+.ham:hover{background:rgba(74,124,95,.08)}
+.ham span{display:block;height:2px;width:100%;background:var(--pine);border-radius:2px;transition:all .25s}
+.ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.ham.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+/* MOBILE DRAWER */
+.mob-drawer{display:none;position:fixed;inset:0;z-index:210;pointer-events:none}
+.mob-drawer.open{display:block;pointer-events:auto}
+.mob-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);animation:fdIn .2s ease}
+@keyframes fdIn{from{opacity:0}to{opacity:1}}
+.mob-panel{position:absolute;top:0;right:0;width:280px;height:100%;background:var(--cream);box-shadow:-8px 0 40px rgba(0,0,0,.18);display:flex;flex-direction:column;animation:slIn .22s ease}
+@keyframes slIn{from{transform:translateX(100%)}to{transform:none}}
+.mob-panel-hd{padding:18px 20px;border-bottom:1px solid rgba(74,124,95,.1);display:flex;align-items:center;justify-content:space-between}
+.mob-panel-logo{display:flex;align-items:center;gap:10px}
+.mob-x{width:32px;height:32px;border-radius:8px;border:none;background:var(--mist);cursor:pointer;font-size:15px;color:var(--stone)}
+.mob-links{flex:1;overflow-y:auto;padding:10px 12px}
+.mob-link{display:flex;align-items:center;gap:10px;padding:13px 12px;border-radius:10px;font-size:14px;color:var(--ink);cursor:pointer;transition:all .15s;font-weight:500}
+.mob-link:hover{background:rgba(74,124,95,.08);color:var(--pine)}
+.mob-link .ml-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.mob-footer{padding:16px 20px;border-top:1px solid rgba(74,124,95,.1);display:flex;flex-direction:column;gap:8px}
+/* Search keyboard nav */
+.sdi.focused{background:#f4faf5;outline:2px solid rgba(74,124,95,.3);outline-offset:-2px}
+/* Search empty state */
+.sdrop-empty{padding:20px 18px;text-align:center;color:var(--stone);font-size:13px}
+.sdrop-empty strong{display:block;font-size:15px;color:var(--ink);margin-bottom:6px}
+.lp{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:#c0392b;background:#fdeaea;padding:5px 11px;border-radius:20px;border:1px solid #f0b8b8}
+.ld{width:6px;height:6px;border-radius:50%;background:#c0392b;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.nb{background:var(--pine);color:#fff;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:var(--fb);transition:all .2s}
+.nb:hover{background:var(--moss);transform:translateY(-1px)}
+.nb.ol{background:transparent;color:var(--pine);border:1.5px solid var(--pine)}
+.nb.ol:hover{background:var(--mist)}
+/* VIEWS */
+.view{display:none}.view.active{display:block}
+/* HERO */
+.hero{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 40px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 65% at 10% 90%,rgba(74,124,95,.12),transparent 60%),radial-gradient(ellipse 60% 70% at 90% 10%,rgba(26,61,43,.08),transparent 60%),linear-gradient(175deg,#eef2ef,var(--cream))}
+.eyebrow{position:relative;display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--sage);background:rgba(74,124,95,.1);padding:7px 18px;border-radius:20px;margin-bottom:28px;border:1px solid rgba(74,124,95,.18)}
+.hero h1{position:relative;font-family:var(--fd);font-size:clamp(44px,8vw,84px);line-height:1.02;color:var(--pine);margin-bottom:22px;max-width:820px;font-weight:600}
+.hero h1 em{color:var(--clay);font-style:italic}
+.hero-sub{position:relative;font-size:17px;line-height:1.8;color:var(--stone);max-width:460px;margin-bottom:44px;font-weight:300}
+/* SEARCH */
+.sw{position:relative;width:100%;max-width:600px;margin-bottom:22px;z-index:10}
+.sb{display:flex;align-items:center;background:#fff;border:1.5px solid rgba(74,124,95,.2);border-radius:16px;overflow:hidden;box-shadow:0 4px 28px rgba(26,61,43,.1)}
+.sb input{flex:1;padding:18px 22px;border:none;outline:none;font-family:var(--fb);font-size:15px;color:var(--ink)}
+.sb input::placeholder{color:var(--stone);opacity:.65}
+.sbtn{margin:7px;background:var(--pine);color:#fff;border:none;border-radius:11px;padding:12px 26px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--fb);transition:background .2s}
+.sbtn:hover{background:var(--moss)}
+.sdrop{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border:1.5px solid rgba(74,124,95,.22);border-radius:14px;z-index:100;max-height:340px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.14);display:none;text-align:left}
+.sdrop.open{display:block}
+.sdi{padding:12px 18px;cursor:pointer;border-bottom:1px solid #f0f0ee;display:flex;align-items:center;gap:12px;transition:background .1s}
+.sdi:hover{background:#f4faf5}.sdi:last-child{border-bottom:none}
+.sin{font-size:14px;font-weight:500;color:var(--ink)}.sim{font-size:11px;color:var(--stone);margin-top:2px}
+/* FILTERS */
+.fls{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.fb{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:500;border:1.5px solid rgba(74,124,95,.22);color:var(--sage);background:#fff;cursor:pointer;transition:all .2s;font-family:var(--fb)}
+.fb:hover,.fb.act{background:var(--pine);color:#fff;border-color:var(--pine)}
+/* STATS */
+.stats-bar{display:flex;justify-content:center;background:#fff;border-bottom:1px solid rgba(74,124,95,.1)}
+.stat{flex:1;max-width:200px;text-align:center;padding:22px 20px;border-right:1px solid rgba(74,124,95,.08)}
+.stat:last-child{border:none}
+.stat-n{font-family:var(--fd);font-size:28px;font-weight:600;color:var(--pine);display:block}
+.stat-l{font-size:10px;color:var(--stone);letter-spacing:.08em;text-transform:uppercase;margin-top:5px;display:block}
+/* SECTION */
+.sec{padding:64px 40px;max-width:1240px;margin:0 auto}
+.sec-hd{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;gap:20px;flex-wrap:wrap}
+.sec-t{font-family:var(--fd);font-size:34px;color:var(--pine);font-weight:600}
+.sec-t span{color:var(--clay);font-style:italic}
+.sec-note{font-size:12px;color:var(--stone);max-width:260px;text-align:right;line-height:1.65}
+/* CROWD */
+.cg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.crow{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid rgba(74,124,95,.09);border-radius:12px;padding:12px 15px;cursor:pointer;transition:all .2s}
+.crow:hover{border-color:rgba(74,124,95,.3);box-shadow:var(--shadow);transform:translateX(2px)}
+.cem{font-size:18px;flex-shrink:0}
+.ci{min-width:90px}.cn{font-size:13px;font-weight:500;color:var(--ink)}.cr{font-size:11px;color:var(--stone);margin-top:2px}
+.cbc{flex:1}.cbg{height:5px;background:#eee;border-radius:3px;overflow:hidden;margin-bottom:4px}
+.cbf{height:100%;border-radius:3px;transition:width 1s}
+.bl{background:linear-gradient(90deg,#3aab66,#52c97e)}.bm{background:linear-gradient(90deg,#e8a020,#f0b830)}.bh{background:linear-gradient(90deg,#e24a4a,#f06060)}
+.cp{font-size:10px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.pl{background:#e6f4ec;color:#1e6b3c}.pm{background:#fef3e2;color:#9b6c1a}.ph{background:#fdeaea;color:#9b2020}
+.show-more{text-align:center;margin-top:22px}
+.sm-btn{padding:10px 26px;border-radius:20px;border:1.5px solid rgba(74,124,95,.25);background:#fff;color:var(--sage);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--fb);transition:all .2s}
+.sm-btn:hover{background:var(--pine);color:#fff;border-color:var(--pine)}
+/* MAP */
+.map-wrap{padding:0 40px 48px;max-width:1240px;margin:0 auto}
+.map-card{background:#fff;border-radius:18px;border:1px solid rgba(74,124,95,.1);overflow:hidden;box-shadow:var(--shadow);position:relative}
+.map-hd{padding:16px 20px;border-bottom:1px solid rgba(74,124,95,.1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.map-ttl{font-family:var(--fd);font-size:20px;color:var(--pine)}
+.map-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.map-filter-btn{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid rgba(74,124,95,.22);color:var(--sage);background:#fff;cursor:pointer;transition:all .18s;font-family:var(--fb);white-space:nowrap}
+.pf-btn{padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid rgba(74,124,95,.2);color:var(--sage);background:#fff;cursor:pointer;transition:all .2s;font-family:var(--fb);white-space:nowrap}
+.htab{padding:12px 20px;border:none;background:none;font-size:13px;font-weight:600;color:var(--stone);cursor:pointer;border-bottom:3px solid transparent;font-family:var(--fb);white-space:nowrap;transition:all .2s}
+.htab.act{color:var(--pine);border-bottom-color:var(--pine)}
+.htab:hover{color:var(--pine)}
+.h-card{background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:16px;padding:20px;margin-bottom:16px}
+.h-stat{background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:14px;padding:18px;text-align:center}
+.h-stat-n{font-family:var(--fd);font-size:32px;font-weight:700;color:var(--pine)}
+.h-stat-l{font-size:12px;color:var(--stone);margin-top:4px}
+.pf-btn:hover,.pf-btn.act{background:var(--pine);color:#fff;border-color:var(--pine)}
+.save-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:transform .15s;z-index:2}
+.save-btn:hover{transform:scale(1.15)}
+.save-btn.saved{background:rgba(255,255,255,.95)}
+.pc-img{position:relative}
+.map-filter-btn:hover,.map-filter-btn.act{background:var(--pine);color:#fff;border-color:var(--pine)}
+.map-filter-btn.quiet-only.act{background:#3aab66;border-color:#3aab66}
+.map-leg{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--stone)}
+.leg-d{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.map-body{display:grid;grid-template-columns:1fr 270px}
+#lfmap{height:560px;z-index:1;background:#e8f0ec}
+/* Leaflet overrides */
+.leaflet-container{font-family:'DM Sans',sans-serif!important}
+.leaflet-control-zoom{border:none!important;box-shadow:0 2px 12px rgba(0,0,0,.14)!important}
+.leaflet-control-zoom a{width:32px!important;height:32px!important;line-height:32px!important;color:var(--pine)!important;font-size:18px!important;border-radius:8px!important;font-weight:400!important}
+.leaflet-control-zoom-in{border-radius:8px 8px 0 0!important}
+.leaflet-control-zoom-out{border-radius:0 0 8px 8px!important}
+.leaflet-attribution-flag{display:none!important}
+.leaflet-control-attribution{font-size:9px!important;background:rgba(255,255,255,.75)!important;border-radius:6px 0 0 0!important}
+.lf-tip{background:#1a3d2b!important;color:#fff!important;border:none!important;border-radius:6px!important;font-family:'DM Sans',sans-serif!important;font-size:11px!important;font-weight:600!important;padding:4px 9px!important;box-shadow:0 2px 8px rgba(0,0,0,.18)!important;white-space:nowrap!important}
+.lf-tip::before{border-top-color:#1a3d2b!important}
+/* Custom popup */
+.lf-pop{font-family:'DM Sans',sans-serif;min-width:210px;max-width:245px}
+.lf-pop-head{display:flex;align-items:center;gap:8px;margin-bottom:9px;padding-right:10px}
+.lf-pop-emoji{font-size:22px;line-height:1;flex-shrink:0}
+.lf-pop-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;font-weight:600;color:#1a3d2b;line-height:1.15}
+.lf-pop-sub{font-size:11px;color:#6b7c6e;margin-top:2px}
+.lf-bar{height:5px;background:#eee;border-radius:3px;margin:8px 0 4px;overflow:hidden}
+.lf-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.lf-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:7px}
+.lf-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.lf-pill-l{background:#e6f4ec;color:#1e6b3c}
+.lf-pill-m{background:#fef3e2;color:#9b6c1a}
+.lf-pill-h{background:#fdeaea;color:#9b2020}
+.lf-fact{font-size:11px;color:#6b7c6e;margin-bottom:3px;line-height:1.5}
+.lf-fact strong{color:#1c2420}
+.lf-nearby{margin-top:8px;border-top:1px solid #f0f0ee;padding-top:8px}
+.lf-nearby-ttl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7c6e;margin-bottom:5px}
+.lf-nb{display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:6px;cursor:pointer;font-size:11px;transition:background .1s}
+.lf-nb:hover{background:#f4faf5}
+.lf-nb-name{flex:1;color:#1c2420;font-weight:500}
+.lf-nb-km{color:#6b7c6e;font-size:10px}
+.lf-nb-badge{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700}
+.lf-acts{display:flex;gap:7px;margin-top:10px}
+.lf-btn{flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.lf-btn-p{background:#1a3d2b;color:#fff}.lf-btn-p:hover{background:#2d5a40}
+.lf-btn-s{background:#e6f4ec;color:#1a3d2b;border:1px solid rgba(30,107,60,.15)}.lf-btn-s:hover{background:#d0ecd8}
+.leaflet-popup-content-wrapper{border-radius:14px!important;box-shadow:0 10px 40px rgba(0,0,0,.16)!important;border:1px solid rgba(74,124,95,.14)!important;padding:0!important}
+.leaflet-popup-content{margin:14px 16px!important;width:auto!important}
+.leaflet-popup-tip-container{margin-top:-1px}
+.leaflet-popup-close-button{font-size:16px!important;color:#6b7c6e!important;top:10px!important;right:10px!important;width:22px!important;height:22px!important;background:#f4f6f4!important;border-radius:6px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important}
+/* Sidebar */
+.map-sidebar{border-left:1px solid rgba(74,124,95,.1);overflow-y:auto;max-height:560px;background:#fafafa}
+.ms-head{padding:14px 16px;border-bottom:1px solid rgba(74,124,95,.1);position:sticky;top:0;background:#fafafa;z-index:2}
+.ms-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:8px}
+.ms-search{width:100%;padding:8px 12px;border:1.5px solid rgba(74,124,95,.2);border-radius:8px;font-family:var(--fb);font-size:12px;outline:none;color:var(--ink);box-sizing:border-box}
+.ms-search:focus{border-color:var(--sage)}
+.ms-list{padding:8px}
+.ms-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.ms-item:hover{background:#fff;border-color:rgba(74,124,95,.12);box-shadow:0 2px 8px rgba(26,61,43,.06)}
+.ms-item.highlighted{background:#e6f4ec;border-color:rgba(30,107,60,.2)}
+.ms-emoji{font-size:16px;flex-shrink:0;width:22px;text-align:center}
+.ms-info{flex:1;min-width:0}
+.ms-name{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-sub{font-size:10px;color:var(--stone);margin-top:1px}
+.ms-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* map offline fallback */
+.map-offline{display:flex;flex-direction:column;align-items:center;justify-content:center;height:560px;background:linear-gradient(135deg,#dbeee3,#c8e0d0);gap:12px;color:var(--sage)}
+.map-offline-icon{font-size:48px}
+.map-offline-t{font-family:var(--fd);font-size:22px;color:var(--pine)}
+.map-offline-s{font-size:13px;color:var(--stone);text-align:center;max-width:280px;line-height:1.6}
+@media(max-width:768px){
+  .map-body{grid-template-columns:1fr}
+  .map-sidebar{max-height:240px;border-left:none;border-top:1px solid rgba(74,124,95,.1)}
+  #lfmap{height:340px}
+  .map-offline{height:340px}
+  .map-wrap{padding:0 16px 36px}
+  .map-hd{padding:12px 14px}
+}
+/* PLAN */
+.plan-sec{background:var(--pine);padding:64px 40px}
+.plan-in{max-width:1240px;margin:0 auto}
+.plan-t{font-family:var(--fd);font-size:34px;color:#fff;margin-bottom:6px}
+.plan-s{font-size:15px;color:rgba(255,255,255,.5);font-weight:300;margin-bottom:28px}
+.plan-form{display:grid;grid-template-columns:1fr 1fr 90px 120px auto;gap:12px;align-items:end;margin-bottom:18px}
+@media(max-width:768px){.plan-form{grid-template-columns:1fr 1fr;}.plan-form .pfbtn{grid-column:1/-1}}
+@media(max-width:640px){
+  .hero{padding:60px 16px 40px}
+  .hero-t{font-size:clamp(26px,8vw,48px)}
+  .hero-s{font-size:14px}
+  .cg{grid-template-columns:1fr}
+  .pd-hg{grid-template-columns:1fr!important}
+  .adm-layout{flex-direction:column!important}
+  .adm-nav{width:100%!important;flex-direction:row!important;flex-wrap:wrap!important;gap:6px!important;padding:12px!important}
+  .adm-ni{padding:8px 12px!important;font-size:12px!important}
+  .adm-main{padding:16px!important}
+  .fcc-grid{grid-template-columns:1fr 1fr!important}
+  .mo-box{margin:0!important;border-radius:16px 16px 0 0!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;max-height:92vh!important;overflow-y:auto!important}
+  .stays-grid,.sg,.pd-sg{grid-template-columns:1fr!important}
+  .epass-grid{grid-template-columns:1fr 1fr!important}
+  .sec{padding:40px 16px}
+  .pg-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .plan-in{padding:28px 16px}
+  .alt-grid{grid-template-columns:1fr}
+  .plan-form{grid-template-columns:1fr!important}
+  .plan-form .pfbtn{grid-column:1/-1}
+  .nav-links{display:none}
+}
+@media(max-width:380px){
+  .cg{grid-template-columns:1fr}
+  .fcc-grid{grid-template-columns:1fr!important}
+  .hero-t{font-size:26px}
+}
+.pg label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.45);margin-bottom:6px}
+.pi,.psel{width:100%;padding:13px 15px;border-radius:10px;border:1.5px solid rgba(255,255,255,.18);background:rgba(255,255,255,.09);color:#fff;font-family:var(--fb);font-size:13px;outline:none}
+.pi::placeholder{color:rgba(255,255,255,.5)}.psel option{background:#1a3d2b}
+.pfbtn{padding:14px 20px;background:#fff;color:var(--pine);border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)}
+.pfbtn:hover{background:var(--mist)}
+.plan-res{display:none;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:22px}
+.plan-res.show{display:block}
+.fcc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.fcc{border-radius:12px;padding:15px;text-align:center}
+.fc-g{background:rgba(58,171,102,.16);border:1px solid rgba(58,171,102,.28)}
+.fc-w{background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.28)}
+.fc-d{background:rgba(226,74,74,.16);border:1px solid rgba(226,74,74,.28)}
+.fcc-i{font-size:22px;margin-bottom:5px}.fcc-l{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);margin-bottom:3px}
+.fcc-v{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px}.fcc-s{font-size:11px;color:rgba(255,255,255,.55)}
+.fc-adv{border-radius:12px;padding:15px 18px;font-size:14px;line-height:1.75;color:#fff}
+.fca-g{background:rgba(58,171,102,.16);border:1px solid rgba(58,171,102,.28)}
+.fca-w{background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.28)}
+.fca-d{background:rgba(226,74,74,.16);border:1px solid rgba(226,74,74,.28)}
+/* ALTERNATIVES */
+.alt-band{background:#1b2d22;padding:64px 40px}
+.alt-in{max-width:1240px;margin:0 auto}
+.alt-t{font-family:var(--fd);font-size:34px;color:#fff;margin-bottom:7px}
+.alt-sub{font-size:15px;color:rgba(255,255,255,.45);font-weight:300;margin-bottom:32px}
+.alt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.alt-c{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:20px;cursor:pointer;transition:all .22s}
+.alt-c:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.22);transform:translateY(-2px)}
+.alt-io{font-size:10px;font-weight:600;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.alt-n{font-family:var(--fd);font-size:22px;color:#fff;margin-bottom:6px}
+.alt-d{font-size:13px;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:12px;font-weight:300}
+.alt-ft{display:flex;align-items:center;gap:10px}
+.alt-cb{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(58,171,102,.2);color:#7dcf9b}
+.alt-vb{font-size:11px;color:rgba(255,255,255,.35)}
+/* PLACES GRID */
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.pc{background:#fff;border:1px solid rgba(74,124,95,.09);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s}
+.pc:hover{border-color:rgba(74,124,95,.28);box-shadow:0 12px 40px rgba(26,61,43,.1);transform:translateY(-4px)}
+.pc-img{height:165px;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;overflow:hidden}
+.pc-badge{position:absolute;top:10px;right:10px}
+.pc-body{padding:15px 18px}
+.pc-n{font-family:var(--fd);font-size:19px;font-weight:600;color:var(--ink)}
+.pc-d{font-size:11px;color:var(--stone);margin-top:2px;margin-bottom:8px}
+.pc-desc{font-size:12px;color:var(--stone);line-height:1.65;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.ptag{font-size:10px;padding:3px 9px;border-radius:20px;background:var(--mist);color:var(--sage);font-weight:500}
+.bth{height:4px;background:#eee;border-radius:3px;overflow:hidden}
+.btf{height:100%;border-radius:3px}
+.pc-acts{display:flex;gap:8px;margin-top:10px}
+.pb2{flex:1;padding:9px 10px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--fb);border:none}
+.pb2-p{background:var(--pine);color:#fff}.pb2-p:hover{background:var(--moss)}
+.pb2-s{background:transparent;color:var(--stone);border:1px solid rgba(74,124,95,.2)}.pb2-s:hover{border-color:var(--pine);color:var(--pine)}
+/* STAYS */
+.stays-bg{background:#f4f6f4;padding:64px 0}
+.stays-in{max-width:1240px;margin:0 auto;padding:0 40px}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
+.sc{background:#fff;border:1px solid rgba(74,124,95,.09);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .22s}
+.sc:hover{border-color:rgba(74,124,95,.28);transform:translateY(-3px);box-shadow:var(--shadow)}
+.s-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;overflow:hidden;background-size:cover;background-position:center;cursor:pointer}
+.s-img-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.sc:hover .s-img-cover{transform:scale(1.04)}
+.s-img-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 40%,rgba(0,0,0,.45) 100%)}
+.s-img-cnt{position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;display:flex;align-items:center;gap:4px}
+.s-photo-dot{width:4px;height:4px;border-radius:50%;background:#fff;opacity:.5;transition:opacity .2s}
+.s-photo-dot.act{opacity:1;width:14px;border-radius:2px}
+/* STAY PHOTO LIGHTBOX */
+.slx{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.93);align-items:center;justify-content:center;flex-direction:column}
+.slx.open{display:flex}
+.slx-img{max-width:92vw;max-height:80vh;object-fit:contain;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.slx-caption{color:rgba(255,255,255,.7);font-size:13px;margin-top:12px;font-family:var(--fd)}
+.slx-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.13);border:none;color:#fff;font-size:24px;padding:10px 16px;border-radius:8px;cursor:pointer;transition:background .2s}
+.slx-nav:hover{background:rgba(255,255,255,.25)}
+.slx-prev{left:16px}.slx-next{right:16px}
+.slx-close{position:absolute;top:18px;right:20px;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:18px;width:36px;height:36px;border-radius:8px;cursor:pointer}
+.slx-dots{display:flex;gap:6px;margin-top:14px}
+.slx-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;transition:all .2s}
+.slx-dot.act{background:#fff;width:18px;border-radius:3px}
+/* STAY PHOTO LABEL */
+.s-no-photo{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,.7);padding:6px;background:rgba(0,0,0,.3);font-family:var(--fb)}
+/* E-PASS */
+.epass-wrap{padding:4px 0}
+.epass-card{background:linear-gradient(135deg,#0f2d1a 0%,#1a3d2b 40%,#0d2318 100%);border-radius:20px;padding:28px 26px 22px;color:#fff;position:relative;overflow:hidden;font-family:var(--fb)}
+.epass-card::before{content:'';position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(74,124,95,.4) 0%,transparent 70%)}
+.epass-card::after{content:'';position:absolute;bottom:-30px;left:-30px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(212,166,74,.15) 0%,transparent 70%)}
+.epass-logo{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+.epass-title{font-family:var(--fd);font-size:28px;font-weight:600;letter-spacing:.01em;margin-bottom:4px;background:linear-gradient(90deg,#fff,#a8d4b4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.epass-sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:22px}
+.epass-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.epass-field{background:rgba(255,255,255,.06);border-radius:10px;padding:10px 13px;border:1px solid rgba(255,255,255,.08)}
+.epass-field-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:3px}
+.epass-field-val{font-size:13px;font-weight:600;color:#fff}
+.epass-ref{font-family:monospace;font-size:18px;letter-spacing:.12em;color:#a8d4b4;background:rgba(168,212,180,.08);border:1px solid rgba(168,212,180,.15);border-radius:8px;padding:10px 14px;margin-bottom:18px;text-align:center}
+.epass-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.epass-badge{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:500;color:rgba(255,255,255,.75)}
+.epass-score-row{display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,rgba(168,212,180,.1),transparent);border-radius:10px;padding:10px 14px;border:1px solid rgba(168,212,180,.15)}
+.epass-score-num{font-family:var(--fd);font-size:32px;color:#a8d4b4;line-height:1}
+.epass-score-info{flex:1}
+.epass-score-title{font-size:13px;font-weight:600;color:#fff}
+.epass-score-pts{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+.epass-qr{width:52px;height:52px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#1a3d2b;font-weight:700;text-align:center;line-height:1.2}
+.epass-footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)}
+.epass-footer-l{font-size:10px;color:rgba(255,255,255,.3);line-height:1.6}
+.epass-dl-btn{padding:10px 20px;background:linear-gradient(135deg,#3aab66,#2d8a52);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)}
+.epass-ig-btn{padding:10px 20px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)}
+/* TRAVELLER SCORE */
+.ts-wrap{background:linear-gradient(135deg,#1a3d2b,#2d5a40);border-radius:16px;padding:20px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden}
+.ts-wrap::before{content:'🏔️';position:absolute;right:-10px;top:-10px;font-size:80px;opacity:.08}
+.ts-header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.ts-big{font-family:var(--fd);font-size:42px;color:#a8d4b4;line-height:1}
+.ts-info{flex:1}
+.ts-title{font-size:16px;font-weight:600;margin-bottom:2px}
+.ts-sub{font-size:11px;color:rgba(255,255,255,.5)}
+.ts-bar-wrap{margin-bottom:14px}
+.ts-bar-label{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.4);margin-bottom:5px}
+.ts-bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.ts-bar-fill{height:100%;background:linear-gradient(90deg,#3aab66,#a8d4b4);border-radius:3px;transition:width 1s}
+.ts-factors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ts-factor{background:rgba(255,255,255,.06);border-radius:8px;padding:8px 10px;font-size:11px}
+.ts-factor-n{color:rgba(255,255,255,.5);margin-bottom:2px}
+.ts-factor-v{font-weight:600;color:#fff}
+/* STAY PHOTOS ADMIN */
+.sp-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;margin-top:8px}
+.sp-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:2px solid transparent;cursor:pointer;transition:all .15s}
+.sp-thumb:hover{border-color:var(--sage)}
+.eco-fl{position:absolute;top:8px;left:8px;background:#1e6b3c;color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px}
+.s-body{padding:14px 16px}
+.s-type{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:20px;background:var(--mist);color:var(--sage);display:inline-block;margin-bottom:7px}
+.eco-type{background:#e6f4ec;color:#1e6b3c}
+.s-name{font-family:var(--fd);font-size:16px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.s-loc{font-size:11px;color:var(--stone);margin-bottom:9px}
+.s-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.s-price{font-size:15px;font-weight:600;color:var(--pine)}
+.s-rating{font-size:11px;color:var(--stone)}
+.s-contact{font-size:11px;color:var(--stone);margin-bottom:8px}
+.s-btn{width:100%;padding:9px;border-radius:8px;background:var(--pine);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--fb);transition:background .2s}
+.s-btn:hover{background:var(--moss)}
+/* PLACE DETAIL */
+#pd{display:none;position:fixed;inset:0;z-index:300;background:var(--cream);overflow-y:auto}
+#pd.open{display:block;animation:slin .22s ease}
+@keyframes slin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pd-bar{position:sticky;top:0;z-index:10;background:rgba(250,249,246,.96);backdrop-filter:blur(14px);border-bottom:1px solid rgba(74,124,95,.12);display:flex;align-items:center;justify-content:space-between;padding:14px 28px}
+.pd-back{display:flex;align-items:center;gap:6px;background:none;border:none;font-family:var(--fb);font-size:13px;color:var(--stone);cursor:pointer;padding:6px 12px;border-radius:8px;transition:all .15s}
+.pd-back:hover{background:var(--mist);color:var(--pine)}
+.pd-in{max-width:1100px;margin:0 auto;padding:28px 28px 80px}
+.pd-hg{display:grid;grid-template-columns:1fr 300px;gap:22px;margin-bottom:20px}
+.pd-tabs{display:flex;gap:2px;background:rgba(74,124,95,.07);border-radius:10px;padding:3px;margin-bottom:10px}
+.pd-tab{flex:1;padding:8px 10px;border-radius:8px;border:none;background:transparent;font-family:var(--fb);font-size:12px;font-weight:500;color:var(--stone);cursor:pointer;transition:all .18s}
+.pd-tab.act{background:#fff;color:var(--pine);box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.pd-media{width:100%;height:360px;border-radius:14px;overflow:hidden;background:var(--mist);display:flex;align-items:center;justify-content:center;font-size:72px;position:relative}
+.pd-media img,.pd-media iframe,.pd-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:none}
+.pd-thumbs{display:flex;gap:7px;margin-top:9px;overflow-x:auto;padding-bottom:4px;min-height:52px}
+.pd-thumb{width:60px;height:46px;border-radius:7px;object-fit:cover;cursor:pointer;opacity:.65;border:2px solid transparent;flex-shrink:0;transition:all .15s}
+.pd-thumb:hover,.pd-thumb.act{opacity:1;border-color:var(--pine)}
+.pd-thumbv{width:60px;height:46px;border-radius:7px;background:#1a1a2e;border:2px solid transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;cursor:pointer;opacity:.65;transition:all .15s}
+.pd-thumbv:hover,.pd-thumbv.act{opacity:1;border-color:var(--pine)}
+/* SIDE PANEL */
+.pd-sp{display:flex;flex-direction:column;gap:11px}
+.pd-name{font-family:var(--fd);font-size:30px;font-weight:600;color:var(--pine);line-height:1.1}
+.pd-loc{font-size:12px;color:var(--stone);margin-top:4px}
+.pd-box{background:#fff;border:1px solid rgba(74,124,95,.11);border-radius:12px;padding:14px}
+.pd-bl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--stone);margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.pd-fact{display:flex;align-items:flex-start;gap:7px;font-size:12px;margin-bottom:7px}
+.pd-fl{color:var(--stone);min-width:70px;flex-shrink:0}.pd-fv{color:var(--ink);font-weight:500}
+.pd-tags{display:flex;gap:5px;flex-wrap:wrap}
+/* CARBON */
+.cw{background:#fff;border:1px solid rgba(74,124,95,.14);border-radius:12px;padding:15px}
+.cw-t{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:11px}
+.cw-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cw-sel{flex:1;min-width:120px;padding:8px 11px;border:1.5px solid #e0e0e0;border-radius:8px;font-family:var(--fb);font-size:12px;color:var(--ink);outline:none}
+.cw-res{background:var(--mist);border-radius:10px;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cw-n{font-family:var(--fd);font-size:22px;color:var(--pine)}
+.cw-ob{padding:7px 13px;border-radius:8px;background:var(--pine);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--fb)}
+.cw-ob:hover{background:var(--moss)}
+/* PERMIT */
+.permit-b{background:linear-gradient(135deg,#e6f4ec,#d4ead8);border:1px solid rgba(30,107,60,.18);border-radius:14px;padding:18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:14px}
+.pb-icon{font-size:28px;flex-shrink:0}.pb-t{font-size:14px;font-weight:500;color:#1a3d2b;margin-bottom:4px}
+.pb-d{font-size:12px;color:#2d5a40;line-height:1.65}
+.pb-btn{margin-top:9px;padding:8px 16px;background:#1a3d2b;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--fb)}
+.pb-btn:hover{background:#2d5a40}
+/* DESC + HEATMAP */
+.pd-desc{background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:14px;padding:22px;margin-bottom:16px}
+.pd-hm{background:#fff;border:1px solid rgba(74,124,95,.1);border-radius:14px;padding:18px;margin-bottom:18px}
+.hm-g{display:grid;grid-template-columns:52px repeat(7,1fr);gap:4px;align-items:center;font-size:11px}
+.hm-day{color:var(--stone);text-align:center;font-weight:500;font-size:10px}
+.hm-lbl{color:var(--stone);font-size:10px}
+.hm-cell{height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff}
+/* VIDEOS */
+.vg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:12px}
+/* STAYS GRID IN DETAIL */
+.pd-sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+/* BOOKING MODAL */
+.mo{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.52);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px}
+.mo.open{display:flex}
+.mo-box{background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 28px 72px rgba(0,0,0,.22)}
+.mo-hd{padding:22px 26px 16px;border-bottom:1px solid rgba(74,124,95,.1);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;border-radius:20px 20px 0 0;z-index:2}
+.mo-t{font-family:var(--fd);font-size:21px;color:var(--pine)}
+.mo-x{width:30px;height:30px;border-radius:8px;border:none;background:var(--mist);cursor:pointer;font-size:15px;color:var(--stone)}
+.mo-body{padding:22px 26px}
+.stay-sum{background:var(--mist);border-radius:12px;padding:14px;margin-bottom:18px;display:flex;align-items:center;gap:13px}
+.ss-e{font-size:26px}.ss-n{font-family:var(--fd);font-size:16px;color:var(--ink)}.ss-l{font-size:11px;color:var(--stone);margin-top:2px}
+.ss-p{margin-left:auto;font-family:var(--fd);font-size:18px;color:var(--pine);font-weight:600;white-space:nowrap}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px}
+.fi{width:100%;padding:11px 13px;border:1.5px solid #e0e0e0;border-radius:10px;font-family:var(--fb);font-size:14px;color:var(--ink);outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--sage)}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.eco-opt{display:flex;align-items:center;gap:11px;background:#e6f4ec;border:1px solid rgba(30,107,60,.15);border-radius:10px;padding:11px 13px;margin-bottom:14px;cursor:pointer}
+.eco-opt input{accent-color:var(--pine);width:15px;height:15px;cursor:pointer}
+.eot{flex:1}.eot-l{font-size:13px;font-weight:500;color:var(--ink)}.eot-d{font-size:11px;color:var(--stone);margin-top:2px}
+.eot-p{font-size:13px;font-weight:600;color:#1e6b3c;white-space:nowrap}
+.price-bd{border-top:1px solid #eee;padding-top:13px;margin-bottom:18px}
+.pr{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--stone)}
+.pr.tot{font-size:15px;font-weight:600;color:var(--ink);padding-top:9px;border-top:1px solid #eee;margin-top:8px}
+.pm-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.pm-tag{font-size:12px;font-weight:500;padding:5px 12px;border-radius:8px;background:var(--mist);color:var(--stone)}
+.pm-tag.act{background:rgba(74,124,95,.12);color:var(--pine);border:1px solid rgba(74,124,95,.2)}
+.pay-btn{width:100%;padding:14px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.pay-btn:hover{background:var(--moss)}
+.pay-note{text-align:center;font-size:11px;color:var(--stone);margin-top:9px}
+.pay-success{text-align:center;padding:24px 10px}
+.ps-icon{font-size:56px;margin-bottom:14px}
+.ps-t{font-family:var(--fd);font-size:26px;color:var(--pine);margin-bottom:8px}
+.ps-d{font-size:14px;color:var(--stone);line-height:1.75;margin-bottom:18px}
+.ps-ref{background:var(--mist);border-radius:10px;padding:11px 16px;font-size:13px;font-weight:600;color:var(--pine);font-family:var(--fd)}
+/* ABOUT + FOOTER */
+.about-sec{padding:72px 40px;text-align:center;max-width:700px;margin:0 auto}
+.about-t{font-family:var(--fd);font-size:38px;color:var(--pine);margin-bottom:16px}
+.about-d{font-size:15px;line-height:1.9;color:var(--stone);font-weight:300;margin-bottom:32px}
+footer{background:var(--ink);padding:44px 40px;text-align:center;color:rgba(255,255,255,.45)}
+.ft-logo{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+/* ADMIN */
+.adm-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 62px)}
+.adm-sb{background:var(--pine);padding:18px 10px}
+.adm-sb-ttl{padding:0 10px 16px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:12px}
+.adm-ni{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.6);margin-bottom:2px;transition:all .15s}
+.adm-ni:hover,.adm-ni.act{background:rgba(255,255,255,.14);color:#fff}
+.adm-main{padding:28px;background:#f4f5f2;overflow-y:auto}
+.adm-panel{background:#fff;border-radius:14px;padding:20px;border:1px solid rgba(74,124,95,.1);margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.adm-panel h3{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f0ee}
+.ce-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.ce-item{background:#f8f8f6;border:1px solid #ebebeb;border-radius:10px;padding:12px}
+.ce-n{font-size:12px;font-weight:500;color:var(--ink);margin-bottom:7px}
+.ce-row{display:flex;align-items:center;gap:8px}
+input[type=range]{flex:1;accent-color:var(--pine)}
+.ce-v{font-size:12px;font-weight:600;min-width:30px;text-align:right}
+.dt{width:100%;border-collapse:collapse}
+.dt th{text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);padding:8px 12px;border-bottom:2px solid #eeeeea}
+.dt td{padding:10px 12px;border-bottom:1px solid #f2f2f0;font-size:13px;color:var(--ink);vertical-align:middle}
+.dt tr:hover td{background:#f8faf8}
+.ai{padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-family:var(--fb);font-size:13px;outline:none;width:100%}
+.ai:focus{border-color:var(--sage)}
+.ab{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:var(--fb)}
+.ab-p{background:var(--pine);color:#fff}.ab-p:hover{background:var(--moss)}
+.ab-d{background:#fdeaea;color:#9b2020;border:1px solid #f0b8b8}
+.bk-list{display:flex;flex-direction:column;gap:10px}
+.bk-item{background:#fff;border:1px solid rgba(74,124,95,.09);border-radius:10px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bk-n{font-size:14px;font-weight:500;color:var(--ink)}.bk-m{font-size:12px;color:var(--stone);margin-top:3px}
+.bst{font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px;white-space:nowrap}
+.bs-c{background:#e6f4ec;color:#1e6b3c}.bs-p{background:#fef3e2;color:#9b6c1a}
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;z-index:9999;transition:transform .3s;pointer-events:none;max-width:360px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav{padding:12px 16px}.nl{display:none}.nr .nb{display:none}.ham{display:flex}
+  .hero,.sec,.plan-sec,.alt-band,.about-sec{padding:48px 20px}
+  .stays-in{padding:0 20px}.map-wrap{padding:0 20px 40px}
+  .cg{grid-template-columns:1fr}
+  .pd-hg{grid-template-columns:1fr}.pd-in{padding:16px 16px 60px}
+  .adm-layout{grid-template-columns:1fr}.adm-sb{display:none}
+  .fg-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="setView('home')" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0">
+  <rect width="32" height="32" rx="7" fill="#1a3d2b"/>
+  <polygon points="16,20 22,8 28,20" fill="#4a7c5f" opacity="0.5"/>
+  <polygon points="13,20 19,6 25,20" fill="#4a7c5f" opacity="0.85"/>
+  <polygon points="8,20 16,4 24,20" fill="#f5f2ec"/>
+  <polygon points="16,4 19.5,10 12.5,10" fill="#1a3d2b"/>
+  <path d="M6,21.5 Q16,18.5 26,21.5" fill="none" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+    <span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1a3d2b;letter-spacing:-0.5px">Pahari<span style="font-weight:400;color:#4a7c5f">Path</span></span>
+  </div>
+ <ul class="nl">
+    <li><a onclick="goTo('crowd')">Crowd Meter</a></li>
+    <li><a onclick="goTo('mapwrap')">Map</a></li>
+    <li><a onclick="goTo('plansec')">Plan Trip</a></li>
+    <li><a onclick="goTo('explore')">Explore</a></li>
+    <li><a onclick="goTo('stays-bg')">Stays</a></li>
+    <li><a href="/blog">Blog</a></li>
+   
+  </ul>
+  <div class="nr">
+    <button class="nb" onclick="openTravellerProfile()" style="background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);color:var(--pine);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">🏔️ My Profile</button>
+    <div class="lp"><div class="ld"></div> Live</div>
+<button class="nb ol" onclick="openBookMo(1)">Book a Stay</button>
+    <button class="nb" onclick="goTo('stays-bg')">Find Stays →</button>
+    <button class="ham" id="hamBtn" onclick="openMobMenu()" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="mob-drawer" id="mobDrawer" role="dialog" aria-label="Navigation menu">
+  <div class="mob-overlay" onclick="closeMobMenu()"></div>
+  <div class="mob-panel">
+    <div class="mob-panel-hd">
+      <div class="mob-panel-logo" style="display:flex;align-items:center;gap:10px"><svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0">
+  <rect width="32" height="32" rx="7" fill="#1a3d2b"/>
+  <polygon points="16,20 22,8 28,20" fill="#4a7c5f" opacity="0.5"/>
+  <polygon points="13,20 19,6 25,20" fill="#4a7c5f" opacity="0.85"/>
+  <polygon points="8,20 16,4 24,20" fill="#f5f2ec"/>
+  <polygon points="16,4 19.5,10 12.5,10" fill="#1a3d2b"/>
+  <path d="M6,21.5 Q16,18.5 26,21.5" fill="none" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+</svg><span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1a3d2b;letter-spacing:-0.5px">Pahari<span style="font-weight:400;color:#4a7c5f">Path</span></span></div>
+      <button class="mob-x" onclick="closeMobMenu()" aria-label="Close menu">✕</button>
+    </div>
+   <div class="mob-links">
+      <div class="mob-link" onclick="closeMobMenu();openTravellerProfile()" style="background:rgba(74,124,95,.08);border-radius:10px;margin-bottom:4px"><span class="ml-icon">🏔️</span>My Profile</div>
+      <div class="mob-link" onclick="closeMobMenu();goTo('crowd')"><span class="ml-icon">🚦</span>Crowd Meter</div>
+      <div class="mob-link" onclick="closeMobMenu();goTo('mapwrap')"><span class="ml-icon">🗺️</span>Live Map</div>
+      <div class="mob-link" onclick="closeMobMenu();goTo('plansec')"><span class="ml-icon">🗓</span>Plan Trip</div>
+      <div class="mob-link" onclick="closeMobMenu();goTo('explore')"><span class="ml-icon">🏔️</span>Explore Places</div>
+      <div class="mob-link" onclick="closeMobMenu();goTo('stays-bg')"><span class="ml-icon">🏡</span>Find Stays</div>
+      <a href="/blog" class="mob-link" style="text-decoration:none"><span class="ml-icon">📝</span>Blog</a>
+      <a href="/faq.html" class="mob-link" style="text-decoration:none"><span class="ml-icon">❓</span>FAQ</a>
+      <div class="mob-link" onclick="closeMobMenu();openSupportMo()"><span class="ml-icon">🎧</span>Help &amp; Support</div>
+      <div class="mob-link" onclick="closeMobMenu();openSOSMo()" style="color:#c0392b"><span class="ml-icon">🆘</span>Emergency SOS</div>
+    </div>
+    <div class="mob-footer">
+      <button class="nb" onclick="closeMobMenu();goTo('stays-bg')" style="text-align:center">Find Stays →</button>
+      <button class="nb ol" onclick="closeMobMenu();openBookMo(1)" style="text-align:center">Book a Stay</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME VIEW -->
+<div id="view-home" class="view active">
+<section class="hero">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px">
+    <svg width="48" height="48" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="8" fill="#1a3d2b"/>
+      <polygon points="18,24 25,10 32,24" fill="#2d5a40"/>
+      <polygon points="14,24 22,8 30,24" fill="#3d7a55"/>
+      <polygon points="7,25 18,4 29,25" fill="none" stroke="#f5f2ec" stroke-width="2" stroke-linejoin="round"/>
+      <polygon points="7,25 18,4 29,25" fill="#f5f2ec" opacity="0.92"/>
+      <polygon points="18,4 22,12 14,12" fill="#1a3d2b"/>
+      <path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div style="text-align:left">
+      <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#1a3d2b;letter-spacing:-0.5px;line-height:1">Pahari<span style="font-weight:400;color:#4a7c5f">Path</span></div>
+      <div style="font-family:sans-serif;font-size:9px;letter-spacing:2.5px;color:#8fbbaa;margin-top:2px">HIMACHAL · OFFBEAT</div>
+    </div>
+  </div>
+  <div class="eyebrow">🏔️ 146 destinations · Live crowd data · Responsible travel</div>
+  <h1>Go beyond the <em>tourist trail</em></h1>
+  <p class="hero-sub">Find peaceful valleys, quiet villages, and real Pahadi experiences. Live crowd tracking. Book directly with local hosts.</p>
+  <div class="sw">
+    <div class="sb">
+      <input type="text" id="sinp" placeholder="Search any of 146 places in Himachal Pradesh…" autocomplete="off" oninput="liveSearch(this.value)" onkeydown="searchKeyNav(event)" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-owns="sdrop"/>
+      <button class="sbtn" onclick="doSearch()">Search</button>
+    </div>
+    <div class="sdrop" id="sdrop"></div>
+  </div>
+  <div class="fls">
+    <button class="fb act" onclick="fltr(this,'all')">All 146</button>
+    <button class="fb" onclick="fltr(this,'adventure')">Adventure</button>
+    <button class="fb" onclick="fltr(this,'spiritual')">Spiritual</button>
+    <button class="fb" onclick="fltr(this,'nature')">Nature</button>
+    <button class="fb" onclick="fltr(this,'offbeat')">Offbeat</button>
+    <button class="fb" onclick="fltr(this,'culture')">Culture</button>
+    <button class="fb" onclick="fltr(this,'trek')">Trek</button>
+    <button class="fb" onclick="fltrStays(this)">🏡 Has Stays</button>
+  </div>
+</section>
+<div class="stats-bar" id="sbar"></div>
+<section class="sec" id="crowd">
+  <div class="sec-hd">
+    <div>
+      <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
+      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
+    </div>
+    <div style="text-align:right">
+      <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
+      <div id="utime" style="font-size:11px;color:var(--stone)"></div>
+    </div>
+  </div>
+  <div class="cg" id="cgrid"></div>
+  <div class="show-more"><button class="sm-btn" id="crowd-more-btn" onclick="toggleCrowd()">Show all 146 places ↓</button></div>
+</section>
+<section class="sec" id="explore">
+  <div class="sec-hd">
+    <div>
+      <h2 class="sec-t">Explore <span>Himachal</span></h2>
+      <p style="font-size:13px;color:var(--stone);margin-top:5px" id="plcount"></p>
+    </div>
+    <p class="sec-note">Sorted least crowded first. Click for virtual tour, heatmap &amp; bookings.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px" id="plFilterRow">
+    <button class="pf-btn act" onclick="plFilter('all',this)">All Places</button>
+    <button class="pf-btn" onclick="plFilter('quiet',this)">🟢 Quiet Now</button>
+    <button class="pf-btn" onclick="plFilter('trek',this)">🥾 Trek</button>
+    <button class="pf-btn" onclick="plFilter('offbeat',this)">🌿 Offbeat</button>
+    <button class="pf-btn" onclick="plFilter('spiritual',this)">🛕 Spiritual</button>
+    <button class="pf-btn" onclick="plFilter('river',this)">🌊 River</button>
+    <button class="pf-btn" onclick="plFilter('snow',this)">❄️ Snow</button>
+    <button class="pf-btn" onclick="plFilter('village',this)">🏘️ Village</button>
+    <button class="pf-btn" onclick="plFilter('hasstays',this)">🏡 Has Stays</button>
+    <button class="pf-btn" onclick="plFilter('eco',this)">♻️ Eco</button>
+  </div>
+  <div class="pg-grid" id="pgrid"></div>
+  <div class="show-more"><button class="sm-btn" id="pl-more-btn" onclick="togglePlaces()">Show all places ↓</button></div>
+</section>
+<div class="alt-band">
+  <div class="alt-in">
+    <div class="alt-t">Same vibe. <em style="font-style:italic">Fewer people.</em></div>
+    <p class="alt-sub">Every overcrowded hotspot has a quieter twin that's just as stunning</p>
+    <div class="alt-grid" id="altg"></div>
+  </div>
+</div>
+
+<div class="map-wrap" id="mapwrap">
+  <div class="map-card">
+    <div class="map-hd">
+      <div>
+        <div class="map-ttl">Live Destination Map — Himachal Pradesh</div>
+        <p style="font-size:12px;color:var(--stone);margin-top:2px" id="map-provider-note">Click any pin · 146 GPS locations · Live crowd colors</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+        <div class="map-leg">
+          <div class="leg-i"><div class="leg-d" style="background:#3aab66"></div>Quiet</div>
+          <div class="leg-i"><div class="leg-d" style="background:#e8a020"></div>Moderate</div>
+          <div class="leg-i"><div class="leg-d" style="background:#e24a4a"></div>Busy</div>
+        </div>
+        <div class="map-controls">
+          <button class="map-filter-btn act" onclick="mapFilter('all',this)">All 146</button>
+          <button class="map-filter-btn quiet-only" onclick="mapFilter('quiet',this)">🟢 Quiet Only</button>
+          <button class="map-filter-btn" onclick="mapFilter('trek',this)">Trek</button>
+          <button class="map-filter-btn" onclick="mapFilter('spiritual',this)">Spiritual</button>
+          <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
+          <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
+          <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
+        </div>
+      </div>
+    </div>
+    <div class="map-body">
+      <div id="lfmap-wrap" style="position:relative">
+        <div id="lfmap"></div>
+        <div id="map-fallback" class="map-offline" style="display:none">
+          <div class="map-offline-icon">🏔️</div>
+          <div class="map-offline-t">Map needs internet</div>
+          <div class="map-offline-s">OpenStreetMap tiles require a connection. Connect to Wi-Fi and reload to see the full interactive map.</div>
+        </div>
+        <div style="position:absolute;bottom:16px;right:12px;z-index:999;display:flex;align-items:center;gap:8px" id="addPinBtn" onclick="startAddPin()">
+          <button style="background:#1a3d2b;color:#fff;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px">
+            📍 Add a Place
+          </button>
+        </div>
+      </div>
+      <div class="map-sidebar">
+        <div class="ms-head">
+          <div class="ms-title">Destinations <span id="ms-count" style="font-weight:400;color:var(--sage)"></span></div>
+          <input class="ms-search" id="msSearch" placeholder="Filter by name or district…" oninput="filterSidebar(this.value)"/>
+        </div>
+        <div class="ms-list" id="msList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="mpop" style="display:none"></div>
+<div class="plan-sec" id="plansec">
+  <div class="plan-in">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:32px">
+      <div>
+        <div class="plan-t">Plan your <em style="font-family:var(--fd);font-style:italic">trip</em></div>
+        <p class="plan-s">Pick a place and date — get crowd forecast, weather, road safety & a day-by-day itinerary</p>
+      </div>
+      <button onclick="detectLocation()" style="background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);color:#fff;padding:10px 18px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb);display:flex;align-items:center;gap:8px;white-space:nowrap">
+        <span id="locBtnIcon">📍</span> <span id="locBtnText">Use my location</span>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <div class="plan-form">
+      <div class="pg">
+        <label>Choose Place</label>
+        <div style="position:relative" id="ppPlaceWrap">
+          <input type="text" class="psel" id="ppPlaceSearch" placeholder="🔍 Type to search 146 places…" autocomplete="off"
+            oninput="filterPlanPlaces(this.value)"
+            onfocus="document.getElementById('ppPlaceDrop').style.display='block';filterPlanPlaces(this.value)"
+            style="font-size:16px;width:100%;box-sizing:border-box;cursor:pointer"
+          />
+          <input type="hidden" id="ppPlace"/>
+          <div id="ppPlaceDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid rgba(74,124,95,.2);border-radius:10px;max-height:220px;overflow-y:auto;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.12);margin-top:4px"></div>
+        </div>
+      </div>
+      <div class="pg">
+        <label>Travel Date</label>
+        <input type="date" class="pi" id="ppDate" onchange="runFC()" style="font-size:16px;cursor:pointer"/>
+      </div>
+      <div class="pg">
+        <label>Nights</label>
+        <input type="number" class="pi" id="ppNights" value="2" min="1" max="14" oninput="runFC()"/>
+      </div>
+      <div class="pg">
+        <label>Travellers</label>
+        <select class="psel" id="ppTravellers" onchange="runFC()">
+          <option value="1">1 person</option>
+          <option value="2" selected>2 people</option>
+          <option value="3">3 people</option>
+          <option value="4">4 people</option>
+          <option value="5+">5+ group</option>
+        </select>
+      </div>
+      <button class="pfbtn" onclick="runFC()" style="white-space:nowrap">Get Forecast →</button>
+    </div>
+
+    <!-- Results -->
+    <div class="plan-res" id="planRes">
+
+      <!-- Header with place info -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0"><polygon points="18,24 25,10 32,24" fill="rgba(255,255,255,0.15)"/><polygon points="14,24 22,8 30,24" fill="rgba(255,255,255,0.25)"/><polygon points="7,25 18,4 29,25" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.2" stroke-linejoin="round"/><polygon points="7,25 18,4 29,25" fill="rgba(255,255,255,0.75)"/><polygon points="18,4 22,12 14,12" fill="#1a3d2b" opacity="0.5"/><path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg><div><div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;line-height:1.1">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span></div><div style="font-family:sans-serif;font-size:9px;letter-spacing:2px;color:#c9a84c;line-height:1;margin-top:2px">HIMACHAL · OFFBEAT</div></div></div>
+        <div style="flex:1">
+          <div id="planEmoji" style="font-size:44px;line-height:1;margin-bottom:4px"></div>
+          <div style="font-family:var(--fd);font-size:22px;color:#fff;font-weight:600" id="planTitle"></div>
+          <div style="font-size:13px;color:rgba(255,255,255,.55);margin-top:3px" id="planSub"></div>
+        </div>
+        <div id="planOverallBadge"></div>
+      </div>
+
+      <!-- Forecast cards -->
+      <div class="fcc-grid" id="fccards"></div>
+
+      <!-- Main advice -->
+      <div id="fcadv" style="margin-bottom:16px"></div>
+
+
+
+      <!-- Location context -->
+      <div id="fcLocation" style="display:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.7)"></div>
+
+      <!-- Day by day itinerary -->
+      <div id="fcItinerary" style="display:none">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:12px">📅 Day-by-Day Plan</div>
+        <div id="fcDays"></div>
+      </div>
+
+      <!-- What to pack -->
+      <div id="fcPack" style="display:none;margin-top:16px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:12px">🎒 What to Pack</div>
+        <div id="fcPackList" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+
+      <!-- Book a stay CTA -->
+      <div id="fcCTA" style="display:none;margin-top:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#fff" id="fcCTATitle"></div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:3px" id="fcCTASub"></div>
+        </div>
+        <button onclick="document.getElementById('stays-bg').scrollIntoView({behavior:'smooth'})" style="background:#fff;color:var(--pine);border:none;border-radius:10px;padding:12px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--fb)">View Stays →</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="stays-bg" id="stays-bg">
+  <div class="stays-in">
+    <div class="sec-hd">
+      <div>
+        <h2 class="sec-t">Local <span>Stays</span></h2>
+        <p style="font-size:13px;color:var(--stone);margin-top:5px">Book directly with local hosts — no middlemen, no markups</p>
+      </div>
+      <p class="sec-note">Only local homestays &amp; eco stays. No resort chains. 🌱 = eco-certified.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px" id="stayFilterBar">
+      <select class="ai" id="fType" onchange="renderStays()" style="max-width:160px">
+        <option value="">All Property Types</option>
+        <option>Homestay</option><option>Eco Cottage</option><option>Eco Camp</option><option>Heritage Stay</option><option>Village Stay</option><option>Lodge</option>
+      </select>
+      <select class="ai" id="fPrice" onchange="renderStays()" style="max-width:160px">
+        <option value="">Any Price</option>
+        <option value="0-1500">Under ₹1,500</option>
+        <option value="1500-3000">₹1,500 – ₹3,000</option>
+        <option value="3000-5000">₹3,000 – ₹5,000</option>
+        <option value="5000-999999">₹5,000+</option>
+      </select>
+      <div style="position:relative">
+        <button onclick="const d=document.getElementById('amenityDropdown');d.style.display=d.style.display==='block'?'none':'block'" style="background:#fff;border:1px solid #ddd;padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--fb)">🧰 Amenities <span id="amenityCount"></span></button>
+        <div id="amenityDropdown" style="position:absolute;top:110%;left:0;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:50;min-width:180px;display:none"></div>
+      </div>
+      <span id="clearFiltersBtn"></span>
+    </div>
+    <div class="sg" id="stgrid"></div>
+  </div>
+</div>
+  <div class="about-sec">
+  <h2 class="about-t">Why PahariPath?</h2>
+  <p class="about-d">Himachal Pradesh is far more than Manali, Shimla, and Kasol. PahariPath shows you live crowd data across all 146 destinations, enforces visitor limits at sensitive zones, suggests quiet alternatives, and connects you directly with local homestays. No tourist-speak. No corporate stays. Just honest travel.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <button class="nb" onclick="goTo('stays-bg')">Find a Stay</button>
+    <button class="nb ol" onclick="toast('Partner listing — email hello@paharipath.in')">List Your Property</button>
+  </div>
+</div>
+<div id="socialProofBar" style="max-width:900px;margin:0 auto;padding:0 20px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center"></div>
+<div style="max-width:420px;margin:0 auto 32px;padding:0 20px;text-align:center">
+  <div style="font-size:13px;font-weight:600;color:var(--pine);margin-bottom:8px">Get offbeat Himachal picks in your inbox</div>
+  <div style="display:flex;gap:8px">
+    <input type="email" id="newsletterEmail" placeholder="you@email.com" style="flex:1;padding:10px 14px;border-radius:8px;border:1px solid #ddd;font-size:13px"/>
+    <button onclick="subscribeNewsletter()" style="background:var(--pine);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);white-space:nowrap">Subscribe</button>
+  </div>
+</div>
+<footer>
+  <div class="ft-logo" style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0"><polygon points="18,24 25,10 32,24" fill="rgba(255,255,255,0.15)"/><polygon points="14,24 22,8 30,24" fill="rgba(255,255,255,0.25)"/><polygon points="7,25 18,4 29,25" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.2" stroke-linejoin="round"/><polygon points="7,25 18,4 29,25" fill="rgba(255,255,255,0.75)"/><polygon points="18,4 22,12 14,12" fill="#1a3d2b" opacity="0.5"/><path d="M5,27 Q18,23.5 31,27" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg><div><div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;line-height:1.1">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span></div><div style="font-family:sans-serif;font-size:9px;letter-spacing:2px;color:#c9a84c;line-height:1;margin-top:2px">HIMACHAL · OFFBEAT</div></div></div>
+  <p>Promoting offbeat travel · Supporting local communities · Preserving Pahari culture</p>
+  <p style="margin-top:8px;font-size:11px;opacity:.4">© 2026 PahariPath · Built for Himachal Pradesh · Eco &amp; Responsible Tourism</p>
+  <!-- Hidden access: type "pahari" anywhere for admin, go to /#host for host login -->
+<div style="margin-top:12px;height:20px" id="secretZone" onclick="handleSecretClick()"></div>
+</footer>
+</div>
+<div style="margin-top:10px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+  <a href="/blog" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Blog</a>
+  <a href="/privacy-policy.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Privacy Policy</a>
+  <a href="/terms-of-service.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Terms of Service</a>
+  <a href="/faq.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">FAQ</a>
+  <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
+  <a href="#" onclick="openManageBooking()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Manage / Cancel Booking</a>
+  <a href="#" onclick="openSupportMo()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Help & Support</a>
+  <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us</a></div><!-- /home -->
+
+<!-- ADMIN LOGIN -->
+<!-- HOST LOGIN -->
+<div id="view-host-login" class="view">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2d5a40,#1a3d2b);padding:20px">
+    <div style="background:#fff;border-radius:20px;padding:40px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.25);text-align:center">
+      <div style="width:52px;height:52px;background:var(--pine);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px">🏡</div>
+      <div style="font-family:var(--fd);font-size:26px;color:var(--pine);margin-bottom:6px">Host Login</div>
+      <p style="font-size:13px;color:var(--stone);margin-bottom:28px;line-height:1.6">Welcome back. Manage your PahariPath listing, view bookings and guest feedback.</p>
+      <div style="margin-bottom:14px;text-align:left">
+        <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px">Email</label>
+        <input type="email" id="hostEmail" class="fi" placeholder="your@email.com" onkeydown="if(event.key==='Enter')document.getElementById('hostPass').focus()"/>
+      </div>
+      <div style="margin-bottom:20px;text-align:left">
+        <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px">Password</label>
+        <input type="password" id="hostPass" class="fi" placeholder="••••••••" onkeydown="if(event.key==='Enter')doHostLogin()"/>
+      </div>
+      <div id="hostLoginErr" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px;text-align:left"></div>
+      <button onclick="doHostLogin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Sign In →</button>
+      <button onclick="setView('home')" style="width:100%;padding:10px;background:none;border:none;font-size:13px;color:var(--stone);cursor:pointer;margin-top:12px;font-family:var(--fb)">← Back to site</button>
+      <p style="font-size:11px;color:var(--stone);margin-top:16px;opacity:.6">Not registered? <a href="#" onclick="showHostRegister()" style="color:var(--pine);font-weight:600">Register as a Host →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- HOST DASHBOARD -->
+<div id="view-host" class="view">
+  <div style="min-height:100vh;background:#f4f5f2">
+    <!-- Host nav -->
+    <div style="background:var(--pine);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:22px">🏡</div>
+        <div>
+          <div style="font-family:var(--fd);font-size:16px;color:#fff;font-weight:600">Host Dashboard</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6)" id="hostWelcome">Welcome</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="setView('home')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--fb)">← Site</button>
+        <button onclick="doHostLogout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--fb)">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Host tabs -->
+    <div style="background:#fff;border-bottom:1px solid #eee;padding:0 24px;display:flex;gap:0;overflow-x:auto">
+      <button class="htab act" onclick="hTab('overview',this)">📊 Overview</button>
+      <button class="htab" onclick="hTab('bookings',this)">📋 Bookings</button>
+      <button class="htab" onclick="hTab('guests',this)">👥 Guests</button>
+      <button class="htab" onclick="hTab('listing',this)">🏡 My Listing</button>
+      <button class="htab" onclick="hTab('calendar',this)">📅 Calendar</button>
+      <button class="htab" onclick="hTab('crowd',this)">🚦 Crowd Update</button>
+      <button class="htab" onclick="hTab('itinerary',this)">🗺️ Itinerary</button>
+      <button class="htab" onclick="hTab('earnings',this)">💰 Earnings</button>
+      <button class="htab" onclick="hTab('suggest',this)">💡 Suggest a Task</button>
+    </div>
+
+    <!-- Host content -->
+    <div style="padding:24px;max-width:900px;margin:0 auto" id="hostContent"></div>
+  </div>
+</div>
+
+<div id="view-admin-login" class="view">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a3d2b,#2d5a40);padding:20px">
+    <div style="background:#fff;border-radius:20px;padding:40px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.25);text-align:center">
+      <div style="width:52px;height:52px;background:var(--pine);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px">⛰</div>
+      <div style="font-family:var(--fd);font-size:26px;color:var(--pine);margin-bottom:6px">Admin Login</div>
+      <p style="font-size:13px;color:var(--stone);margin-bottom:28px;line-height:1.6">PahariPath management dashboard.<br>Authorised staff only.</p>
+      <div style="margin-bottom:14px;text-align:left">
+        <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px">Username</label>
+        <input type="text" id="adminUser" class="fi" placeholder="admin@paharipath.in" autocomplete="off" inputmode="email" onkeydown="if(event.key==='Enter')document.getElementById('adminPass').focus()"/>
+      </div>
+      <div style="margin-bottom:20px;text-align:left">
+        <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px">Password</label>
+        <div style="position:relative">
+          <input type="password" id="adminPass" class="fi" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLogin()"/>
+          <button onclick="togglePassVis()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--stone)" id="passEye">👁</button>
+        </div>
+      </div>
+      <div id="loginErr" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px;text-align:left"></div>
+      <button onclick="doAdminLogin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb);transition:background .2s" onmouseover="this.style.background='#2d5a40'" onmouseout="this.style.background='var(--pine)'">Sign In →</button>
+      <button onclick="setView('home')" style="width:100%;padding:10px;background:none;border:none;font-size:13px;color:var(--stone);cursor:pointer;margin-top:12px;font-family:var(--fb)">← Back to site</button>
+      <p style="font-size:11px;color:var(--stone);margin-top:20px;opacity:.6">Forgot credentials? Contact support@paharipath.in</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL (only shown after login) -->
+<div id="view-admin" class="view">
+  <div class="adm-layout">
+    <div class="adm-sb">
+      <div class="adm-sb-ttl">
+        <div style="display:flex;align-items:center;gap:8px"><svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0">
+  <polygon points="16,20 22,8 28,20" fill="rgba(255,255,255,0.2)"/>
+  <polygon points="13,20 19,6 25,20" fill="rgba(255,255,255,0.4)"/>
+  <polygon points="8,20 16,4 24,20" fill="rgba(255,255,255,0.75)"/>
+  <polygon points="16,4 19.5,10 12.5,10" fill="#1a3d2b" opacity="0.3"/>
+  <path d="M6,21.5 Q16,18.5 26,21.5" fill="none" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+</svg><span style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.3px">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span> <span style="font-size:11px;opacity:.6;font-family:sans-serif;font-weight:400">Admin</span></span></div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Management Dashboard</div>
+      </div>
+      <div class="adm-ni act" onclick="adTab('dash',this)">📊 Dashboard</div>
+      <div class="adm-ni" onclick="adTab('crowd',this)">🚦 Crowd Levels</div>
+      <div class="adm-ni" onclick="adTab('dest',this)">📍 Destinations</div>
+      <div class="adm-ni" onclick="adTab('tasks',this)">🎯 PAHADI Tasks</div>
+      <div class="adm-ni" onclick="adTab('reviews',this)">⭐ Reviews</div>
+      <div class="adm-ni" onclick="adTab('support',this)">🎧 Support</div>
+      <div class="adm-ni" onclick="adTab('hostapps',this)">🏠 Host Applications</div>
+      <div class="adm-ni" onclick="adTab('stays',this)">🏡 Stays</div>
+      <div class="adm-ni" onclick="adTab('book',this)">📋 Bookings</div>
+      <div class="adm-ni" onclick="adTab('eco',this)">🌿 Eco Permits</div>
+      <div class="adm-ni" onclick="adTab('feedback',this)">⭐ Host Feedback</div>
+      <div class="adm-ni" onclick="adTab('ngo',this)">🤝 NGO / Clean-ups</div>
+      <div class="adm-ni" onclick="adTab('media',this)">📷 Media / 360°</div>
+      <div class="adm-ni" onclick="adTab('itinerary',this)">🗺️ Itineraries</div>
+      <div class="adm-ni" onclick="adTab('pins',this)">📍 Community Pins</div>
+      <div class="adm-ni" onclick="adTab('corrections',this)">🛠️ Location Fixes</div>
+      <div class="adm-ni" onclick="adTab('profiles',this)">🏅 Traveller Profiles</div>
+      <div class="adm-ni" onclick="adTab('blog',this)">📝 Blog</div>
+      <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:10px">
+        <div class="adm-ni" onclick="setView('home')">← Back to Site</div>
+        <div class="adm-ni" onclick="adminLogout()" style="color:#f08080;margin-top:4px">🔓 Sign Out</div>
+      </div>
+    </div>
+    <div class="adm-main" id="adMain"></div>
+  </div>
+</div>
+
+<!-- PLACE DETAIL -->
+<div id="pd">
+  <div class="pd-bar">
+    <button class="pd-back" onclick="closePD()">← Back</button>
+    <div style="font-family:var(--fd);font-size:17px;font-weight:600;color:var(--pine)" id="pdnav"></div>
+    <button id="pdShareBtn" onclick="if(window._curPD)waSharePlace(window._curPD.id,window._curPD.name)" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1.5px solid #25D366;background:#fff;color:#128C7E;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)">📲 Share</button>
+  </div>
+  <div class="pd-in">
+    <div class="pd-hg">
+      <div>
+        <div class="pd-tabs">
+          <button class="pd-tab act" onclick="pdTab(this,'photo')">📷 Photos</button>
+          <button class="pd-tab" onclick="pdTab(this,'video')">▶ Videos</button>
+          <button class="pd-tab" onclick="pdTab(this,'forecast')">📅 Forecast</button>
+        </div>
+        <div id="pdPhotoSec">
+          <div class="pd-media" id="pdmedia"></div>
+          <div class="pd-thumbs" id="pdthumbs"></div>
+        </div>
+        <div id="pdForecastSec" style="display:none;padding:4px 0"></div>
+        <div id="pdVideoSec" style="display:none">
+          <div id="pdvids" class="vg"></div>
+          <div id="pdvid-empty" style="display:none;padding:40px;text-align:center;background:#f5f5f3;border-radius:12px;color:var(--stone);font-size:13px">No videos added yet. Add via Admin → Media.</div>
+        </div>
+      </div>
+      <div class="pd-sp">
+        <div>
+          <div class="pd-name" id="pdname"></div>
+          <div class="pd-loc" id="pddist"></div>
+        </div>
+        <div class="pd-box">
+          <div class="pd-bl"><div class="ld"></div> Live crowd now</div>
+          <div style="height:8px;background:#eee;border-radius:4px;margin-bottom:7px"><div id="pdcbar" style="height:100%;border-radius:4px;transition:width .9s"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span id="pdcpct" style="color:var(--stone)"></span><span id="pdcpill" class="cp"></span></div>
+        </div>
+        <div class="pd-box"><div class="pd-bl">Quick Facts</div><div id="pdfacts"></div></div>
+        <div class="pd-tags" id="pdtags"></div>
+        <div class="cw">
+          <div class="cw-t">🌱 Carbon footprint estimator</div>
+          <div class="cw-row">
+            <select class="cw-sel" id="cwFrom" onchange="calcCO2()">
+              <option value="Delhi">From Delhi</option>
+              <option value="Chandigarh">From Chandigarh</option>
+              <option value="Amritsar">From Amritsar</option>
+              <option value="Mumbai">From Mumbai</option>
+              <option value="Bangalore">From Bangalore</option>
+              <option value="Hyderabad">From Hyderabad</option>
+            </select>
+            <select class="cw-sel" id="cwMode" onchange="calcCO2()">
+              <option value="car">🚗 Petrol/Diesel Car</option>
+              <option value="ev">⚡ Electric Vehicle</option>
+              <option value="bus">🚌 Bus</option>
+              <option value="train">🚆 Train</option>
+              <option value="flight">✈️ Flight</option>
+            </select>
+          </div>
+          <div id="cwres" class="cw-res">
+            <div><div class="cw-n">—</div><div style="font-size:11px;color:var(--stone)">Select city &amp; transport above</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="pdPermit"></div>
+    <div class="pd-desc">
+      <div style="font-family:var(--fd);font-size:21px;color:var(--pine);margin-bottom:10px">About <span id="pdaname" style="color:var(--clay);font-style:italic"></span></div>
+      <p id="pddesc" style="font-size:14px;color:var(--stone);line-height:1.9;font-weight:300"></p>
+    </div>
+    <div class="pd-hm">
+      <div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:12px">📅 Weekly crowd forecast — <span id="pdhmn" style="color:var(--clay)"></span></div>
+      <div class="hm-g" id="pdhm"></div>
+      <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+        <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#3aab66;display:inline-block"></span>Quiet (&lt;35%)</span>
+        <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#e8a020;display:inline-block"></span>Moderate</span>
+        <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#e24a4a;display:inline-block"></span>Crowded</span>
+        <span style="font-size:11px;color:var(--stone);font-style:italic">Bold border = today</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:5px">Stays in <span id="pdsname" style="color:var(--clay);font-style:italic"></span></div>
+      <p style="font-size:13px;color:var(--stone);margin-bottom:14px">Book directly — call or WhatsApp the host</p>
+      <div id="pdstays" class="pd-sg"></div>
+      <div id="pdnostays" style="display:none;background:#fff;border:1px dashed rgba(74,124,95,.22);border-radius:12px;padding:22px;text-align:center;color:var(--stone);font-size:13px">No stays listed yet for this destination. <a href="#" style="color:var(--pine)" onclick="toast('Email hello@paharipath.in to list your property')">List your property →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="mo" id="bookMo" onclick="if(event.target===this)closeMo()">
+  <div class="mo-box">
+    <div class="mo-hd">
+      <div class="mo-t" id="moTitle">Book your stay</div>
+      <button class="mo-x" onclick="closeMo()">✕</button>
+    </div>
+    <div class="mo-body" id="moBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<!-- STAY PHOTO LIGHTBOX -->
+<div class="slx" id="stayLightbox">
+  <button class="slx-close" onclick="closeLx()">✕</button>
+  <button class="slx-nav slx-prev" onclick="lxNav(-1)">‹</button>
+  <img class="slx-img" src="" alt="Stay photo"/>
+  <div class="slx-caption"></div>
+  <div class="slx-dots" id="slxDots"></div>
+  <button class="slx-nav slx-next" onclick="lxNav(1)">›</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/app.js"></script>
+<!-- MANAGE / CANCEL BOOKING MODAL -->
+<div id="manageBookingMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:460px">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('manageBookingMo').classList.remove('open');document.getElementById('manageBookingMo').style.display='none'">✕</button>
+    <div id="mbLookupView">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:36px;margin-bottom:8px">🎟️</div>
+        <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">Manage Your Booking</div>
+        <p style="font-size:13px;color:var(--stone);margin-top:6px">Enter your booking reference and the phone number you booked with.</p>
+      </div>
+      <div class="fg"><label>Booking Reference</label><input class="fi" id="mbRef" placeholder="e.g. PP482913" style="text-transform:uppercase"/></div>
+      <div class="fg"><label>Phone Number</label><input class="fi" id="mbPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+      <div id="mbLookupErr" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px"></div>
+      <button onclick="lookupMyBooking()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Find My Booking →</button>
+    </div>
+    <div id="mbDetailView" style="display:none"></div>
+  </div>
+</div>
+
+<!-- REPORT WRONG PIN MODAL -->
+<div id="reportPinMo" class="mo" onclick="if(event.target===this)cancelPinReport()" style="display:none">
+  <div class="mo-box" style="max-width:420px">
+    <button class="mo-x" aria-label="Close" onclick="cancelPinReport()">✕</button>
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:36px;margin-bottom:8px">📍</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">Fix this location</div>
+      <p style="font-size:13px;color:var(--stone);margin-top:6px">
+        Reporting: <strong id="reportPinName" style="color:var(--ink)"></strong>
+      </p>
+    </div>
+    <div style="background:#fdf0e8;border:1px solid #f0d4b8;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:#7a5a2a">
+      🔴 The red circle on the map shows where this pin currently is. Drag/pan the map so the crosshair (map center) is over the correct spot, then tap the button below.
+    </div>
+    <button onclick="useMapCenterForCorrection()" style="width:100%;padding:12px;background:#1a3d2b;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb);margin-bottom:12px">
+      📌 Use Map Center as Correct Location
+    </button>
+    <div id="reportPinCoords" style="display:none;text-align:center;font-size:12px;color:var(--pine);font-weight:600;margin-bottom:12px;background:#f0f6f2;padding:8px;border-radius:8px"></div>
+    <input type="hidden" id="reportPinLat"/>
+    <input type="hidden" id="reportPinLng"/>
+    <div class="fg"><label>Note (optional)</label><textarea class="fi" id="reportPinNote" rows="2" placeholder="e.g. The pin is 5km north of the actual temple"></textarea></div>
+    <button onclick="submitPinCorrection()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit Correction ✓</button>
+  </div>
+</div>
+
+<!-- POI DETAIL MODAL -->
+<div id="poiMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:440px">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('poiMo').classList.remove('open');document.getElementById('poiMo').style.display='none'">✕</button>
+    <div id="poiMoContent"></div>
+  </div>
+</div>
+
+<!-- ADD PIN MODAL -->
+<div id="addPinMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';cancelAddPin();}" style="display:none">
+  <div class="mo-box" style="max-width:460px">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('addPinMo').classList.remove('open');document.getElementById('addPinMo').style.display='none';cancelAddPin()">✕</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:36px;margin-bottom:8px">📍</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">Add a Place</div>
+      <p style="font-size:13px;color:var(--stone);margin-top:6px">Help fellow travellers discover this spot. Our team reviews all submissions within 24 hours.</p>
+    </div>
+    <input type="hidden" id="pinLat"/>
+    <input type="hidden" id="pinLng"/>
+    <div class="fg"><label>Place Name *</label><input class="fi" id="pinName" placeholder="e.g. Hidden Waterfall above Tirthan"/></div>
+    <div class="fg"><label>Category *</label>
+      <select class="fi" id="pinType">
+        <option value="viewpoint">🌅 Viewpoint</option>
+        <option value="waterfall">🌊 Waterfall</option>
+        <option value="parking">🅿️ Parking</option>
+        <option value="dhaba">🍽️ Dhaba / Food</option>
+        <option value="temple">🛕 Temple / Monastery</option>
+        <option value="campsite">🏕️ Campsite</option>
+        <option value="petrol">⛽ Petrol Pump</option>
+        <option value="medical">🏥 Medical / Emergency</option>
+        <option value="atm">🏧 ATM</option>
+        <option value="network">📡 Network Spot</option>
+        <option value="road_alert">⚠️ Road Alert</option>
+        <option value="glacier">🧊 Glacier / Snow Point</option>
+        <option value="shop">🏪 Shop / Market</option>
+      </select>
+    </div>
+    <div class="fg"><label>Description</label><textarea class="fi" id="pinDesc" rows="3" placeholder="What makes this place special? Any tips for travellers?"></textarea></div>
+    <div class="fg"><label>Your Name (optional)</label><input class="fi" id="pinSubmitter" placeholder="Anonymous if left blank"/></div>
+    <div style="background:#f0f6f2;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--stone)">
+      📍 Pin will be placed at your selected location on the map. Photos can be added after approval by the community.
+    </div>
+    <button onclick="submitCommunityPin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit for Review ✓</button>
+  </div>
+</div>
+
+<!-- ADMIN — EDIT COMMUNITY PIN MODAL -->
+<div id="editPinMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:480px">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('editPinMo').classList.remove('open');document.getElementById('editPinMo').style.display='none'">✕</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:36px;margin-bottom:8px">✏️</div>
+      <div style="font-family:var(--fd);font-size:20px;color:var(--pine);font-weight:600">Edit Pin</div>
+      <p style="font-size:13px;color:var(--stone);margin-top:6px">Update details, coordinates, or photos for this community pin.</p>
+    </div>
+    <input type="hidden" id="epId"/>
+    <div class="fg"><label>Place Name *</label><input class="fi" id="epName" placeholder="Place name"/></div>
+    <div class="fg"><label>Category *</label>
+      <select class="fi" id="epType">
+        <option value="viewpoint">🌅 Viewpoint</option>
+        <option value="waterfall">🌊 Waterfall</option>
+        <option value="parking">🅿️ Parking</option>
+        <option value="dhaba">🍽️ Dhaba / Food</option>
+        <option value="temple">🛕 Temple / Monastery</option>
+        <option value="campsite">🏕️ Campsite</option>
+        <option value="petrol">⛽ Petrol Pump</option>
+        <option value="medical">🏥 Medical / Emergency</option>
+        <option value="atm">🏧 ATM</option>
+        <option value="network">📡 Network Spot</option>
+        <option value="road_alert">⚠️ Road Alert</option>
+        <option value="glacier">🧊 Glacier / Snow Point</option>
+        <option value="shop">🏪 Shop / Market</option>
+      </select>
+    </div>
+    <div class="fg"><label>Description</label><textarea class="fi" id="epDesc" rows="3" placeholder="What makes this place special?"></textarea></div>
+    <div class="fg-row">
+      <div class="fg"><label>Latitude *</label><input class="fi" id="epLat" type="number" step="0.000001" placeholder="e.g. 31.9"/></div>
+      <div class="fg"><label>Longitude *</label><input class="fi" id="epLng" type="number" step="0.000001" placeholder="e.g. 77.2"/></div>
+    </div>
+    <button onclick="editPinUseMapCenter()" style="width:100%;padding:9px;background:#f0f6f2;color:var(--pine);border:1.5px dashed rgba(74,124,95,.3);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb);margin-bottom:14px">📌 Use current map center as coordinates</button>
+    <div class="fg"><label>Photo URLs <span style="font-weight:400;color:var(--stone)">(comma separated)</span></label><textarea class="fi" id="epPhotos" rows="2" placeholder="https://..., https://..."></textarea></div>
+    <div class="fg"><label>Status</label>
+      <select class="fi" id="epStatus">
+        <option value="pending">⏳ Pending review</option>
+        <option value="approved">✅ Approved (live on map)</option>
+      </select>
+    </div>
+    <button onclick="adminSavePinEdit()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Save Changes ✓</button>
+  </div>
+</div>
+
+<!-- TRAVELLER PROFILE MODAL -->
+<div id="travellerMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:440px;max-height:90vh;overflow-y:auto">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('travellerMo').classList.remove('open');document.getElementById('travellerMo').style.display='none'">✕</button>
+
+    <!-- Login view -->
+    <div id="tLoginView">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:8px">🏔️</div>
+        <div style="font-family:var(--fd);font-size:22px;color:var(--pine);font-weight:600">Your PAHADI Profile</div>
+        <p style="font-size:13px;color:var(--stone);margin-top:6px">Track your journeys, earn points, unlock tier badges</p>
+      </div>
+      <div class="fg"><label>Your Name</label><input class="fi" id="tLoginName" placeholder="Full name"/></div>
+      <div class="fg"><label>Mobile Number</label><input class="fi" id="tLoginPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+      <button onclick="travellerLogin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb);margin-bottom:10px">View My Profile →</button>
+      <button onclick="showTravellerRegister()" style="width:100%;padding:11px;background:none;border:1.5px solid rgba(74,124,95,.2);border-radius:12px;font-size:13px;color:var(--pine);cursor:pointer;font-family:var(--fb)">New here? Create Profile</button>
+    </div>
+
+    <!-- Register view -->
+    <div id="tRegView" style="display:none">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:40px;margin-bottom:8px">🌱</div>
+        <div style="font-family:var(--fd);font-size:22px;color:var(--pine);font-weight:600">Create Your Profile</div>
+        <p style="font-size:13px;color:var(--stone);margin-top:6px">Join the PAHADI community of responsible travellers</p>
+      </div>
+      <div class="fg"><label>Full Name *</label><input class="fi" id="tRegName" placeholder="Your name"/></div>
+      <div class="fg"><label>Mobile Number *</label><input class="fi" id="tRegPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+      <div class="fg"><label>Email (optional)</label><input class="fi" id="tRegEmail" type="email" placeholder="for booking confirmations"/></div>
+      <div class="fg"><label>City / State</label><input class="fi" id="tRegCity" placeholder="Where are you from?"/></div>
+      <button onclick="travellerRegister()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb);margin-bottom:10px">Create My PAHADI Profile 🏔️</button>
+      <button onclick="showTravellerLogin()" style="width:100%;padding:11px;background:none;border:none;font-size:13px;color:var(--stone);cursor:pointer;font-family:var(--fb)">Already have a profile? Sign in</button>
+    </div>
+
+    <!-- Dashboard view -->
+    <div id="tDashView" style="display:none"></div>
+  </div>
+</div>
+
+<!-- HOST REGISTER MODAL -->
+<div id="hostRegMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
+  <div class="mo-box" style="max-width:500px;max-height:90vh;overflow-y:auto">
+    <button class="mo-x" aria-label="Close" onclick="document.getElementById('hostRegMo').classList.remove('open');document.getElementById('hostRegMo').style.display='none'">✕</button>
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:40px;margin-bottom:8px">🏡</div>
+      <div style="font-family:var(--fd);font-size:22px;color:var(--pine);font-weight:600">Register as a Host</div>
+      <p style="font-size:13px;color:var(--stone);margin-top:6px">List your property on PahariPath. Free to join — we earn only when you earn.</p>
+    </div>
+    <div class="fg"><label>Your Name *</label><input class="fi" id="hrName" placeholder="Host full name"/></div>
+    <div class="fg"><label>Property Name *</label><input class="fi" id="hrProp" placeholder="e.g. Tirthan River Cottage"/></div>
+    <div class="fg"><label>Location *</label><input class="fi" id="hrLoc" placeholder="Village, District, HP"/></div>
+    <div class="fg"><label>WhatsApp Number *</label><input class="fi" id="hrPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+    <div class="fg"><label>Email *</label><input class="fi" id="hrEmail" type="email" placeholder="Used for host dashboard login"/></div>
+    <div class="fg"><label>Password *</label><input class="fi" id="hrPass" type="password" placeholder="Min 6 characters"/></div>
+    <div class="fg"><label>Price per Night (₹)</label><input class="fi" id="hrPrice" type="number" placeholder="e.g. 2000"/></div>
+    <div class="fg"><label>Property Type</label>
+      <select class="fi" id="hrType">
+        <option>Homestay</option><option>Eco Cottage</option><option>Eco Camp</option><option>Heritage Stay</option><option>Village Stay</option><option>Lodge</option>
+      </select>
+    </div>
+    <button onclick="submitHostRegister()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Register & Get Listed →</button>
+    <p style="font-size:11px;color:var(--stone);text-align:center;margin-top:12px">Already registered? <a href="#host" onclick="setView('host-login')" style="color:var(--pine)">Host Login →</a></p>
+  </div>
+</div>
+
+<!-- COOKIE CONSENT -->
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a3d2b;color:#fff;padding:14px 24px;z-index:99999;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--fb);font-size:13px">
+  <div>🍪 We use cookies to improve your experience. No ads, no tracking — just analytics to help us serve you better. <a href="#" onclick="showPrivacy()" style="color:#7fd4a0;text-decoration:underline">Privacy Policy</a></div>
+  <div style="display:flex;gap:10px">
+    <button onclick="acceptCookies()" style="background:#fff;color:#1a3d2b;border:none;padding:8px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-family:var(--fb)">Accept</button>
+    <button onclick="declineCookies()" style="background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.3);padding:8px 16px;border-radius:8px;cursor:pointer;font-family:var(--fb)">Decline</button>
+  </div>
+</div>
+
+<!-- PRIVACY POLICY MODAL -->
+<div id="privacyMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
+  <div class="mo-box" style="max-width:640px;max-height:82vh;overflow-y:auto">
+    <button class="mo-x" onclick="document.getElementById('privacyMo').classList.remove('open');document.getElementById('privacyMo').style.display='none'">✕</button>
+    <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:4px">Privacy Policy</h2>
+    <p style="font-size:11px;color:var(--stone);margin-bottom:18px">Last updated: July 2026 · Applies to paharipath.in and the PahariPath platform</p>
+    <div style="font-size:13px;color:var(--stone);line-height:1.85">
+      <p><strong>1. Who we are</strong><br>PahariPath ("we", "us") operates a travel discovery and booking platform for Himachal Pradesh, India. This policy explains what personal data we collect, why, and the rights you have over it under India's Digital Personal Data Protection Act, 2023 (DPDP Act).</p>
+
+      <p><strong>2. What we collect</strong></p>
+      <ul style="margin:0 0 12px 18px;padding:0">
+        <li>When you book a stay: name, phone number, email (optional), number of guests, check-in/check-out dates.</li>
+        <li>When you create a Traveller Profile: name, phone number, and activity history (bookings, eco offsets, pledges, PAHADI points).</li>
+        <li>When you register as a host: name, property details, phone number, email, and login credentials.</li>
+        <li>When you submit a Community Pin or report a location correction: the location itself, an optional description, and your name if you choose to provide it.</li>
+        <li>Payments: processed directly by Razorpay. We never see or store your card, UPI, or bank details — only the payment confirmation and amount.</li>
+        <li>Basic usage analytics via Plausible Analytics — a cookieless, privacy-first tool that does not track individuals or share data with third parties.</li>
+      </ul>
+
+      <p><strong>3. Why we collect it</strong><br>To process and confirm bookings, connect you with the host you're booking, operate the PAHADI traveller rewards system, respond to enquiries, maintain the accuracy of destination and map data, and improve the platform. We do not collect more than is needed for these purposes.</p>
+
+      <p><strong>4. Who we share it with</strong></p>
+      <ul style="margin:0 0 12px 18px;padding:0">
+        <li><strong>Razorpay</strong> (payment processing) — handles your payment details directly; governed by Razorpay's own privacy policy.</li>
+        <li><strong>Your host</strong> — when you book a stay, we share your name, phone number, and booking dates with that specific host so they can prepare for your visit.</li>
+        <li><strong>Supabase</strong> (our database and backend infrastructure provider) — stores platform data on our behalf under standard data-processing terms.</li>
+      </ul>
+      <p>We do not sell your personal data to anyone, ever.</p>
+
+      <p><strong>5. Cookies</strong><br>We use only minimal, functional cookies (e.g. remembering your cookie consent choice). Our analytics tool, Plausible, does not use cookies at all. We do not use advertising or third-party tracking cookies.</p>
+
+      <p><strong>6. Data retention</strong><br>We retain booking and traveller profile data for as long as your account is active or as needed to resolve disputes, comply with tax/accounting obligations, and maintain the PAHADI points history. You can request deletion at any time (see Section 8).</p>
+
+      <p><strong>7. Children's privacy</strong><br>PahariPath is not directed at children under 18. We do not knowingly collect personal data from minors. If you believe a minor has provided us data, contact us and we'll remove it.</p>
+
+      <p><strong>8. Your rights</strong><br>Under the DPDP Act, you have the right to access, correct, or request deletion of your personal data, and to withdraw consent at any time. To exercise these rights, email <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a> with your registered phone number or email.</p>
+
+      <p><strong>9. Grievance Officer</strong><br>As required under Indian law, grievances relating to this policy can be directed to our Grievance Officer at <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a>. <em>[Founder: please designate a named Grievance Officer with contact details here before public launch — required under the DPDP Act.]</em></p>
+
+      <p><strong>10. Security</strong><br>Data is transmitted over encrypted connections (HTTPS) and stored with access controls on our database. No system is 100% secure, and we can't guarantee absolute security, but we take reasonable measures to protect your data.</p>
+
+      <p><strong>11. Changes to this policy</strong><br>We may update this policy as the platform evolves. Material changes will be reflected by updating the "Last updated" date above.</p>
+
+      <p><strong>12. Contact</strong><br>hello@paharipath.in · PahariPath, Himachal Pradesh, India</p>
+
+      <p style="font-size:11px;color:#999;margin-top:16px;padding-top:12px;border-top:1px solid #eee">This policy is provided as a starting point and has not been reviewed by a lawyer. Please have it reviewed by a qualified legal professional familiar with the DPDP Act before relying on it in production, especially the Grievance Officer designation in Section 9.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TERMS OF SERVICE MODAL -->
+<div id="termsMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
+  <div class="mo-box" style="max-width:640px;max-height:82vh;overflow-y:auto">
+    <button class="mo-x" onclick="document.getElementById('termsMo').classList.remove('open');document.getElementById('termsMo').style.display='none'">✕</button>
+    <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:4px">Terms of Service</h2>
+    <p style="font-size:11px;color:var(--stone);margin-bottom:18px">Last updated: July 2026</p>
+    <div style="font-size:13px;color:var(--stone);line-height:1.85">
+      <p><strong>1. About PahariPath</strong><br>PahariPath is a discovery and booking marketplace connecting travellers with independent local hosts across Himachal Pradesh. We are an intermediary platform — the actual accommodation contract is between you and the host, not with PahariPath.</p>
+
+      <p><strong>2. Eligibility</strong><br>You must be at least 18 years old to make a booking or register as a host on PahariPath.</p>
+
+      <p><strong>3. Bookings & payment</strong><br>Bookings are confirmed once payment is completed via Razorpay and the host has been notified. Prices shown include a 5% GST component, applied at checkout. Cancellations made more than 48 hours before check-in are eligible for a free cancellation; cancellation terms within 48 hours of check-in are at the host's discretion — contact the host directly via the number provided in your booking confirmation.</p>
+
+      <p><strong>4. Carbon offset contributions</strong><br>Carbon offset amounts added at checkout are voluntary contributions passed toward tree-planting initiatives via our conservation partner. They are non-refundable once a booking is confirmed.</p>
+
+      <p><strong>5. Eco Permits</strong><br>Eco Permits for sensitive zones (e.g. Spiti, Parvati, Pin Valley) are date-specific, non-transferable, and non-refundable once issued. 70% of the permit fee is directed to local conservation efforts.</p>
+
+      <p><strong>6. PAHADI Traveller Points</strong><br>PAHADI points, tiers, and badges are a loyalty and recognition system with no cash value and cannot be redeemed, transferred, or sold. We may adjust the points system, thresholds, or rewards at any time.</p>
+
+      <p><strong>7. Crowd data & forecasts</strong><br>Live crowd levels, weekly forecasts, and weather/road-safety guidance are estimates based on historical patterns, seasonal data, and host-submitted updates. They are indicative only, not a guarantee of actual conditions — always verify road and weather conditions independently before travelling to remote or high-altitude areas.</p>
+
+      <p><strong>8. Community-submitted content</strong><br>Community Pins, location corrections, and reviews are user-submitted and reviewed by our team before appearing publicly. By submitting content, you grant PahariPath a non-exclusive right to display it on the platform. We may edit, reject, or remove submissions at our discretion.</p>
+
+      <p><strong>9. Host responsibilities</strong><br>Hosts are responsible for the accuracy of their listings, honoring confirmed bookings, complying with applicable local, state, and tax regulations (including any Himachal Pradesh tourism/homestay registration requirements), and maintaining safe accommodations.</p>
+
+      <p><strong>10. Prohibited conduct</strong><br>You agree not to misuse the platform, submit false information, attempt to circumvent bookings or payments outside the platform in bad faith, or engage in behavior that endangers hosts, guests, wildlife, or protected areas.</p>
+
+      <p><strong>11. Limitation of liability</strong><br>PahariPath facilitates bookings but is not liable for cancellations by hosts, weather conditions, road closures, natural disasters, or any loss, injury, or damage arising during your travel. Bookings in high-altitude or environmentally sensitive areas carry inherent risk — travel at your own discretion and judgment.</p>
+
+      <p><strong>12. Governing law</strong><br>These terms are governed by the laws of India. <em>[Founder: confirm the jurisdiction/courts you want specified here, typically your state of incorporation or principal place of business.]</em></p>
+
+      <p><strong>13. Changes to these terms</strong><br>We may update these terms as the platform evolves. Continued use of PahariPath after changes constitutes acceptance of the updated terms.</p>
+
+      <p><strong>14. Contact</strong><br>hello@paharipath.in</p>
+
+      <p style="font-size:11px;color:#999;margin-top:16px;padding-top:12px;border-top:1px solid #eee">These terms are a starting draft and have not been reviewed by a lawyer. Please have them reviewed by a qualified legal professional before public launch, particularly Sections 3 (refund/cancellation enforceability), 9 (host compliance obligations), and 12 (jurisdiction).</p>
+    </div>
+  </div>
+</div>
+
+<!-- PARTNER LISTING FORM MODAL -->
+<div id="partnerMo" class="mo" onclick="if(event.target===this)this.classList.remove('open')" style="display:none">
+  <div class="mo-box" style="max-width:560px">
+    <button class="mo-x" onclick="document.getElementById('partnerMo').classList.remove('open');document.getElementById('partnerMo').style.display='none'">✕</button>
+    <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:6px">List your property</h2>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Join PahariPath as a partner host. Free listing, bookings direct to your WhatsApp.</p>
+    <div class="fg"><label>Property Name</label><input class="fi" id="pName" placeholder="e.g. Riverside Cottage, Tirthan"/></div>
+    <div class="fg"><label>Location (Village, District)</label><input class="fi" id="pLoc" placeholder="e.g. Gushaini, Kullu"/></div>
+    <div class="fg"><label>Your Name</label><input class="fi" id="pOwner" placeholder="Host name"/></div>
+    <div class="fg"><label>WhatsApp Number</label><input class="fi" id="pPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
+    <div class="fg"><label>Email (used for your host login)</label><input class="fi" type="email" id="pEmail" placeholder="you@email.com"/></div>
+    <div class="fg"><label>Price per night (₹)</label><input class="fi" type="number" id="pPrice" placeholder="e.g. 2000"/></div>
+    <div class="fg"><label>Property Type</label>
+      <select class="fi" id="pType">
+        <option>Homestay</option><option>Eco Cottage</option><option>Eco Camp</option><option>Heritage Stay</option><option>Village Stay</option><option>Lodge</option>
+      </select>
+    </div>
+    <div class="fg"><label>Tell us about your property</label><textarea class="fi" id="pDesc" rows="3" placeholder="What makes your property special? Views, activities, food..."></textarea></div>
+    <div class="fg"><label>Property Photos (2-5 images)</label><input class="fi" type="file" id="pPropertyPhotos" accept="image/*" multiple/></div>
+    <div class="fg"><label>ID / Ownership Proof (Aadhaar, property papers, etc.)</label><input class="fi" type="file" id="pIdDoc" accept="image/*,.pdf"/></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <input type="checkbox" id="pEco" style="width:16px;height:16px"/>
+      <label for="pEco" style="font-size:13px;color:var(--ink)">This is an eco-friendly property (solar, waste management, local food etc.)</label>
+    </div>
+    <button onclick="submitPartnerForm()" id="pSubmitBtn" style="width:100%;padding:14px;background:var(--pine);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">Submit Listing Request</button>
+  </div>
+</div>
+
+<script>
+// Cookie consent
+(function(){
+  if(!localStorage.getItem('pp_cookie_consent')){
+    const b=document.getElementById('cookieBanner');
+    if(b){b.style.display='flex';setTimeout(()=>b.style.display='flex',100);}
+  }
+})();
+function acceptCookies(){localStorage.setItem('pp_cookie_consent','yes');document.getElementById('cookieBanner').style.display='none';}
+function declineCookies(){localStorage.setItem('pp_cookie_consent','no');document.getElementById('cookieBanner').style.display='none';}
+function showPrivacy(){document.getElementById('privacyMo').style.display='flex';document.getElementById('privacyMo').classList.add('open');}
+function showTerms(){document.getElementById('termsMo').style.display='flex';document.getElementById('termsMo').classList.add('open');}
+function showPartnerForm(){document.getElementById('partnerMo').style.display='flex';document.getElementById('partnerMo').classList.add('open');}
+async function submitPartnerForm(){
+  const name=(document.getElementById('pName')?.value||'').trim();
+  const loc=(document.getElementById('pLoc')?.value||'').trim();
+  const owner=(document.getElementById('pOwner')?.value||'').trim();
+  const phone=(document.getElementById('pPhone')?.value||'').trim();
+  const email=(document.getElementById('pEmail')?.value||'').trim();
+  const price=document.getElementById('pPrice')?.value||'';
+  const type=document.getElementById('pType')?.value||'Homestay';
+  const desc=(document.getElementById('pDesc')?.value||'').trim();
+  const eco=document.getElementById('pEco')?.checked||false;
+  if(!name||!loc||!owner||!phone||!email){toast('Please fill all required fields, including email');return;}
+  if(!/^[6-9]\d{9}$/.test(phone)){toast('Enter a valid 10-digit WhatsApp number');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Enter a valid email address');return;}
+
+  const btn=document.getElementById('pSubmitBtn');
+  if(btn){btn.disabled=true;btn.textContent='Uploading...';}
+
+  // Upload property photos + ID document to Storage (best-effort — a
+  // failed upload shouldn't block the whole application).
+  let propertyPhotoUrls=[];
+  const photoFiles=document.getElementById('pPropertyPhotos')?.files;
+  if(photoFiles&&photoFiles.length){
+    for(let i=0;i<Math.min(photoFiles.length,5);i++){
+      const f=photoFiles[i];
+      const ext=(f.name.split('.').pop()||'jpg').toLowerCase();
+      const path=`app-${Date.now()}-${i}.${ext}`;
+      const {error}=await _sb.storage.from('host-verification').upload(path,f,{upsert:true});
+      if(!error){ const {data}=_sb.storage.from('host-verification').getPublicUrl(path); propertyPhotoUrls.push(data.publicUrl); }
+    }
+  }
+  let idDocUrl=null;
+  const idFile=document.getElementById('pIdDoc')?.files?.[0];
+  if(idFile){
+    const ext=(idFile.name.split('.').pop()||'jpg').toLowerCase();
+    const path=`id-${Date.now()}.${ext}`;
+    const {error}=await _sb.storage.from('host-verification').upload(path,idFile,{upsert:true});
+    if(!error){ const {data}=_sb.storage.from('host-verification').getPublicUrl(path); idDocUrl=data.publicUrl; }
+  }
+
+  const {error}=await _sb.from('partner_applications').insert({
+    property_name:name,location:loc,owner_name:owner,phone,email,price_per_night:parseInt(price)||0,
+    property_type:type,description:desc,eco_friendly:eco,status:'pending',
+    property_photos:propertyPhotoUrls, id_document_url:idDocUrl,
+  });
+  if(btn){btn.disabled=false;btn.textContent='Submit Listing Request';}
+  if(error){
+    // Table may not exist yet — fallback to WhatsApp
+    const msg=`Hi PahariPath! I want to list my property:%0A*${name}* at ${loc}%0AHost: ${owner}%0APhone: ${phone}%0AEmail: ${email}%0APrice: ₹${price}/night%0AType: ${type}%0AEco: ${eco?'Yes':'No'}%0A${desc}`;
+    window.open('https://wa.me/919317110366?text='+msg,'_blank');
+    toast('Redirecting to WhatsApp to complete your application');
+  } else {
+   toast('✓ Application submitted! We will contact you within 48 hours.');
+    document.getElementById('partnerMo').classList.remove('open');
+    document.getElementById('partnerMo').style.display='none';
+  }
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js');
+  });
+}
+</script>
+</body>
+</html>
