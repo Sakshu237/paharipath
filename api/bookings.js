@@ -300,7 +300,7 @@ module.exports = async (req, res) => {
       if (!stay || stay.host_email !== hostEmail) { res.status(403).json({ error: 'This is not your listing' }); return; }
 
       const bkRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/bookings?stay_id=eq.${stayId}&status=in.(confirmed,completed)&select=id,guest,checkin_date,checkout_date,status`,
+        `${SUPABASE_URL}/rest/v1/bookings?stay_id=eq.${stayId}&status=in.(confirmed,completed)&select=id,guest,checkin_date,checkout_date,status,amount,created_at`,
         { headers }
       );
       const bookings = await bkRes.json();
