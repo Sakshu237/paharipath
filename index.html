@@ -1580,13 +1580,14 @@ function hTab(tab, btn){
   else if(tab==='earnings'){
     el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:20px">💰 Earnings</h2>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
-      ${[['₹—','This month'],['₹—','Total earned'],['—','Bookings total']].map(([n,l])=>`<div class="h-stat"><div class="h-stat-n">${n}</div><div class="h-stat-l">${l}</div></div>`).join('')}
+      ${[['hEarnMonth','This month'],['hEarnTotal','Total earned'],['hEarnCount','Bookings total']].map(([id,l])=>`<div class="h-stat"><div class="h-stat-n" id="${id}">—</div><div class="h-stat-l">${l}</div></div>`).join('')}
     </div>
     <div class="h-card">
       <div style="font-size:13px;font-weight:700;color:var(--pine);margin-bottom:12px">How earnings work</div>
       ${[['💳','Guest pays full amount via PahariPath (Razorpay)'],['📊','PahariPath deducts 10-15% platform commission'],['💸','Balance transferred to your bank within 48 hours of check-in'],['📱','You get WhatsApp notification for every new booking']].map(([i,t])=>`<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f5f5f3"><div style="font-size:20px">${i}</div><div style="font-size:13px;color:var(--ink)">${t}</div></div>`).join('')}
-      <p style="font-size:12px;color:var(--stone);margin-top:14px">For payout queries: <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a></p>
+      <p style="font-size:12px;color:var(--stone);margin-top:14px">Figures above show gross booking value, before PahariPath's platform commission. For payout queries: <a href="mailto:hello@paharipath.in" style="color:var(--pine)">hello@paharipath.in</a></p>
     </div>`;
+    loadHostEarnings();
   }
   else if(tab==='calendar'){
     el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">📅 Calendar</h2>
@@ -1647,6 +1648,40 @@ async function hostSaveCrowd(){
   // meter/map — the change isn't live yet. It only goes live once
   // approved from the admin dashboard.
   toast(`✓ Submitted for review — ${p.name} will update to ${val}% once approved by PahariPath`);
+}
+
+// Real earnings, computed from the host's own actual booking amounts —
+// reuses the same host-bookings API action the Calendar tab uses (host
+// identity already verified server-side against session + listing
+// ownership), just asks for amount/created_at too.
+// "This month" = gross value of bookings checking in during the current
+// calendar month. "Total earned" = gross value of completed stays only
+// (i.e. the guest has actually checked out) — confirmed-but-upcoming
+// bookings aren't counted as earned yet. "Bookings total" = all
+// confirmed + completed bookings.
+async function loadHostEarnings(){
+  if(!_hostStay?.id) return;
+  const {data:{session}} = await _sb.auth.getSession();
+  const r = await fetch('/api/bookings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'host-bookings', stayId:_hostStay.id, access_token:session?.access_token})});
+  const json = await r.json();
+  const bookings = json.bookings || [];
+  const fmtINR = n => '₹' + Math.round(n).toLocaleString('en-IN');
+
+  const now = new Date();
+  const thisMonth = bookings.filter(b=>{
+    if(!b.checkin_date) return false;
+    const d = new Date(b.checkin_date);
+    return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+  }).reduce((sum,b)=>sum + (Number(b.amount)||0), 0);
+
+  const totalEarned = bookings.filter(b=>b.status==='completed').reduce((sum,b)=>sum + (Number(b.amount)||0), 0);
+
+  const monthEl = document.getElementById('hEarnMonth');
+  const totalEl = document.getElementById('hEarnTotal');
+  const countEl = document.getElementById('hEarnCount');
+  if(monthEl) monthEl.textContent = fmtINR(thisMonth);
+  if(totalEl) totalEl.textContent = fmtINR(totalEarned);
+  if(countEl) countEl.textContent = String(bookings.length);
 }
 
 async function loadHostCalendar(){
