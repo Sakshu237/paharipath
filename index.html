@@ -1591,6 +1591,7 @@ function hTab(tab, btn){
   else if(tab==='calendar'){
     el.innerHTML=`<h2 style="font-family:var(--fd);font-size:22px;color:var(--pine);margin-bottom:8px">📅 Calendar</h2>
     <p style="font-size:13px;color:var(--stone);margin-bottom:20px">Block dates you're unavailable — travellers won't be able to book your listing on blocked dates. Confirmed bookings are shown below for reference.</p>
+    <div id="hAvailCalendar" style="margin-bottom:16px"></div>
     <div class="h-card" style="margin-bottom:16px">
       <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
         <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--stone);display:block;margin-bottom:6px">Block a date</label><input class="ai" type="date" id="hBlockDate"/></div>
@@ -1667,12 +1668,74 @@ async function loadHostCalendar(){
     </div>`).join('') : '<div style="font-size:13px;color:var(--stone)">No blocked dates.</div>';
   }
   const bkEl = document.getElementById('hConfirmedBookingsList');
+  const bookings = bkRes.bookings||[];
   if(bkEl){
-    const bookings = bkRes.bookings||[];
     bkEl.innerHTML = bookings.length ? bookings.map(b=>`<div style="padding:6px 0;border-bottom:1px solid #f0f0ee;font-size:13px">
       ${b.guest} — ${b.checkin_date?new Date(b.checkin_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—'} to ${b.checkout_date?new Date(b.checkout_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—'} <span style="color:var(--stone);font-size:11px">(${b.status})</span>
     </div>`).join('') : '<div style="font-size:13px;color:var(--stone)">No confirmed bookings yet.</div>';
   }
+  renderHostCalendarGrid(blockedRes.data||[], bookings.filter(b=>b.status==='confirmed'));
+}
+
+function renderHostCalendarGrid(blockedRows, confirmedBookings){
+  const el = document.getElementById('hAvailCalendar');
+  if(!el) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const fmt = d => d.toISOString().split('T')[0];
+  const blocked = new Set((blockedRows||[]).map(r=>r.blocked_date));
+  const booked = new Set();
+  (confirmedBookings||[]).forEach(b=>{
+    if(!b.checkin_date || !b.checkout_date) return;
+    let d = new Date(b.checkin_date);
+    const end = new Date(b.checkout_date);
+    while(d < end){ booked.add(fmt(d)); d.setDate(d.getDate()+1); }
+  });
+  function buildMonth(monthStart){
+    const y = monthStart.getFullYear(), m = monthStart.getMonth();
+    const firstDay = new Date(y,m,1);
+    const daysInMonth = new Date(y,m+1,0).getDate();
+    const startPad = firstDay.getDay();
+    const monthLabel = firstDay.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+    let cells = '';
+    for(let i=0;i<startPad;i++) cells += '<div></div>';
+    for(let day=1; day<=daysInMonth; day++){
+      const d = new Date(y,m,day);
+      const ds = fmt(d);
+      const isPast = d < today;
+      const isBooked = booked.has(ds);
+      const isBlocked = blocked.has(ds);
+      let bg='#eaf3ec', color='#1e6b3c', clickable=!isPast;
+      if(isPast){ bg='#f5f5f3'; color='#c4c4c0'; clickable=false; }
+      else if(isBooked){ bg='#fdf1de'; color='#a5690a'; clickable=false; }
+      else if(isBlocked){ bg='#fdeaea'; color='#c0392b'; clickable=false; }
+      cells += `<div ${clickable?`onclick="quickBlockDate('${ds}')"`:''} style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:11.5px;background:${bg};color:${color};${clickable?'cursor:pointer;font-weight:600':'cursor:default'}">${day}</div>`;
+    }
+    return `<div style="flex:1;min-width:0">
+      <div style="font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:6px;text-align:center">${monthLabel}</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">${['S','M','T','W','T','F','S'].map(d=>`<div style="font-size:9.5px;color:var(--stone);text-align:center;font-weight:600">${d}</div>`).join('')}${cells}</div>
+    </div>`;
+  }
+  const month1 = new Date(today.getFullYear(), today.getMonth(), 1);
+  const month2 = new Date(today.getFullYear(), today.getMonth()+1, 1);
+  el.innerHTML = `
+    <div class="h-card">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--stone);margin-bottom:10px">📅 At a glance</div>
+      <div style="display:flex;gap:16px">${buildMonth(month1)}${buildMonth(month2)}</div>
+      <div style="display:flex;gap:14px;margin-top:10px;font-size:10.5px;color:var(--stone)">
+        <span><span style="display:inline-block;width:9px;height:9px;background:#eaf3ec;border-radius:2px;margin-right:4px"></span>Open</span>
+        <span><span style="display:inline-block;width:9px;height:9px;background:#fdf1de;border-radius:2px;margin-right:4px"></span>Booked</span>
+        <span><span style="display:inline-block;width:9px;height:9px;background:#fdeaea;border-radius:2px;margin-right:4px"></span>Blocked by you</span>
+      </div>
+      <div style="font-size:11px;color:var(--stone);margin-top:8px">Tap an open date to quick-fill the block form below.</div>
+    </div>`;
+}
+
+function quickBlockDate(dateStr){
+  const inp = document.getElementById('hBlockDate');
+  if(!inp) return;
+  inp.value = dateStr;
+  inp.scrollIntoView({behavior:'smooth', block:'center'});
+  inp.focus();
 }
 async function hostBlockDate(){
   const date=document.getElementById('hBlockDate')?.value;
@@ -1748,6 +1811,28 @@ let BOOKINGS = [];
 async function loadStays(){
   const {data,error}=await _sb.from('stays').select('*').order('id');
   if(!error&&data) STAYS=data;
+  await loadStayRatings();
+}
+
+async function loadStayRatings(){
+  const {data,error} = await _sb.from('stay_reviews').select('stay_id,rating').eq('status','published');
+  if(error || !data) return;
+  const agg = {};
+  data.forEach(r=>{
+    if(!agg[r.stay_id]) agg[r.stay_id] = {sum:0,count:0};
+    agg[r.stay_id].sum += r.rating;
+    agg[r.stay_id].count++;
+  });
+  STAYS.forEach(s=>{
+    const a = agg[s.id];
+    if(a && a.count){
+      s.liveRating = (a.sum/a.count).toFixed(1);
+      s.reviewCount = a.count;
+    } else {
+      s.liveRating = null;
+      s.reviewCount = 0;
+    }
+  });
 }
 
 async function loadBookings(){
@@ -2880,7 +2965,7 @@ function renderStays(){
         <span class="s-type ${s.eco?'eco-type':''}">${s.type}</span>
         <div class="s-name">${s.name}${s.verified?' <span style="color:#1e6b3c;font-size:12px" title="Verified Host">✓</span>':''}</div>
         <div class="s-loc">📍 ${s.loc}</div>
-        <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">⭐ ${s.rating}</span></div>
+        <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">${s.reviewCount ? `⭐ ${s.liveRating} (${s.reviewCount})` : `⭐ ${s.rating}`}</span></div>
         <div class="s-contact">📞 ${s.contact}</div>
         <div style="display:flex;gap:7px" onclick="event.stopPropagation()">
           ${unavailable
@@ -2918,7 +3003,7 @@ function renderStayCard(s){
       <span class="s-type ${s.eco?'eco-type':''}">${s.type}</span>
       <div class="s-name">${s.name}${s.verified?' <span style="color:#1e6b3c;font-size:12px" title="Verified Host">✓</span>':''}</div>
       <div class="s-loc">📍 ${s.loc}</div>
-      <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">⭐ ${s.rating}</span></div>
+      <div class="s-meta"><span class="s-price">${s.price}</span><span class="s-rating">${s.reviewCount ? `⭐ ${s.liveRating} (${s.reviewCount})` : `⭐ ${s.rating}`}</span></div>
       <div class="s-contact">📞 ${s.contact}</div>
       <div style="display:flex;gap:7px" onclick="event.stopPropagation()">
         ${unavailable
@@ -4480,6 +4565,7 @@ function openBookMo(sid){
   // Trigger eco calculator first (it calls recalcBooking internally)
   setTimeout(() => recalcEco(s.pn, s.placeid || 0), 60);
   setTimeout(() => checkDateAvailability(s.id, s.pn), 80);
+  renderAvailabilityCalendar(s.id, s.pn);
 }
 function openPermitMo(name){
   document.getElementById('moTitle').textContent='Eco Permit — '+name;
@@ -4658,6 +4744,7 @@ function buildBookForm(s) {
     </div>
   </div>
   <div id="dateAvailWarning" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:10px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px"></div>
+  <div id="availCal" style="margin-bottom:16px"></div>
 
   <div class="fg-row">
     <div class="fg"><label>Your Name</label><input type="text" class="fi" id="gName" placeholder="Full name"/></div>
@@ -6980,6 +7067,97 @@ function getNights() {
   if (!ci || !co) return 1;
   const diff = (new Date(co) - new Date(ci)) / (1000 * 60 * 60 * 24);
   return Math.max(1, Math.round(diff));
+}
+
+// ═══ AVAILABILITY CALENDAR ═══
+// Shows guests which dates are actually open before they even pick dates,
+// by combining confirmed bookings (checkin_date/checkout_date) with the
+// host's manually blocked_dates. Same two data sources checkDateAvailability
+// already uses for its after-the-fact conflict check — this just surfaces
+// the same info visually, up front.
+async function renderAvailabilityCalendar(stayId, pricePerNight){
+  const el = document.getElementById('availCal');
+  if(!el) return;
+  el.innerHTML = '<div style="font-size:12px;color:var(--stone);padding:8px 0">Loading availability…</div>';
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const rangeEnd = new Date(today); rangeEnd.setDate(rangeEnd.getDate() + 60);
+  const fmt = d => d.toISOString().split('T')[0];
+
+  let bookedRanges = [], blockedDates = [];
+  try{
+    const [bkRes, blRes] = await Promise.all([
+      _sb.from('bookings').select('checkin_date,checkout_date').eq('stay_id',stayId).eq('status','confirmed'),
+      _sb.from('host_blocked_dates').select('blocked_date').eq('stay_id',stayId).gte('blocked_date',fmt(today)).lt('blocked_date',fmt(rangeEnd)),
+    ]);
+    bookedRanges = bkRes.data || [];
+    blockedDates = (blRes.data || []).map(r=>r.blocked_date);
+  }catch(e){
+    el.innerHTML = ''; // Migration not run yet or query failed — fail open, just hide the calendar
+    return;
+  }
+
+  // Expand booked ranges + blocked dates into one Set of unavailable YYYY-MM-DD strings.
+  // Checkout day itself is treated as available (guest leaves that morning).
+  const unavailable = new Set(blockedDates);
+  bookedRanges.forEach(b=>{
+    if(!b.checkin_date || !b.checkout_date) return;
+    let d = new Date(b.checkin_date);
+    const end = new Date(b.checkout_date);
+    while(d < end){ unavailable.add(fmt(d)); d.setDate(d.getDate()+1); }
+  });
+
+  function buildMonth(monthStart){
+    const y = monthStart.getFullYear(), m = monthStart.getMonth();
+    const firstDay = new Date(y,m,1);
+    const daysInMonth = new Date(y,m+1,0).getDate();
+    const startPad = firstDay.getDay(); // 0=Sun
+    const monthLabel = firstDay.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+    let cells = '';
+    for(let i=0;i<startPad;i++) cells += '<div></div>';
+    for(let day=1; day<=daysInMonth; day++){
+      const d = new Date(y,m,day);
+      const ds = fmt(d);
+      const isPast = d < today;
+      const isUnavail = unavailable.has(ds);
+      const disabled = isPast || isUnavail;
+      const bg = isPast ? '#f5f5f3' : isUnavail ? '#fdeaea' : '#eaf3ec';
+      const color = isPast ? '#c4c4c0' : isUnavail ? '#c0392b' : '#1e6b3c';
+      cells += `<div ${disabled?'':`onclick="pickAvailDate('${ds}',${pricePerNight})"`} style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:11.5px;background:${bg};color:${color};${disabled?'cursor:default':'cursor:pointer;font-weight:600'}">${day}</div>`;
+    }
+    return `<div style="flex:1;min-width:0">
+      <div style="font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:6px;text-align:center">${monthLabel}</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">${['S','M','T','W','T','F','S'].map(d=>`<div style="font-size:9.5px;color:var(--stone);text-align:center;font-weight:600">${d}</div>`).join('')}${cells}</div>
+    </div>`;
+  }
+
+  const month1 = new Date(today.getFullYear(), today.getMonth(), 1);
+  const month2 = new Date(today.getFullYear(), today.getMonth()+1, 1);
+
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--stone);margin-bottom:8px">📅 Availability</div>
+    <div style="display:flex;gap:16px;background:var(--mist);border-radius:12px;padding:12px">
+      ${buildMonth(month1)}${buildMonth(month2)}
+    </div>
+    <div style="display:flex;gap:14px;margin-top:8px;font-size:10.5px;color:var(--stone)">
+      <span><span style="display:inline-block;width:9px;height:9px;background:#eaf3ec;border-radius:2px;margin-right:4px"></span>Open</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#fdeaea;border-radius:2px;margin-right:4px"></span>Booked/blocked</span>
+    </div>`;
+}
+
+// Tapping an open date on the availability calendar sets it as check-in
+// and bumps check-out to the next day, then re-runs the normal price +
+// conflict-check flow — same as if the guest had typed it into the date field.
+function pickAvailDate(dateStr, pricePerNight){
+  const ciD = document.getElementById('ciD');
+  const coD = document.getElementById('coD');
+  if(!ciD || !coD) return;
+  ciD.value = dateStr;
+  const next = new Date(dateStr); next.setDate(next.getDate()+1);
+  coD.value = next.toISOString().split('T')[0];
+  coD.min = dateStr;
+  recalcBooking(pricePerNight);
+  checkDateAvailability(curBooking?.id, pricePerNight);
 }
 
 // ═══ DATE-RANGE CONFLICT CHECK ═══
