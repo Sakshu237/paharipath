@@ -22,7 +22,9 @@ const APP_SHELL = [
 // INSTALL
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.allSettled(APP_SHELL.map(url => cache.add(url)))
+    )
   );
 
   self.skipWaiting();
@@ -100,8 +102,9 @@ self.addEventListener('fetch', event => {
 
   // ============================
   // STATIC ASSETS — Cache First
+  // (matched by full URL, not pathname, so CDN assets actually hit this branch)
   // ============================
-  if (APP_SHELL.includes(url.pathname)) {
+  if (APP_SHELL.includes(event.request.url)) {
     event.respondWith(
       caches.match(event.request).then(cached => {
         if (cached) return cached;
@@ -137,6 +140,10 @@ self.addEventListener('message', event => {
 });
 
 // PRE-CACHE HP TILES
+// NOTE: not called anywhere yet — do not wire this up until you've
+// switched to a tile provider whose terms allow bulk caching
+// (MapTiler / Stadia Maps). tile.openstreetmap.org's usage policy
+// prohibits this kind of bulk programmatic download.
 async function precacheHPTiles(client) {
   const cache = await caches.open(TILE_CACHE);
   const zoom = 9;
