@@ -6,6 +6,6 @@
     { "source": "/blog/:slug", "destination": "/api/blog/:slug" }
   ],
   "crons": [
-    { "path": "/api/complete-stays?secret=khduendjedeeidnytrfg", "schedule": "0 3 * * *" }
+   { "path": "/api/complete-stays", "schedule": "0 3 * * *" }
   ]
 }
