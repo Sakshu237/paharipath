@@ -143,7 +143,7 @@ module.exports = async (req, res) => {
         return;
       }
       const payload = updates
-        .map(u => ({ place_id: parseInt(u.place_id), crowd_value: parseInt(u.crowd_value), updated_at: new Date().toISOString() }))
+        .map(u => ({ place_id: parseInt(u.place_id), crowd_value: parseInt(u.crowd_value), note: u.note || null, updated_at: new Date().toISOString() }))
         .filter(u => u.place_id && !isNaN(u.crowd_value) && u.crowd_value >= 0 && u.crowd_value <= 100);
       const upsertRes = await fetch(`${SUPABASE_URL}/rest/v1/crowd_overrides?on_conflict=place_id`, {
         method: 'POST',
