@@ -99,7 +99,8 @@
     "zone": "tirthan",
     "mx": 473,
     "my": 270,
-    "slug": "pundrik-rishi-lake"
+    "slug": "pundrik-rishi-lake",
+    "longDesc": "Pundrik Rishi Lake sits at 3,100m in Himachal Pradesh's Sainj Valley, a glacial pool named for the sage said to have meditated on its banks. Unlike Manali's crowded alpine lakes, this one sees only a trickle of trekkers — the approach runs through Sainj Valley's deodar forest and terraced villages, with no road access and no fixed trail markers, so most visitors go with a local guide. The best window is May–June or September–October, when snowmelt clears the path but the monsoon hasn't turned it to mud. Camping overnight near the lake means genuine silence and unpolluted night skies. It pairs naturally with a Sainj Valley stay, since the valley itself is one of Kullu's least-visited corners despite sitting right next to the busier Tirthan."
   },
   {
     "id": 6,
@@ -425,7 +426,8 @@
     "zone": "parvati",
     "mx": 409,
     "my": 195,
-    "slug": "grahan"
+    "slug": "grahan",
+    "longDesc": "Grahan is what Kasol was before it became a backpacker circuit — reached only by a 9km forest trek from the Kasol side of Parvati Valley, with no road access at all. At 2,800m, the walk climbs through dense pine and cannabis-lined forest before opening onto a small village that still runs almost entirely on subsistence farming. There's no cafe strip, no wifi cafes, none of Kasol's Israeli-backpacker infrastructure — just homestays run by the handful of families who live there. Best time is April–June or September–October, avoiding both winter snow and monsoon slides. For travelers who found Kasol's May–September crowds unbearable, Grahan is the same valley, the same mountains, minus the crowd entirely."
   },
   {
     "id": 22,
@@ -588,7 +590,8 @@
     "zone": "kullu",
     "mx": 410,
     "my": 169,
-    "slug": "sethan"
+    "slug": "sethan",
+    "longDesc": "Sethan sits barely 20 minutes above Manali by road, but the shift in atmosphere is total — no tourist buses, no market noise, just a snowbound village at 2,700m looking down over the valley Manali occupies. Winter (December–February) brings genuinely deep snow and a handful of small guesthouses running informal ski and snowshoe trips; summer (June–September) trades snow for quiet meadow walks. Because it's so close to Manali, Sethan works well as either a day trip or a base for travelers who want Manali's access without Manali's density — most of the village's few hundred residents still farm apples and potatoes rather than run tourism operations full-time."
   },
   {
     "id": 30,
@@ -713,7 +716,8 @@
     "zone": "mandi",
     "mx": 386,
     "my": 301,
-    "slug": "barot"
+    "slug": "barot",
+    "longDesc": "Barot is a genuine outlier on Himachal's offbeat map: no permit required, no high-altitude acclimatization needed, just a quiet river valley at 1,800m along the Uhl river in Mandi district. It's built around trout — both wild and farmed — with several trout hatcheries open to visitors and small operators offering rod-and-line fishing trips. The forest here is pine rather than Spiti's barren cold desert, so it reads as a completely different kind of offbeat: green, riverside, low-altitude, and open essentially year-round rather than restricted to a four-month window. Best time is May–June or September–October for clear water and comfortable trekking weather. For travelers priced out of Spiti's long drive and short season, Barot delivers the \"no crowds, no infrastructure\" feeling with a fraction of the logistics."
   },
   {
     "id": 36,
@@ -976,7 +980,8 @@
     "zone": "spiti",
     "mx": 529,
     "my": 125,
-    "slug": "chandratal-lake"
+    "slug": "chandratal-lake",
+    "longDesc": "Chandratal — the \"Moon Lake\" — sits at 4,300m near the Kunzum Pass, its crescent shape giving it the name. The water is glacier-fed and startlingly clear; on a still day you can see the lakebed several meters down. Camping is the standard way to experience it, since day-tripping doesn't do justice to the sunset-to-sunrise light change over the water, and the night sky here is one of the darkest accessible by road in India. It's open only July to September — the approach road is snowbound the rest of the year — and camping permits are required, arranged through the Spiti forest department or your camp operator. Altitude sickness risk is real at this elevation; acclimatizing in Kaza first is standard practice."
   },
   {
     "id": 49,
@@ -2120,7 +2125,8 @@
     "zone": "spiti",
     "mx": 635,
     "my": 178,
-    "slug": "kaza"
+    "slug": "kaza",
+    "longDesc": "Kaza is Spiti's administrative headquarters and the practical base for the entire valley — the last reliable ATM, market, and phone signal before the high villages. At 3,800m, altitude sickness is a real consideration, so most itineraries build in a rest day here before pushing higher to Kibber, Komic, or Langza. The town itself is functional rather than picturesque, but it's surrounded by some of the starkest cold-desert scenery in the Himalayas. Spiti is only accessible June to September; roads close with the first heavy snow. Most travelers reach Kaza via Manali over Kunzum Pass or the longer Shimla–Kinnaur route through Nako and Tabo — both routes are worth planning around rather than rushing."
   },
   {
     "id": 106,
@@ -2140,7 +2146,8 @@
     "zone": "spiti",
     "mx": 635,
     "my": 160,
-    "slug": "key-monastery"
+    "slug": "key-monastery",
+    "longDesc": "Key Monastery is Spiti's most recognizable landmark — a thousand-year-old Buddhist gompa stacked improbably against a cliff face at 4,166m, visible for kilometers before you reach it. It's still an active monastery with roughly 300 resident monks, not a museum, so visitors are welcome but expected to be respectful of prayer times and restricted areas. The best visiting window is June to September, matching Spiti's short accessible season. Inside are centuries-old murals and thangka paintings that have survived earthquakes and Spiti's brutal winters largely intact. It's a short drive from Kaza, making it an easy half-day addition to any Spiti itinerary, though the cliffside architecture rewards lingering rather than a quick photo stop."
   },
   {
     "id": 107,
@@ -2720,7 +2727,8 @@
     "zone": "tirthan",
     "mx": 369,
     "my": 232,
-    "slug": "sainj-valley"
+    "slug": "sainj-valley",
+    "longDesc": "Sainj Valley is the quiet cousin of neighboring Tirthan Valley — same Great Himalayan National Park foothills, same pine-and-apple landscape, a fraction of the tourists. Sitting around 1,600m in Kullu district, it's best visited April–June or September–November, when the weather is mild and the trails to Pundrik Rishi Lake are open. The valley's villages still run on Pahari rhythms: terraced farming, wood-and-stone houses, minimal signage for outsiders. There's no built-up tourist strip here — homestays are the main lodging option, run by local families rather than hotel chains. For travelers who found Tirthan too discovered, Sainj is what Tirthan looked like a decade ago."
   },
   {
     "id": 136,
