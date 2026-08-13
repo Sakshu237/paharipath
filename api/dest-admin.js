@@ -451,7 +451,7 @@ module.exports = async (req, res) => {
       const tempPassword = Math.random().toString(36).slice(-6) + Math.random().toString(36).slice(-4).toUpperCase() + '!1';
       const createUserRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
         method: 'POST', headers: svcHeaders,
-        body: JSON.stringify({ email: app.email, password: tempPassword, email_confirm: true }),
+        body: JSON.stringify({ email: app.email, password: tempPassword, email_confirm: true, user_metadata: { must_change_password: true } }),
       });
       const createdUser = await createUserRes.json();
       if (!createUserRes.ok && !String(createdUser.msg || createdUser.error_description || '').includes('already registered')) {
