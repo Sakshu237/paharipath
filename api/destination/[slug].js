@@ -32,7 +32,11 @@ module.exports = (req, res) => {
   }
 
   const title = `${place.name}, ${place.district} — Crowd Levels, Best Time & Guide | PahariPath`;
-  const description = `${place.desc} Altitude: ${place.altitude || 'N/A'}. Best time to visit: ${place.bestTime || 'year-round'}. Live crowd tracking and local homestays on PahariPath.`;
+  const bodyText = place.longDesc || place.desc;
+  const metaSnippet = place.longDesc
+    ? place.longDesc.slice(0, 155).replace(/\s+\S*$/, '') + '…'
+    : `${place.desc} Altitude: ${place.altitude || 'N/A'}. Best time to visit: ${place.bestTime || 'year-round'}. Live crowd tracking and local homestays on PahariPath.`;
+  const description = metaSnippet;
   const url = `https://paharipath.in/destination/${place.slug}`;
   const ogImage = 'https://paharipath.in/og-image.jpg';
   const tags = (place.vibes || []).map(v => escapeHtml(v));
@@ -63,7 +67,7 @@ ${JSON.stringify({
   "@context": "https://schema.org",
   "@type": "TouristAttraction",
   "name": place.name,
-  "description": place.desc,
+  "description": bodyText,
   "url": url,
   "address": {
     "@type": "PostalAddress",
@@ -112,7 +116,7 @@ ${JSON.stringify({
     <div class="fact"><div class="fact-l">District</div><div class="fact-v">${escapeHtml(place.district)}</div></div>
   </div>
 
-  <p class="desc">${escapeHtml(place.desc)}</p>
+  <p class="desc">${escapeHtml(bodyText)}</p>
 
   <div class="tags">${tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
 
