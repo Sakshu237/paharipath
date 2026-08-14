@@ -492,6 +492,13 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .pd-sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
 /* BOOKING MODAL */
 .mo{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.52);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px}
+/* #bookMo doubles as the review/permit/booking modal and can be opened
+   from inside #travellerMo (the traveller profile panel) — e.g. tapping
+   "Leave a Review" from your profile. Both share .mo's z-index:500, so
+   with equal stacking, DOM order decided the winner and #travellerMo
+   (later in the markup) always painted on top, hiding the review modal
+   behind it. Bumping #bookMo one level higher makes it always win. */
+#bookMo{z-index:501}
 .mo.open{display:flex}
 .mo-box{background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 28px 72px rgba(0,0,0,.22)}
 .mo-hd{padding:22px 26px 16px;border-bottom:1px solid rgba(74,124,95,.1);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;border-radius:20px 20px 0 0;z-index:2}
