@@ -477,7 +477,7 @@ module.exports = async (req, res) => {
         body: JSON.stringify({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: user.email }),
       });
 
-      await sendEmail({
+      const emailSent = await sendEmail({
         to: app.email,
         subject: 'Welcome to PahariPath — your host account is ready',
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
@@ -488,7 +488,16 @@ module.exports = async (req, res) => {
         </div>`,
       });
 
-      res.status(200).json({ success: true, stay: newStay });
+      // sendEmail never throws (see _lib/email.js), so a failed send would
+      // otherwise be silently swallowed and the admin would have no idea
+      // the new host never got their password. Surface it in the response
+      // and hand back the temp password so the admin can relay it manually.
+      res.status(200).json({
+        success: true,
+        stay: newStay,
+        emailSent,
+        ...(emailSent ? {} : { warning: `Login was created but the welcome email failed to send. Share this temporary password with ${app.email} manually: ${tempPassword}`, tempPassword }),
+      });
       return;
     }
 
