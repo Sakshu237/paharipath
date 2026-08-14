@@ -19,6 +19,28 @@ const { checkinHasPassed, awardPointsForBooking } = require('./_lib/points');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 
+// This endpoint was previously wide open: no auth (fine, it's called by
+// any traveller right after booking) but also no rate limit, so a known
+// or guessed bookingRef could be hammered repeatedly, or used to probe
+// which booking refs exist via the 404/200 response difference. It can't
+// award points early or twice (see gates below), so the ceiling on abuse
+// was always low, but there was no reason to leave it unthrottled.
+const MAX_ATTEMPTS = 10;
+const WINDOW_MINUTES = 10;
+
+async function countRecentAttempts(key, headers) {
+  const since = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/rate_limit_log?rl_key=eq.${encodeURIComponent(key)}&created_at=gte.${encodeURIComponent(since)}&select=id`,
+    { headers }
+  );
+  const rows = await res.json();
+  return Array.isArray(rows) ? rows.length : 0;
+}
+async function logAttempt(key, headers) {
+  await fetch(`${SUPABASE_URL}/rest/v1/rate_limit_log`, { method: 'POST', headers, body: JSON.stringify({ rl_key: key }) });
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -26,8 +48,8 @@ module.exports = async (req, res) => {
   }
 
   const { bookingRef } = req.body || {};
-  if (!bookingRef) {
-    res.status(400).json({ error: 'Missing bookingRef' });
+  if (!bookingRef || typeof bookingRef !== 'string' || bookingRef.length > 40) {
+    res.status(400).json({ error: 'Missing or invalid bookingRef' });
     return;
   }
 
@@ -44,6 +66,19 @@ module.exports = async (req, res) => {
   };
 
   try {
+    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+    const ipKey = `award-ip:${ip}`;
+    const refKey = `award-ref:${bookingRef}`;
+    const counts = await Promise.all([
+      countRecentAttempts(ipKey, headers),
+      countRecentAttempts(refKey, headers),
+    ]);
+    if (counts[0] >= MAX_ATTEMPTS || counts[1] >= MAX_ATTEMPTS) {
+      res.status(429).json({ error: 'Too many requests — please slow down' });
+      return;
+    }
+    await Promise.all([logAttempt(ipKey, headers), logAttempt(refKey, headers)]);
+
     // 1. Verify a real, confirmed (not cancelled) booking exists for this reference.
     const bookingRes = await fetch(
       `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&status=eq.confirmed&select=*`,
