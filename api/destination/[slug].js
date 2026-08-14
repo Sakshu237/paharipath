@@ -3,8 +3,55 @@
 // what Google actually sees and ranks. Regular visitors get a "read the
 // full guide in the app" handoff that deep-links straight to that place's
 // detail view inside the main PahariPath single-page app.
+//
+// Content comes from two layers, merged: the static places.json bundle
+// (base data, redeployed with the app) plus any live `destination_overrides`
+// row from Supabase for this place_id (admin-edited name/desc/etc — the
+// same table the client-side SPA reads via loadDestinationEdits). Without
+// this merge, admin edits and the long-form SEO descriptions written into
+// destination_overrides would only ever show inside the app and never on
+// the actual page search engines crawl.
 
 const places = require('../../places.json');
+
+const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
+
+// destination_overrides column -> places.json field mapping. Mirrors the
+// mapping in app.js's loadDestinationEdits so the SPA and the SEO page
+// never disagree about which override field maps to which display field.
+const OVERRIDE_FIELD_MAP = {
+  name: 'name',
+  district: 'district',
+  description: 'desc',
+  emoji: 'emoji',
+  vibes: 'vibes',
+  best_time: 'bestTime',
+  altitude: 'altitude',
+  famous_for: 'famousFor',
+  zone: 'zone',
+};
+
+async function fetchOverride(placeId) {
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/destination_overrides?place_id=eq.${placeId}&select=*&limit=1`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    let r;
+    try {
+      r = await fetch(url, {
+        headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+    const rows = await r.json();
+    return Array.isArray(rows) && rows[0] ? rows[0] : null;
+  } catch (e) {
+    return null; // fall back to static places.json data — never block the page on this
+  }
+}
 
 function escapeHtml(str) {
   if (str === undefined || str === null) return '';
@@ -16,11 +63,11 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   const { slug } = req.query;
-  const place = places.find(p => p.slug === slug);
+  const staticPlace = places.find(p => p.slug === slug);
 
-  if (!place) {
+  if (!staticPlace) {
     res.status(404).setHeader('Content-Type', 'text/html; charset=utf-8');
     res.end(`<!DOCTYPE html><html><head><title>Not found — PahariPath</title>
       <meta name="robots" content="noindex"/></head>
@@ -31,11 +78,23 @@ module.exports = (req, res) => {
     return;
   }
 
+  // Merge in any live admin edits from destination_overrides — same fields,
+  // same precedence as the client-side loadDestinationEdits.
+  const place = { ...staticPlace };
+  const override = await fetchOverride(staticPlace.id);
+  if (override) {
+    for (const [col, field] of Object.entries(OVERRIDE_FIELD_MAP)) {
+      if (override[col] !== undefined && override[col] !== null && override[col] !== '') {
+        place[field] = override[col];
+      }
+    }
+  }
+
   const title = `${place.name}, ${place.district} — Crowd Levels, Best Time & Guide | PahariPath`;
   const bodyText = place.longDesc || place.desc;
-  const metaSnippet = place.longDesc
-    ? place.longDesc.slice(0, 155).replace(/\s+\S*$/, '') + '…'
-    : `${place.desc} Altitude: ${place.altitude || 'N/A'}. Best time to visit: ${place.bestTime || 'year-round'}. Live crowd tracking and local homestays on PahariPath.`;
+  const metaSnippet = bodyText && bodyText.length > 160
+    ? bodyText.slice(0, 155).replace(/\s+\S*$/, '') + '…'
+    : `${bodyText} Altitude: ${place.altitude || 'N/A'}. Best time to visit: ${place.bestTime || 'year-round'}. Live crowd tracking and local homestays on PahariPath.`;
   const description = metaSnippet;
   const url = `https://paharipath.in/destination/${place.slug}`;
   const ogImage = 'https://paharipath.in/og-image.jpg';
