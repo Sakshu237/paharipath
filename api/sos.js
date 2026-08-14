@@ -12,6 +12,44 @@
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 
+// SOS is public and unauthenticated by design (no login in an emergency),
+// so it's rate-limited the same way as /api/bookings.js create-booking —
+// shared rate_limit_log table, but with a distinct key prefix ('sos-...')
+// so it never shares a bucket with booking attempts. Limits are looser
+// than booking's (a panicking traveller may legitimately tap retry a few
+// times) but still block scripted spam of the alert table.
+const MAX_ATTEMPTS = 8;
+const WINDOW_MINUTES = 10;
+
+// Free-text fields are user-supplied and rendered directly in the admin
+// dashboard (loadSOSAlerts in app.js) without sanitization on the way in,
+// so cap their length here to limit abuse/payload size. Rendering-side
+// escaping is handled separately (see loadSOSAlerts sanitize() fix).
+const MAX_NAME_LEN = 100;
+const MAX_PLACE_LEN = 120;
+const MAX_NOTES_LEN = 500;
+const MAX_PHONE_LEN = 20;
+
+function clip(val, max) {
+  if (typeof val !== 'string') return null;
+  const trimmed = val.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, max);
+}
+
+async function countRecentAttempts(key, headers) {
+  const since = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/rate_limit_log?rl_key=eq.${encodeURIComponent(key)}&created_at=gte.${encodeURIComponent(since)}&select=id`,
+    { headers }
+  );
+  const rows = await res.json();
+  return Array.isArray(rows) ? rows.length : 0;
+}
+async function logAttempt(key, headers) {
+  await fetch(`${SUPABASE_URL}/rest/v1/rate_limit_log`, { method: 'POST', headers, body: JSON.stringify({ rl_key: key }) });
+}
+
 async function verifyAdmin(access_token, adminEmail) {
   if (!adminEmail) return { errorReason: 'ADMIN_EMAIL is not set on the server (Vercel env vars)' };
   if (!access_token) return { errorReason: 'No login session was sent with this request — please log out and back in' };
@@ -55,14 +93,33 @@ module.exports = async (req, res) => {
     // ═══════════════════════════════════════════════
     if (action === 'submit') {
       const b = req.body;
+
+      const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+      const ipKey = `sos-ip:${ip}`;
+      const phone = clip(b.travellerPhone, MAX_PHONE_LEN);
+      const phoneKey = phone ? `sos-phone:${phone}` : null;
+
+      const counts = await Promise.all([
+        countRecentAttempts(ipKey, svcHeaders),
+        phoneKey ? countRecentAttempts(phoneKey, svcHeaders) : Promise.resolve(0),
+      ]);
+      if (counts[0] >= MAX_ATTEMPTS || counts[1] >= MAX_ATTEMPTS) {
+        // Still 429, not silently dropped — a real emergency should fall
+        // back to the WhatsApp message (which sendSOS fires regardless of
+        // this endpoint's result) or the 112 guidance shown in the SOS modal.
+        res.status(429).json({ error: 'Too many SOS submissions from this device recently. If this is a real emergency, call 112 or use the WhatsApp button directly.' });
+        return;
+      }
+      await Promise.all([logAttempt(ipKey, svcHeaders), phoneKey ? logAttempt(phoneKey, svcHeaders) : Promise.resolve()]);
+
       const payload = {
-        traveller_name: b.travellerName || 'Unknown traveller',
-        traveller_phone: b.travellerPhone || null,
-        alert_target: b.alertTarget || 'support',
-        place_name: b.placeName || null,
+        traveller_name: clip(b.travellerName, MAX_NAME_LEN) || 'Unknown traveller',
+        traveller_phone: phone,
+        alert_target: b.alertTarget === 'host' ? 'host' : 'support',
+        place_name: clip(b.placeName, MAX_PLACE_LEN),
         lat: typeof b.lat === 'number' ? b.lat : null,
         lng: typeof b.lng === 'number' ? b.lng : null,
-        notes: b.notes || null,
+        notes: clip(b.notes, MAX_NOTES_LEN),
         status: 'new',
       };
       const insRes = await fetch(`${SUPABASE_URL}/rest/v1/sos_alerts`, {
