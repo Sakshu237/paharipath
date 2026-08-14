@@ -8,6 +8,38 @@
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 
+// 'submit' is public and unauthenticated by design (a support request
+// shouldn't require a login), so it's rate-limited and length-capped the
+// same way /api/sos.js and /api/bookings.js create-booking are — shared
+// rate_limit_log table, distinct key prefix so buckets never collide.
+const MAX_ATTEMPTS = 5;
+const WINDOW_MINUTES = 15;
+const MAX_NAME_LEN = 100;
+const MAX_CONTACT_LEN = 100;
+const MAX_CATEGORY_LEN = 40;
+const MAX_MESSAGE_LEN = 1000;
+const MAX_REF_LEN = 40;
+
+function clip(val, max) {
+  if (typeof val !== 'string') return null;
+  const trimmed = val.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, max);
+}
+
+async function countRecentAttempts(key, headers) {
+  const since = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/rate_limit_log?rl_key=eq.${encodeURIComponent(key)}&created_at=gte.${encodeURIComponent(since)}&select=id`,
+    { headers }
+  );
+  const rows = await res.json();
+  return Array.isArray(rows) ? rows.length : 0;
+}
+async function logAttempt(key, headers) {
+  await fetch(`${SUPABASE_URL}/rest/v1/rate_limit_log`, { method: 'POST', headers, body: JSON.stringify({ rl_key: key }) });
+}
+
 async function verifyAdmin(access_token, adminEmail) {
   if (!adminEmail) return { errorReason: 'ADMIN_EMAIL is not set on the server (Vercel env vars)' };
   if (!access_token) return { errorReason: 'No login session was sent with this request — please log out and back in' };
@@ -50,13 +82,30 @@ module.exports = async (req, res) => {
     // ═══════════════════════════════════════════════
     if (action === 'submit') {
       const b = req.body;
-      if (!b.name || !b.contact || !b.message) {
+      const name = clip(b.name, MAX_NAME_LEN);
+      const contact = clip(b.contact, MAX_CONTACT_LEN);
+      const message = clip(b.message, MAX_MESSAGE_LEN);
+      if (!name || !contact || !message) {
         res.status(400).json({ error: 'Name, contact, and message are required' });
         return;
       }
+
+      const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+      const ipKey = `support-ip:${ip}`;
+      const contactKey = `support-contact:${contact}`;
+      const counts = await Promise.all([
+        countRecentAttempts(ipKey, svcHeaders),
+        countRecentAttempts(contactKey, svcHeaders),
+      ]);
+      if (counts[0] >= MAX_ATTEMPTS || counts[1] >= MAX_ATTEMPTS) {
+        res.status(429).json({ error: 'Too many support requests recently — please wait a bit before trying again.' });
+        return;
+      }
+      await Promise.all([logAttempt(ipKey, svcHeaders), logAttempt(contactKey, svcHeaders)]);
+
       const payload = {
-        name: b.name, contact: b.contact, category: b.category || 'general',
-        message: b.message, booking_ref: b.bookingRef || null, status: 'open',
+        name, contact, category: clip(b.category, MAX_CATEGORY_LEN) || 'general',
+        message, booking_ref: clip(b.bookingRef, MAX_REF_LEN), status: 'open',
       };
       const insRes = await fetch(`${SUPABASE_URL}/rest/v1/support_tickets`, {
         method: 'POST', headers: { ...svcHeaders, Prefer: 'return=minimal' }, body: JSON.stringify(payload),
