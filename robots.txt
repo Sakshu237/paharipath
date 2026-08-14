@@ -1,7 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /#admin
-Disallow: /host-login
-Disallow: /host-dashboard
 
 Sitemap: https://paharipath.in/sitemap.xml
