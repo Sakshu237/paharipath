@@ -3,7 +3,8 @@
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/destination/:slug", "destination": "/api/destination/:slug" },
     { "source": "/blog", "destination": "/api/blog-index" },
-    { "source": "/blog/:slug", "destination": "/api/blog/:slug" }
+    { "source": "/blog/:slug", "destination": "/api/blog/:slug" },
+    { "source": "/host-login", "destination": "/index.html" }
   ],
   "crons": [
    { "path": "/api/complete-stays", "schedule": "0 3 * * *" }
