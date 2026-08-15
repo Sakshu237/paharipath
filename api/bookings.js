@@ -144,6 +144,31 @@ module.exports = async (req, res) => {
       }
       await Promise.all([logAttempt(phoneKey, headers), logAttempt(ipKey, headers)]);
 
+      // Server-side date-conflict check. The client already blocks obviously
+      // conflicting dates before showing the pay button, but that check runs
+      // against a snapshot fetched moments earlier — it can't see a booking
+      // that was confirmed in between, and it can't be trusted at all if the
+      // client is bypassed. This re-checks against the live table right
+      // before insert, closing that race/bypass window. Mirrors the same
+      // overlap and blocked-date logic checkDateAvailability() runs client-side.
+      if (booking.stay_id && booking.checkin_date && booking.checkout_date) {
+        const [conflictRes, blockedRes] = await Promise.all([
+          fetch(
+            `${SUPABASE_URL}/rest/v1/bookings?stay_id=eq.${encodeURIComponent(booking.stay_id)}&status=eq.confirmed&checkin_date=lt.${encodeURIComponent(booking.checkout_date)}&checkout_date=gt.${encodeURIComponent(booking.checkin_date)}&select=id`,
+            { headers }
+          ),
+          fetch(
+            `${SUPABASE_URL}/rest/v1/host_blocked_dates?stay_id=eq.${encodeURIComponent(booking.stay_id)}&blocked_date=gte.${encodeURIComponent(booking.checkin_date)}&blocked_date=lt.${encodeURIComponent(booking.checkout_date)}&select=id`,
+            { headers }
+          ),
+        ]);
+        const [conflicts, blocked] = await Promise.all([conflictRes.json(), blockedRes.json()]);
+        if ((Array.isArray(conflicts) && conflicts.length) || (Array.isArray(blocked) && blocked.length)) {
+          res.status(409).json({ error: 'These dates were just booked or blocked by the host — please pick different dates, or message the host directly.' });
+          return;
+        }
+      }
+
       const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
         method: 'POST',
         headers: { ...headers, Prefer: 'return=minimal' },
