@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PahariPath — Bulk Description Upload</title>
+<meta name="robots" content="noindex, nofollow"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f3;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 24px 16px 80px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 22px; color: #1a3d2b; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #6b7c6e; margin-bottom: 24px; }
+  .card {
+    background: #fff;
+    border: 1px solid rgba(74,124,95,.15);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .status {
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .status.warn { background: #fdf3e3; color: #9b6c1a; }
+  .status.ok { background: #e6f4ec; color: #1a6b3c; }
+  .status.err { background: #fdeaea; color: #9b2020; }
+  button {
+    background: #1a3d2b;
+    color: #fff;
+    border: none;
+    padding: 13px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0ee;
+    font-size: 13px;
+  }
+  .row:last-child { border-bottom: none; }
+  .pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .pill.pending { background: #f0f0ee; color: #888; }
+  .pill.ok { background: #e6f4ec; color: #1a6b3c; }
+  .pill.fail { background: #fdeaea; color: #9b2020; }
+  .count { font-size: 13px; color: #6b7c6e; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bulk Description Upload</h1>
+  <div class="sub">Pushes long-form descriptions into your live Supabase data, using your own admin login. No API keys needed here.</div>
+
+  <div id="statusBox" class="status warn">Checking your login session…</div>
+
+  <div class="card">
+    <div id="destList"></div>
+    <div class="count" id="countLine"></div>
+  </div>
+
+  <button id="runBtn" onclick="runAll()" disabled>Checking login…</button>
+</div>
+
+<script>
+const SUPABASE_URL = "https://fcrkfemeirmfhhxhomgw.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const DESTINATIONS = [{"id": 1, "name": "Pangi Valley", "desc": "Pangi Valley is as remote as Himachal gets — a tribal valley on the Chenab river, cut off from the rest of the state for roughly eight months of the year once winter snow seals the Sach Pass access route. At 2,700m, the valley runs on its own rhythm: the Pangwal community here has a distinct language, dress, and way of life shaped by isolation, not tourism. Mobile signal is patchy to nonexistent through most of the valley, and there's no built tourist infrastructure — homestays with local families are the only realistic option. The short window to visit is June–September, when the Sach Pass road is open and the valley is accessible at all. This isn't an add-on to a Chamba trip; it's a destination for travelers who specifically want to go somewhere few outsiders ever see."}, {"id": 2, "name": "Pooh", "desc": "Pooh sits close enough to the Indo-China border that its remoteness isn't a marketing line — it's geography. At 2,840m in Kinnaur, the village has almost none of the tourist infrastructure found further down the valley in Sangla or Kalpa, but it does have centuries-old temples and a Kinnauri tribal culture that's stayed largely undisturbed by outside visitors. Best visited May–October, when the high-Kinnaur roads are clear. There's little in the way of formal sightseeing here — the draw is walking through a working village that tourism hasn't reshaped, with dramatic dry-mountain views typical of upper Kinnaur's rain-shadow landscape. Basic homestays are the only lodging; come with low expectations of comfort and high expectations of quiet."}, {"id": 3, "name": "Rasol", "desc": "Rasol is one of the harder villages to reach in Parvati Valley, which is exactly why it's stayed one of the quietest. There's no road — getting here means a trek from the Kasol side through pine forest, climbing to 2,900m before the village comes into view. Unlike Kasol or Tosh, Rasol has no cafe culture and minimal tourist footfall; it's a genuine mountain village where the silence is the main feature. Best time to go is May–June or September–October, avoiding both winter snow and monsoon-slick trails. It works well as a one- or two-night trek out of Kasol for travelers who want to see what the valley looked like before it became a backpacker circuit."}, {"id": 4, "name": "Karsog Valley", "desc": "Karsog Valley is Mandi district's quietest secret — a low-altitude valley at 1,400m built around apple orchards and centered on the Mamleshwar Mahadev temple, one of the region's older Shiva shrines. Unlike Himachal's high-altitude offbeat spots, Karsog needs no acclimatization and no narrow seasonal window: March–June and September–November both work well, and even outside those months the valley is pleasant. The pace here is agricultural rather than touristic — orchard villages, temple visits, and roads with almost no other travelers on them. It's a realistic weekend option for anyone wanting genuine offbeat Himachal without the logistics of Spiti or Kinnaur."}, {"id": 5, "name": "Pundrik Rishi Lake", "desc": "Pundrik Rishi Lake sits at 3,100m in Himachal Pradesh's Sainj Valley, a glacial pool named for the sage said to have meditated on its banks. Unlike Manali's crowded alpine lakes, this one sees only a trickle of trekkers — the approach runs through Sainj Valley's deodar forest and terraced villages, with no road access and no fixed trail markers, so most visitors go with a local guide. The best window is May–June or September–October, when snowmelt clears the path but the monsoon hasn't turned it to mud. Camping overnight near the lake means genuine silence and unpolluted night skies. It pairs naturally with a Sainj Valley stay, since the valley itself is one of Kullu's least-visited corners despite sitting right next to the busier Tirthan."}, {"id": 6, "name": "Haripurdhar", "desc": "Haripurdhar is a forested ridge in Sirmaur district that most Himachal itineraries skip entirely, which means you can walk it without meeting another traveler. At 2,100m, the ridge is thick with deodar forest and opens onto views over Renuka Lake below — a very different, greener kind of offbeat than the cold-desert valleys further north. Best time is April–June or September–November. There's minimal built infrastructure, so this is a trip for travelers comfortable with basic homestays and self-directed walking rather than marked trails and signage. It pairs naturally with a Renuka Lake visit, extending a fairly standard Sirmaur trip into genuinely offbeat territory."}, {"id": 7, "name": "Thachi Valley", "desc": "Thachi Valley sits deep in Mandi district, an apple-orchard valley where the road turns to dirt track for long stretches and traditional Pahari villages haven't been reshaped by tourism. At 1,800m, it's accessible without acclimatization concerns, with a best-time window of April–June or September–October. There's no tourist strip here — homestays run by orchard-owning families are the standard lodging, and the appeal is straightforwardly the absence of anything touristic: no cafes, no souvenir stalls, just apple trees and mountain villages going about their normal year. It suits travelers looking for a low-key rural Himachal experience rather than a checklist of sights."}, {"id": 8, "name": "Sach Pass", "desc": "Sach Pass, at 4,390m, is one of the more demanding high-altitude crossings in Himachal — narrow switchback roads with drop-offs and patches of snow that can persist into July, connecting Chamba to the isolated Pangi Valley beyond. This is a route for experienced riders or travelers in a capable vehicle, not a casual scenic drive; conditions change fast and margin for error is genuinely thin. The pass is open only July–September. Its real function is as the gateway to Pangi — most travelers who cross Sach Pass are doing so specifically to reach Pangi's tribal villages on the far side, making the pass itself both a destination and a filter for how committed a traveler needs to be to get there."}, {"id": 9, "name": "Churdhar Peak", "desc": "Churdhar Peak, at 3,647m, is the highest point in the outer Himalayas and carries genuine spiritual weight — the Shirgul Maharaj temple sits right at the summit, and the trek up is as much pilgrimage as trek for many who make it. The climb typically starts from Nohradhar or Sarain in Sirmaur district, gaining significant altitude over a single push, so reasonable fitness matters. Best time is May–June or September–October, avoiding monsoon slides and winter snow. Unlike more commercialized trek routes elsewhere in Himachal, Churdhar sees a modest, mostly domestic pilgrim and trekker crowd rather than backpacker tourism, and the summit views across the Sirmaur and Shimla hills are the payoff for a demanding day."}, {"id": 10, "name": "Ribba", "desc": "Ribba is a Kinnauri village known locally for something few visitors expect from Himachal: grape wine, made from vineyards that thrive in Kinnaur's dry mountain climate at 2,700m. It's a village that runs on its own traditional Kinnauri culture — distinct architecture, dress, and customs — with essentially no tourist infrastructure built around it. Best time to visit is August–October, which lines up with the grape harvest season and gives the best chance to see the vineyards in their most active state. There's no formal wine-tasting setup; this is a village to walk through and talk to people in, not a vineyard-tour destination in the commercial sense."}, {"id": 11, "name": "Kalga", "desc": "Kalga sits above Pulga in Parvati Valley and is, by most accounts, the quietest inhabited point in that whole stretch — forest, mountain views, and birdsong replacing the cafe noise of Kasol further down the valley. At 2,500m, it's reached by a short trek from the road-end near Barshaini, with a best-time window of April–June or September–October. Homestays here are genuinely small-scale, run by the handful of families living in the village, and there's little to \"do\" in the conventional sense — the point is slow mornings and forest walks rather than an activity checklist. For travelers who found even Tosh too built-up, Kalga is the next step further in."}, {"id": 12, "name": "Bhaba Valley", "desc": "Bhaba Valley is widely considered Kinnaur's greenest corner, a striking contrast to the dry, rocky landscape most of Kinnaur is known for. At 2,700m, it's best known as the starting point for the Bhaba Pass trek, a multi-day route that eventually crosses over into Pin Valley in Spiti — connecting two very different landscapes on foot. Best time is June–September, matching the trekking season. Even for travelers not attempting the full pass crossing, the lower valley itself is worth a visit for its unusually lush meadows and forest, a side of Kinnaur that photos of Kalpa and Sangla don't usually show."}, {"id": 13, "name": "Khab", "desc": "Khab marks the point where the Spiti River meets the Sutlej, and the landscape shift is immediate and dramatic — green Kinnaur giving way abruptly to the barren, cold-desert terrain that defines Spiti further upstream. At 2,000m, it's more a striking waypoint than a destination with its own infrastructure; most travelers see it while driving the Kinnaur–Spiti road rather than stopping to stay. Best time is May–October, matching the road's open season. It's worth building a deliberate stop into an itinerary here rather than passing through — the confluence and the sudden change in terrain are among the more visually dramatic single moments on the whole Kinnaur-to-Spiti route."}, {"id": 14, "name": "Komic", "desc": "Komic is widely cited as the highest motorable village in Asia, sitting at 4,587m in Spiti's stark high-altitude terrain. A handful of families live here year-round alongside an old monastery, and the landscape is about as close to alien as Himachal gets — bare rock, thin air, and long views across the Spiti plateau. Best time is June–September, the only real access window. Altitude is a genuine consideration at this elevation; acclimatizing in Kaza before heading up is standard practice. It pairs naturally with nearby Langza and Hikkim as part of a Spiti loop, but of the three, Komic's elevation and isolation make it the most demanding stop."}, {"id": 15, "name": "Shangarh", "desc": "Shangarh is home to one of Himachal's more striking sights: a vast, ancient open meadow in Sainj Valley, with the small Shangchul Mahadev temple sitting at its edge and mountain views stretching in every direction. At 2,200m, it's accessible without technical trekking, with a best-time window of March–June or September–November. Unlike more famous meadows elsewhere in Kullu, Shangarh sees very light tourist traffic, so the meadow itself tends to be empty rather than crowded with photo-seekers. It pairs naturally with a Sainj Valley stay, extending a visit to nearby Pundrik Rishi Lake into a fuller offbeat itinerary."}, {"id": 16, "name": "Gushaini", "desc": "Gushaini is the main gateway into the Great Himalayan National Park, a UNESCO World Heritage site, sitting on the Tirthan river at 1,500m. It's a working base rather than a polished tourist town — anglers come for the trout fishing the Tirthan is known for, and trekkers use it as the jumping-off point for GHNP routes. Best time is March–June or September–November. Compared to Jibhi or Shoja further up the valley, Gushaini sees noticeably fewer casual tourists, since its main draw (park access and fishing) attracts a more specific kind of traveler than a weekend-getaway crowd. Riverside homestays are the standard lodging option."}, {"id": 17, "name": "Janjheli", "desc": "Janjheli is a lush, largely undiscovered hill station at 2,150m in Mandi district — green meadows and forest with almost no tourist traffic outside weekends. Best time is March–June or September–November. It functions as a practical base for the trek up to nearby Shikari Devi temple, but it's worth a stay in its own right for travelers who want Himachal's classic meadow-and-forest scenery without Kufri or Narkanda's crowds. Infrastructure is basic — homestays rather than hotels — which suits the low-key nature of the place."}, {"id": 18, "name": "Shikari Devi", "desc": "Shikari Devi temple sits at 3,360m in Mandi district, and local lore holds that it has no roof because every attempt to build one has collapsed — whether myth or coincidence, the open-air shrine surrounded by dense alpine forest makes for an unusually atmospheric stop. Best time is May–June or September–October. Reaching it typically means a trek through forest rather than a drive to the door, which keeps footfall low. It works well combined with a stay in nearby Janjheli, turning what could be a quick temple visit into a fuller offbeat Mandi trip built around forest walking and quiet meadow country."}, {"id": 19, "name": "Rakcham", "desc": "Rakcham sits on the road between Sangla and Chitkul, at 3,100m, and most travelers drive straight through it without stopping — which is the mistake. The village is ringed by birch forest and apple orchards, a softer, greener version of Kinnaur than the barren stretches further up the valley. There's no dedicated attraction here in the ticket-and-signage sense; the appeal is simply staying a night in a working orchard village between two more famous stops. Best time is May–October. For travelers doing the standard Sangla–Chitkul run, breaking the drive with a night in Rakcham is an easy way to see a side of the valley almost everyone skips past."}, {"id": 20, "name": "Kamrunag", "desc": "Kamrunag is a remote deity lake at 3,334m in Mandi district, where devotees have thrown coins into the water for generations as offerings to the local deity — a practice that continues today and gives the lake a genuinely lived-in spiritual weight rather than a staged one. The lake draws its biggest crowd during an atmospheric annual fair in June, but outside that window it's quiet. Best time is June or September. Reaching it involves a trek rather than a drive, which keeps casual footfall low even by Mandi's already-offbeat standards."}, {"id": 21, "name": "Grahan", "desc": "Grahan is what Kasol was before it became a backpacker circuit — reached only by a 9km forest trek from the Kasol side of Parvati Valley, with no road access at all. At 2,800m, the walk climbs through dense pine and cannabis-lined forest before opening onto a small village that still runs almost entirely on subsistence farming. There's no cafe strip, no wifi cafes, none of Kasol's Israeli-backpacker infrastructure — just homestays run by the handful of families who live there. Best time is April–June or September–October, avoiding both winter snow and monsoon slides. For travelers who found Kasol's May–September crowds unbearable, Grahan is the same valley, the same mountains, minus the crowd entirely."}, {"id": 24, "name": "Kareri Lake", "desc": "Kareri Lake is a hidden alpine glacial lake at 2,934m above Dharamshala, often described as a quieter alternative to the far more crowded Triund trek nearby. The trail runs through similar terrain — oak and rhododendron forest opening onto high meadows — but draws a fraction of Triund's trekker traffic. Best time is April–June or September–October. For travelers who've heard Triund is overrun and want a comparable experience without the crowds, Kareri Lake is the direct answer, though it typically requires a longer trek and more self-sufficient planning than Triund's well-worn path."}, {"id": 25, "name": "Andretta", "desc": "Andretta is a small artist village in Kangra district built around one of Himachal's more significant cultural sites: the Sobha Singh Art Gallery, home to work by one of India's noted 20th-century painters. At 900m, it's low-altitude and accessible year-round, though October–March brings the most comfortable weather. The village also has a tradition of pottery-making, with small studios still active. Unlike Kangra's more visited temple towns, Andretta draws almost no tourist traffic despite its genuine cultural significance — it's a stop for travelers interested in Himachal's art history specifically, not a general sightseeing destination."}, {"id": 27, "name": "Hatu Peak", "desc": "Hatu Peak is the highest point accessible from the Shimla region at 3,400m, topped by the small Hatu Mata temple and a genuine 360-degree Himalayan panorama on a clear day. Best time is May–June or September–October. It's reached via a manageable trek from Narkanda, making it accessible to reasonably fit travelers without technical mountaineering experience. Compared to Shimla's more crowded viewpoints, Hatu Peak offers a real summit experience — open ridgeline, wide views, minimal infrastructure — while still being reachable as a day trip from Narkanda or even Shimla itself for early starters."}, {"id": 29, "name": "Sethan", "desc": "Sethan sits barely 20 minutes above Manali by road, but the shift in atmosphere is total — no tourist buses, no market noise, just a snowbound village at 2,700m looking down over the valley Manali occupies. Winter (December–February) brings genuinely deep snow and a handful of small guesthouses running informal ski and snowshoe trips; summer (June–September) trades snow for quiet meadow walks. Because it's so close to Manali, Sethan works well as either a day trip or a base for travelers who want Manali's access without Manali's density — most of the village's few hundred residents still farm apples and potatoes rather than run tourism operations full-time."}, {"id": 30, "name": "Sereolesar Lake", "desc": "Sereolesar Lake is a genuinely hidden find reached by trekking from Jalori Pass — a clear, still alpine lake at 3,100m with the small Budhi Nagin temple sitting right on its shore. Unlike better-known lakes elsewhere in Himachal, this one sees a trickle of trekkers rather than tour buses; there's no road access at all. Best time is May–June or September–October, avoiding both winter snow and monsoon mud on the trail. It makes a natural extension for travelers already at Jalori Pass or staying in Shoja or Jibhi, adding a half-day trek onto what's otherwise a driving-focused itinerary."}, {"id": 32, "name": "Shoja", "desc": "Shoja is a quiet hilltop village near Jalori Pass, ringed by apple orchards, at 2,300m — the kind of place built for doing nothing in particular for a couple of days. Best time is March–June or September–November. It sits along the same Tirthan-valley corridor as Jibhi, but tends to be slightly quieter and more oriented toward longer, slower stays than day-trip sightseeing. The Jalori Pass views from the village are a genuine draw on their own, and Shoja works well either as a standalone rest stop or as a base for exploring Jalori Pass and Sereolesar Lake nearby."}, {"id": 35, "name": "Barot", "desc": "Barot is a genuine outlier on Himachal's offbeat map: no permit required, no high-altitude acclimatization needed, just a quiet river valley at 1,800m along the Uhl river in Mandi district. It's built around trout — both wild and farmed — with several trout hatcheries open to visitors and small operators offering rod-and-line fishing trips. The forest here is pine rather than Spiti's barren cold desert, so it reads as a completely different kind of offbeat: green, riverside, low-altitude, and open essentially year-round rather than restricted to a four-month window. Best time is May–June or September–October for clear water and comfortable trekking weather. For travelers priced out of Spiti's long drive and short season, Barot delivers the \"no crowds, no infrastructure\" feeling with a fraction of the logistics."}, {"id": 37, "name": "Nako Village", "desc": "Nako Village sits at 3,625m in Kinnaur, built around a small lake and an old monastery, with a traditional Kinnauri way of life that's changed little despite the village's proximity to the Kinnaur–Spiti highway. Best time is May–October. Unlike Kalpa or Sangla, which have developed more visible tourist infrastructure, Nako remains largely residential — travelers passing through on the way to Spiti often stop for an hour rather than staying, which means those who do stay overnight get a noticeably quieter experience of high-Kinnaur village life."}, {"id": 48, "name": "Chandratal Lake", "desc": "Chandratal — the \"Moon Lake\" — sits at 4,300m near the Kunzum Pass, its crescent shape giving it the name. The water is glacier-fed and startlingly clear; on a still day you can see the lakebed several meters down. Camping is the standard way to experience it, since day-tripping doesn't do justice to the sunset-to-sunrise light change over the water, and the night sky here is one of the darkest accessible by road in India. It's open only July to September — the approach road is snowbound the rest of the year — and camping permits are required, arranged through the Spiti forest department or your camp operator. Altitude sickness risk is real at this elevation; acclimatizing in Kaza first is standard practice."}, {"id": 51, "name": "Pin Valley", "desc": "Pin Valley is a national park sitting deep in Spiti's cold desert at 3,650m, home to snow leopards, ibex, and Himalayan wolves — genuine high-altitude wildlife territory rather than a manicured park. It's also the starting point for the demanding Pin-Parvati Pass trek, which connects Spiti to Kullu district on foot. Best time is June–September. Wildlife sightings, especially snow leopards, are rare and require luck and patience rather than being guaranteed, but the valley's stark beauty and genuine wilderness feel are worth the visit even without one. This is a destination for serious nature and trekking travelers rather than a casual stop."}, {"id": 53, "name": "Rajgundha", "desc": "Rajgundha is a high-altitude meadow village above Bir that almost no one outside serious trekking circles has heard of. At 2,800m, reaching it means a genuinely tough trek — there's no easy road access — which is precisely why it's stayed silent while Bir below has become a paragliding hub. Best time is May–June or September–October. The reward for the climb is open meadow, mountain views, and a small village mostly untouched by the tourism economy that's transformed Bir. This is a trip for travelers who specifically want a physical trek with a payoff, not a drive-up destination."}, {"id": 62, "name": "Nurpur", "desc": "Nurpur is a Kangra town whose historical importance far outstrips its tourist profile — a partially ruined fort and the Brij Raj Swami temple sit here, remnants of a once-significant hill kingdom. At 500m, it's low-altitude and accessible year-round, though October–March brings the most comfortable weather. Unlike Kangra Fort, which draws a steadier stream of visitors, Nurpur's fort and temple see very light footfall despite comparable historical weight — worth a stop for travelers genuinely interested in Kangra's pre-colonial history rather than just its temple circuit."}, {"id": 66, "name": "Thanedar", "desc": "Thanedar is where apple cultivation in Himachal Pradesh effectively began — American missionary Samuel Stokes planted the region's first commercial apple orchards here in the early 1900s, and that history still shapes the town today. At 2,350m, it's a working orchard town rather than a built-up hill station, with a best-time window of April–June or September–October. There's a quiet historical weight to walking through the original orchards, especially for travelers who've already seen HP's apple economy in Shimla or Kotgarh without knowing where it started. Thanedar rewards visitors who care about the \"why\" behind Himachal's apple culture, not just the scenery."}, {"id": 67, "name": "Chanshal Pass", "desc": "Chanshal Pass is the highest motorable pass in Shimla district at 4,520m, with snow lingering on the route into July most years. It offers Rohtang-style high-altitude scenery — snowfields, switchbacks, big mountain views — but with a fraction of Rohtang's traffic and none of its permit or congestion hassles. Best time to attempt it is June–September, once the snow has cleared enough for vehicles. The road condition varies year to year, so checking current status before setting out matters more here than on better-maintained highway passes. It's a solid pick for travelers who want the high-pass experience without Rohtang's crowds."}, {"id": 70, "name": "Jubbal", "desc": "Jubbal is a former princely-state town in Shimla district, built around Jubbal Palace and surrounded by apple orchards, at 1,900m. It's part of the old Shimla Hill States circuit — a network of small former royal territories that get far less attention than Shimla itself despite their historical significance. Best time is April–June or September–October. The palace and town center give Jubbal a cultural weight that pure-nature offbeat destinations don't have, making it a good stop for travelers interested in Himachal's princely-state history rather than just scenery."}, {"id": 71, "name": "Shoghi", "desc": "Shoghi sits just outside Shimla, close enough for an easy day trip in, but far enough that it avoids Mall Road's noise and crowding entirely. At 1,519m, it's best visited October–May, when Shimla itself gets overrun with domestic tourists — Shoghi offers the same regional views and cooler climate with a fraction of the footfall. There's no major sight to check off here; the value is a quiet stay with decent food options, functioning as either a calmer base for exploring Shimla or a standalone stop for travelers who'd rather skip Shimla's town center altogether."}, {"id": 105, "name": "Kaza", "desc": "Kaza is Spiti's administrative headquarters and the practical base for the entire valley — the last reliable ATM, market, and phone signal before the high villages. At 3,800m, altitude sickness is a real consideration, so most itineraries build in a rest day here before pushing higher to Kibber, Komic, or Langza. The town itself is functional rather than picturesque, but it's surrounded by some of the starkest cold-desert scenery in the Himalayas. Spiti is only accessible June to September; roads close with the first heavy snow. Most travelers reach Kaza via Manali over Kunzum Pass or the longer Shimla–Kinnaur route through Nako and Tabo — both routes are worth planning around rather than rushing."}, {"id": 106, "name": "Key Monastery", "desc": "Key Monastery is Spiti's most recognizable landmark — a thousand-year-old Buddhist gompa stacked improbably against a cliff face at 4,166m, visible for kilometers before you reach it. It's still an active monastery with roughly 300 resident monks, not a museum, so visitors are welcome but expected to be respectful of prayer times and restricted areas. The best visiting window is June to September, matching Spiti's short accessible season. Inside are centuries-old murals and thangka paintings that have survived earthquakes and Spiti's brutal winters largely intact. It's a short drive from Kaza, making it an easy half-day addition to any Spiti itinerary, though the cliffside architecture rewards lingering rather than a quick photo stop."}, {"id": 135, "name": "Sainj Valley", "desc": "Sainj Valley is the quiet cousin of neighboring Tirthan Valley — same Great Himalayan National Park foothills, same pine-and-apple landscape, a fraction of the tourists. Sitting around 1,600m in Kullu district, it's best visited April–June or September–November, when the weather is mild and the trails to Pundrik Rishi Lake are open. The valley's villages still run on Pahari rhythms: terraced farming, wood-and-stone houses, minimal signage for outsiders. There's no built-up tourist strip here — homestays are the main lodging option, run by local families rather than hotel chains. For travelers who found Tirthan too discovered, Sainj is what Tirthan looked like a decade ago."}];
+
+const listEl = document.getElementById('destList');
+const countLine = document.getElementById('countLine');
+const statusBox = document.getElementById('statusBox');
+const runBtn = document.getElementById('runBtn');
+
+function renderList() {
+  listEl.innerHTML = DESTINATIONS.map(d => `
+    <div class="row" id="row-${d.id}">
+      <span>${d.name} <span style="color:#999">(ID ${d.id})</span></span>
+      <span class="pill pending" id="pill-${d.id}">Pending</span>
+    </div>
+  `).join('');
+  countLine.textContent = `${DESTINATIONS.length} destinations queued`;
+}
+renderList();
+
+async function checkLogin() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    statusBox.className = 'status err';
+    statusBox.innerHTML = 'You are not logged in. Open your main PahariPath site in another tab, log in as admin, then reload this page.';
+    runBtn.textContent = 'Not logged in';
+    return null;
+  }
+  statusBox.className = 'status ok';
+  statusBox.textContent = `Logged in as ${session.user.email}. Ready to push ${DESTINATIONS.length} descriptions.`;
+  runBtn.disabled = false;
+  runBtn.textContent = `Push All ${DESTINATIONS.length} Descriptions`;
+  return session.access_token;
+}
+
+let accessToken = null;
+checkLogin().then(t => accessToken = t);
+
+async function runAll() {
+  if (!accessToken) { accessToken = await checkLogin(); if (!accessToken) return; }
+  runBtn.disabled = true;
+  runBtn.textContent = 'Uploading…';
+  let ok = 0, fail = 0;
+
+  for (const d of DESTINATIONS) {
+    const pill = document.getElementById(`pill-${d.id}`);
+    pill.textContent = 'Saving…';
+    try {
+      const res = await fetch('/api/dest-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          id: d.id,
+          desc: d.desc,
+          access_token: accessToken,
+        }),
+      });
+      const j = await res.json();
+      if (res.ok && j.success) {
+        pill.className = 'pill ok';
+        pill.textContent = '✓ Saved';
+        ok++;
+      } else {
+        pill.className = 'pill fail';
+        pill.textContent = 'Failed';
+        fail++;
+        console.error(d.name, j.error);
+      }
+    } catch (e) {
+      pill.className = 'pill fail';
+      pill.textContent = 'Error';
+      fail++;
+      console.error(d.name, e);
+    }
+    countLine.textContent = `${ok} saved, ${fail} failed, ${DESTINATIONS.length - ok - fail} remaining`;
+  }
+
+  runBtn.textContent = `Done — ${ok} saved, ${fail} failed`;
+  statusBox.className = fail ? 'status warn' : 'status ok';
+  statusBox.textContent = fail
+    ? `Finished with ${fail} failure(s) — check console (F12) for details, or re-run this page to retry.`
+    : `All ${ok} descriptions saved successfully! You can now delete this page from your repo.`;
+}
+</script>
+</body>
+</html>
