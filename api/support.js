@@ -143,9 +143,16 @@ module.exports = async (req, res) => {
     if (action === 'update') {
       const ticketId = parseInt(req.body.ticketId);
       if (!ticketId) { res.status(400).json({ error: 'Missing ticketId' }); return; }
+      const ALLOWED_STATUSES = ['open', 'in_progress', 'resolved'];
       const fields = { updated_at: new Date().toISOString() };
-      if (req.body.status) fields.status = req.body.status;
-      if (req.body.adminNotes !== undefined) fields.admin_notes = req.body.adminNotes;
+      if (req.body.status) {
+        if (!ALLOWED_STATUSES.includes(req.body.status)) {
+          res.status(400).json({ error: 'Invalid status value' });
+          return;
+        }
+        fields.status = req.body.status;
+      }
+      if (req.body.adminNotes !== undefined) fields.admin_notes = clip(req.body.adminNotes, MAX_MESSAGE_LEN);
       const upd = await fetch(`${SUPABASE_URL}/rest/v1/support_tickets?id=eq.${ticketId}`, {
         method: 'PATCH', headers: svcHeaders, body: JSON.stringify(fields),
       });
