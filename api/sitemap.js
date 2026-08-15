@@ -81,7 +81,12 @@ module.exports = async (req, res) => {
     : CONTENT_SEED_DATE;
 
   const urls = [
-    { loc: 'https://paharipath.in/', priority: '1.0', freq: 'weekly', lastmod: mostRecentActivity },
+    // Homepage deliberately has no lastmod — it's the evergreen entry
+    // point, and Google was showing this date directly in the search
+    // snippet (before the description), which looked odd for a homepage.
+    // Destination and blog pages keep real lastmod dates below, since
+    // freshness signals are genuinely useful for that content.
+    { loc: 'https://paharipath.in/', priority: '1.0', freq: 'weekly' },
     { loc: 'https://paharipath.in/blog', priority: '0.7', freq: 'weekly', lastmod: mostRecentActivity },
     { loc: 'https://paharipath.in/privacy-policy.html', priority: '0.3', freq: 'yearly', lastmod: LEGAL_LAST_REVISED },
     { loc: 'https://paharipath.in/terms-of-service.html', priority: '0.3', freq: 'yearly', lastmod: LEGAL_LAST_REVISED },
@@ -102,8 +107,8 @@ module.exports = async (req, res) => {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(u => `  <url>
-    <loc>${u.loc}</loc>
-    <lastmod>${u.lastmod}</lastmod>
+    <loc>${u.loc}</loc>${u.lastmod ? `
+    <lastmod>${u.lastmod}</lastmod>` : ''}
     <changefreq>${u.freq}</changefreq>
     <priority>${u.priority}</priority>
   </url>`).join('\n')}
