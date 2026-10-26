@@ -12,6 +12,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 // shouldn't require a login), so it's rate-limited and length-capped the
 // same way /api/sos.js and /api/bookings.js create-booking are — shared
 // rate_limit_log table, distinct key prefix so buckets never collide.
+const { sendEmail } = require('./_lib/email');
 const MAX_ATTEMPTS = 5;
 const WINDOW_MINUTES = 15;
 const MAX_NAME_LEN = 100;
@@ -19,6 +20,17 @@ const MAX_CONTACT_LEN = 100;
 const MAX_CATEGORY_LEN = 40;
 const MAX_MESSAGE_LEN = 1000;
 const MAX_REF_LEN = 40;
+
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const PROPERTY_TYPES = ['Homestay', 'Eco Cottage', 'Eco Camp', 'Heritage Stay', 'Village Stay', 'Lodge'];
+// Uploaded files are referenced as "bucket/filename" — nothing else is accepted.
+function parseStorageRef(v, allowedBuckets) {
+  if (typeof v !== 'string') return null;
+  const m = v.trim().match(/^([a-z-]+)\/([A-Za-z0-9._-]{1,160})$/);
+  if (!m || !allowedBuckets.includes(m[1])) return null;
+  return { bucket: m[1], path: m[2] };
+}
 
 function clip(val, max) {
   if (typeof val !== 'string') return null;
@@ -112,6 +124,89 @@ module.exports = async (req, res) => {
       });
       if (!insRes.ok) { res.status(400).json({ error: 'Submit failed: ' + await insRes.text() }); return; }
       res.status(200).json({ success: true, message: "We've got your message — we'll get back to you soon." });
+      return;
+    }
+
+
+    // ═══════════════════════════════════════════════
+    // action: 'partner-apply' — a property owner submits a listing request
+    // (public, rate-limited). Saved as a pending partner_applications row
+    // for admin verification; the admin is emailed and the applicant gets
+    // a confirmation. Files are uploaded by the browser first and sent here
+    // as "bucket/filename" references, which are validated below.
+    // ═══════════════════════════════════════════════
+    if (action === 'partner-apply') {
+      const b = req.body;
+      const propertyName = clip(b.propertyName, 120);
+      const location = clip(b.location, 150);
+      const ownerName = clip(b.ownerName, 100);
+      const phone = clip(b.phone, 10);
+      const email = (clip(b.email, 150) || '').toLowerCase();
+      const description = clip(b.description, 1000) || '';
+      const price = parseInt(b.price);
+      const propertyType = PROPERTY_TYPES.includes(b.propertyType) ? b.propertyType : 'Homestay';
+      const eco = b.eco === true;
+
+      if (!propertyName || !location || !ownerName || !phone || !email) { res.status(400).json({ error: 'Please fill all required fields' }); return; }
+      if (!/^[6-9]\d{9}$/.test(phone)) { res.status(400).json({ error: 'Enter a valid 10-digit WhatsApp number' }); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { res.status(400).json({ error: 'Enter a valid email address' }); return; }
+      if (!(price >= 100 && price <= 100000)) { res.status(400).json({ error: 'Enter a valid price per night (₹100 to ₹1,00,000)' }); return; }
+
+      const photoRefs = (Array.isArray(b.photos) ? b.photos : []).slice(0, 5)
+        .map(p => parseStorageRef(p, ['stay-photos', 'host-verification'])).filter(Boolean);
+      if (photoRefs.length < 2) { res.status(400).json({ error: 'Please add at least 2 photos of your property' }); return; }
+      const idRef = parseStorageRef(b.idDoc, ['host-verification']);
+      if (!idRef) { res.status(400).json({ error: 'Please add an ID or ownership proof' }); return; }
+
+      const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+      const ipKey = `partner-ip:${ip}`;
+      const emailKey = `partner-email:${email}`;
+      const counts = await Promise.all([countRecentAttempts(ipKey, svcHeaders), countRecentAttempts(emailKey, svcHeaders)]);
+      if (counts[0] >= MAX_ATTEMPTS || counts[1] >= MAX_ATTEMPTS) {
+        res.status(429).json({ error: 'Too many attempts recently — please wait a few minutes and try again.' });
+        return;
+      }
+      await Promise.all([logAttempt(ipKey, svcHeaders), logAttempt(emailKey, svcHeaders)]);
+
+      const dupRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?email=eq.${encodeURIComponent(email)}&status=eq.pending&select=id&limit=1`, { headers: svcHeaders });
+      const dup = dupRes.ok ? await dupRes.json() : [];
+      if (Array.isArray(dup) && dup.length) {
+        res.status(409).json({ error: 'We already have a pending application for this email. Our team will contact you on WhatsApp soon.' });
+        return;
+      }
+
+      const row = {
+        property_name: propertyName, location, owner_name: ownerName, phone, email,
+        price_per_night: price, property_type: propertyType, description, eco_friendly: eco, status: 'pending',
+        property_photos: photoRefs.map(r => `${SUPABASE_URL}/storage/v1/object/public/${r.bucket}/${r.path}`),
+        id_document_url: `${idRef.bucket}/${idRef.path}`,
+      };
+      const insRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications`, {
+        method: 'POST', headers: { ...svcHeaders, Prefer: 'return=minimal' }, body: JSON.stringify(row),
+      });
+      if (!insRes.ok) { res.status(500).json({ error: 'Could not save your application right now. Please try again.' }); return; }
+
+      // Best-effort emails — sendEmail never throws, and a failed email must not fail the application.
+      if (adminEmail) {
+        await sendEmail({
+          to: adminEmail,
+          subject: `New host application: ${propertyName}`,
+          html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px">
+            <h3 style="color:#2d5a3d">New host application</h3>
+            <p><b>${esc(propertyName)}</b> — ${esc(location)}<br/>${esc(propertyType)} · ₹${price}/night<br/>
+            ${esc(ownerName)} · ${esc(phone)} · ${esc(email)}</p>
+            <p>Review it in the admin panel → Host Applications, then approve or reject.</p></div>`,
+        });
+      }
+      await sendEmail({
+        to: email,
+        subject: 'We received your PahariPath listing request',
+        html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+          <h2 style="color:#2d5a3d">Thanks, ${esc(ownerName)}!</h2>
+          <p>We received your request to list <b>${esc(propertyName)}</b> on PahariPath. Our team will verify your details and contact you on WhatsApp within 48 hours. Once approved, your listing goes live and your host login is emailed to you.</p></div>`,
+      });
+
+      res.status(200).json({ success: true });
       return;
     }
 
