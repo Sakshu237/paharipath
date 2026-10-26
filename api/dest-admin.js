@@ -67,6 +67,38 @@ function slugify(name) {
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// A stored file reference: a bare "bucket/filename" (new applications) or a full
+// Supabase storage URL (older applications). Anything else is ignored.
+function parseStorageRef(v) {
+  if (typeof v !== 'string') return null;
+  let s = v.trim();
+  const m = s.match(/\/storage\/v1\/object\/(?:public|sign)\/([^?]+)/);
+  if (m) { try { s = decodeURIComponent(m[1]); } catch (e) { return null; } }
+  else if (/^https?:\/\//i.test(s)) return null;
+  const parts = s.split('/');
+  if (parts.length !== 2 || !['stay-photos', 'host-verification'].includes(parts[0])) return null;
+  if (!/^[A-Za-z0-9._-]{1,160}$/.test(parts[1])) return null;
+  return { bucket: parts[0], path: parts[1] };
+}
+// Short-lived signed link so private files (ID proofs) can be reviewed without a public bucket.
+async function signStorageRef(ref, svcHeaders) {
+  const r = parseStorageRef(ref);
+  if (!r) return null;
+  try {
+    const sr = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/${r.bucket}/${r.path}`, {
+      method: 'POST', headers: svcHeaders, body: JSON.stringify({ expiresIn: 3600 }),
+    });
+    if (sr.ok) {
+      const j = await sr.json();
+      const p = j.signedURL || j.signedUrl;
+      if (p) return `${SUPABASE_URL}/storage/v1${p.startsWith('/') ? '' : '/'}${p}`;
+    }
+  } catch (e) { /* fall through */ }
+  return r.bucket === 'stay-photos' ? `${SUPABASE_URL}/storage/v1/object/public/${r.bucket}/${r.path}` : null;
+}
+
 const HOST_ONLY_ACTIONS = new Set(['task-propose']);
 
 module.exports = async (req, res) => {
@@ -430,7 +462,12 @@ module.exports = async (req, res) => {
         : `${SUPABASE_URL}/rest/v1/partner_applications?order=created_at.desc&limit=200`;
       const listRes = await fetch(url, { headers: svcHeaders });
       if (!listRes.ok) { res.status(400).json({ error: 'Fetch failed: ' + await listRes.text() }); return; }
-      const applications = await listRes.json();
+      const rows = await listRes.json();
+      const applications = await Promise.all((Array.isArray(rows) ? rows : []).map(async a => ({
+        ...a,
+        photo_urls: (await Promise.all((Array.isArray(a.property_photos) ? a.property_photos : []).slice(0, 8).map(p => signStorageRef(p, svcHeaders)))).filter(Boolean),
+        id_url: a.id_document_url ? await signStorageRef(a.id_document_url, svcHeaders) : null,
+      })));
       res.status(200).json({ success: true, applications });
       return;
     }
@@ -444,59 +481,90 @@ module.exports = async (req, res) => {
       const appId = parseInt(req.body.applicationId);
       if (!appId) { res.status(400).json({ error: 'Missing applicationId' }); return; }
       const getRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}&select=*`, { headers: svcHeaders });
-      const [app] = await getRes.json();
+      const found = await getRes.json();
+      const app = Array.isArray(found) ? found[0] : null;
       if (!app) { res.status(404).json({ error: 'Application not found' }); return; }
+      if (app.status !== 'pending') { res.status(409).json({ error: `This application is already ${app.status}.` }); return; }
       if (!app.email) { res.status(400).json({ error: 'This application has no email on file — cannot create a host login. Contact them to get one, then retry.' }); return; }
+
+      // Claim it first, so a double-click or a second admin tab can never create two listings.
+      const claimRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}&status=eq.pending`, {
+        method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' },
+        body: JSON.stringify({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: user.email }),
+      });
+      const claimed = claimRes.ok ? await claimRes.json() : [];
+      if (!Array.isArray(claimed) || !claimed.length) { res.status(409).json({ error: 'This application was just handled by someone else — refresh the list.' }); return; }
+      const revert = () => fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}`, {
+        method: 'PATCH', headers: svcHeaders, body: JSON.stringify({ status: 'pending', reviewed_at: null, reviewed_by: null }),
+      }).catch(() => {});
 
       const tempPassword = Math.random().toString(36).slice(-6) + Math.random().toString(36).slice(-4).toUpperCase() + '!1';
       const createUserRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
         method: 'POST', headers: svcHeaders,
         body: JSON.stringify({ email: app.email, password: tempPassword, email_confirm: true, user_metadata: { must_change_password: true } }),
       });
-      const createdUser = await createUserRes.json();
-      if (!createUserRes.ok && !String(createdUser.msg || createdUser.error_description || '').includes('already registered')) {
-        res.status(400).json({ error: 'Could not create host login: ' + (createdUser.msg || createUserRes.statusText) });
-        return;
+      const createdUser = await createUserRes.json().catch(() => ({}));
+      let createdUserId = null, loginExisted = false;
+      if (createUserRes.ok) {
+        createdUserId = createdUser.id || null;
+      } else {
+        const msg = String(createdUser.msg || createdUser.error_description || createdUser.message || '');
+        if (createdUser.error_code === 'email_exists' || /already (been )?registered|already exists/i.test(msg)) loginExisted = true;
+        else { await revert(); res.status(400).json({ error: 'Could not create host login: ' + (msg || createUserRes.statusText) }); return; }
       }
 
       const colors = ['#d5e8d0', '#e4dcc8', '#d4e6da', '#e0dce8', '#dcd8e8', '#d4dce8', '#d8e4d4'];
+      // Only the applicant's public property photos go live — never anything from the private ID bucket.
+      const livePhotos = (Array.isArray(app.property_photos) ? app.property_photos : [])
+        .map(parseStorageRef).filter(r => r && r.bucket === 'stay-photos').slice(0, 5)
+        .map(r => `${SUPABASE_URL}/storage/v1/object/public/${r.bucket}/${r.path}`);
       const stayPayload = {
         name: app.property_name, loc: app.location, type: app.property_type || 'Homestay',
         eco: !!app.eco_friendly, pn: app.price_per_night || 0, price: '₹' + (app.price_per_night || 0).toLocaleString() + '/night',
         rating: '4.5', emoji: '🏡', color: colors[appId % colors.length], contact: app.phone,
-        nights: 2, placeid: 0, status: 'active', host_email: app.email, verified: false,
+        nights: 2, placeid: 0, status: 'active', host_email: app.email, verified: false, photos: livePhotos,
       };
       const insStayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays`, {
         method: 'POST', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(stayPayload),
       });
-      if (!insStayRes.ok) { res.status(400).json({ error: 'Host login created, but stay listing failed: ' + await insStayRes.text() }); return; }
-      const [newStay] = await insStayRes.json();
+      if (!insStayRes.ok) {
+        // Undo everything so the admin can simply retry.
+        if (createdUserId) await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${createdUserId}`, { method: 'DELETE', headers: svcHeaders }).catch(() => {});
+        await revert();
+        res.status(400).json({ error: 'Could not create the stay listing, so nothing was approved — you can retry. Details: ' + await insStayRes.text() });
+        return;
+      }
+      const newStayRows = await insStayRes.json();
+      const newStay = Array.isArray(newStayRows) ? newStayRows[0] : newStayRows;
 
-      await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}`, {
-        method: 'PATCH', headers: svcHeaders,
-        body: JSON.stringify({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: user.email }),
-      });
-
+      const credentialsHtml = loginExisted
+        ? `<p>You already have a PahariPath account with this email, so sign in with your existing password at paharipath.in → Host Login. Your listing will appear in your host dashboard.</p>`
+        : `<p><b>Email:</b> ${esc(app.email)}<br/><b>Temporary password:</b> ${esc(tempPassword)}</p>
+          <p style="font-size:13px;color:#666">Log in at paharipath.in → Host Login, and change your password from your host dashboard after your first login.</p>`;
       const emailSent = await sendEmail({
         to: app.email,
-        subject: 'Welcome to PahariPath — your host account is ready',
+        subject: 'Welcome to PahariPath — your listing is live',
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-          <h2 style="color:#2d5a3d">You're approved, ${app.owner_name}! 🎉</h2>
-          <p>${app.property_name} is now live on PahariPath. Here's your host login:</p>
-          <p><b>Email:</b> ${app.email}<br/><b>Temporary password:</b> ${tempPassword}</p>
-          <p style="font-size:13px;color:#666">Log in at paharipath.in → Host Login, and change your password from your host dashboard after your first login.</p>
+          <h2 style="color:#2d5a3d">You're approved, ${esc(app.owner_name)}! 🎉</h2>
+          <p>${esc(app.property_name)} is now live on PahariPath.</p>
+          ${credentialsHtml}
         </div>`,
       });
 
-      // sendEmail never throws (see _lib/email.js), so a failed send would
-      // otherwise be silently swallowed and the admin would have no idea
-      // the new host never got their password. Surface it in the response
-      // and hand back the temp password so the admin can relay it manually.
+      // sendEmail never throws (see _lib/email.js), so surface a failed send here and hand the
+      // admin whatever they need to relay it manually.
+      let warning;
+      if (!emailSent) {
+        warning = loginExisted
+          ? `The stay is live, but the welcome email failed to send. ${app.email} already had a login — tell them to sign in with their existing password.`
+          : `Login was created but the welcome email failed to send. Share this temporary password with ${app.email} manually: ${tempPassword}`;
+      } else if (loginExisted) {
+        warning = `The stay is live. ${app.email} already had a login, so no new password was created — they were told to use their existing one.`;
+      }
       res.status(200).json({
-        success: true,
-        stay: newStay,
-        emailSent,
-        ...(emailSent ? {} : { warning: `Login was created but the welcome email failed to send. Share this temporary password with ${app.email} manually: ${tempPassword}`, tempPassword }),
+        success: true, stay: newStay, emailSent, loginExisted,
+        ...(warning ? { warning } : {}),
+        ...(!emailSent && !loginExisted ? { tempPassword } : {}),
       });
       return;
     }
