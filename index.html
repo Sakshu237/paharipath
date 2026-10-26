@@ -1631,7 +1631,7 @@ function ppGo(n){
 function ppValidate(n){
   if(n===1){
     if(!ppVal('pName')||!ppVal('pLoc')||!ppVal('pOwner')||!ppVal('pPhone')||!ppVal('pEmail')){toast('Please fill all required fields');return false;}
-    if(!(parseInt(document.getElementById('pPrice')?.value)>0)){toast('Enter your price per night');return false;}
+    if(!(parseInt(document.getElementById('pPrice')?.value)>=100)){toast('Enter your price per night (minimum ₹100)');return false;}
     if(!/^[6-9]\d{9}$/.test(ppVal('pPhone'))){toast('Enter a valid 10-digit WhatsApp number');return false;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ppVal('pEmail'))){toast('Enter a valid email address');return false;}
   }
@@ -1689,10 +1689,11 @@ function ppCompress(file){
     img.src=url;
   });
 }
-async function ppUpload(path,blob){
-  const {error}=await _sb.storage.from('host-verification').upload(path,blob,{upsert:true});
-  if(error)return null;
-  return _sb.storage.from('host-verification').getPublicUrl(path).data.publicUrl;
+function ppRand(){const a=new Uint8Array(8);crypto.getRandomValues(a);return Array.from(a,x=>x.toString(16).padStart(2,'0')).join('');}
+// Uploads one file and returns "bucket/filename" (or null on failure). Never overwrites an existing file.
+async function ppUpload(bucket,name,blob){
+  const {error}=await _sb.storage.from(bucket).upload(name,blob,{upsert:false,contentType:blob.type||undefined});
+  return error?null:bucket+'/'+name;
 }
 async function ppSubmit(){
   if(_ppBusy)return;
@@ -1706,40 +1707,47 @@ async function ppSubmit(){
   const name=ppVal('pName'),loc=ppVal('pLoc'),owner=ppVal('pOwner'),phone=ppVal('pPhone'),email=ppVal('pEmail');
   const price=document.getElementById('pPrice')?.value||'',type=document.getElementById('pType')?.value||'Homestay';
   const desc=ppVal('pDesc'),eco=!!document.getElementById('pEco')?.checked;
-  const stamp=Date.now();
   const restore=()=>{_ppBusy=false;if(btn){btn.disabled=false;btn.textContent='Submit for verification';}if(back)back.disabled=false;};
   try{
-    const photoUrls=[];
+    // Photos go to the public "stay-photos" bucket (they show on the live listing once approved).
+    // If that bucket is not set up yet, fall back to the verification bucket so applications still work.
+    let photoBucket='stay-photos';
+    const photoRefs=[];
     for(let i=0;i<_ppPhotos.length;i++){
       setBtn('Uploading photo '+(i+1)+' of '+_ppPhotos.length+'…');
       const blob=await ppCompress(_ppPhotos[i].file);
-      const ext=blob.type==='image/jpeg'?'jpg':((_ppPhotos[i].file.name.split('.').pop()||'jpg').toLowerCase());
-      const u=await ppUpload(`app-${stamp}-${i}.${ext}`,blob);
-      if(u)photoUrls.push(u);
+      const ext=blob.type==='image/jpeg'?'jpg':((_ppPhotos[i].file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg');
+      let ref=await ppUpload(photoBucket,`app-${ppRand()}.${ext}`,blob);
+      if(!ref&&photoBucket==='stay-photos'&&!photoRefs.length){photoBucket='host-verification';ref=await ppUpload(photoBucket,`app-${ppRand()}.${ext}`,blob);}
+      if(ref)photoRefs.push(ref);
     }
-    if(photoUrls.length<PP_MIN_PHOTOS){toast('Photo upload failed. Check your connection and try again.');restore();return;}
+    if(photoRefs.length<PP_MIN_PHOTOS){toast('Photo upload failed. Check your connection and try again.');restore();return;}
     setBtn('Uploading ID proof…');
     const idFile=document.getElementById('pIdDoc').files[0];
-    const idExt=(idFile.name.split('.').pop()||'jpg').toLowerCase();
-    const idUrl=await ppUpload(`id-${stamp}.${idExt}`,idFile);
-    if(!idUrl){toast('ID upload failed. Check your connection and try again.');restore();return;}
+    const idExt=(idFile.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg';
+    const idRef=await ppUpload('host-verification',`id-${ppRand()}.${idExt}`,idFile);
+    if(!idRef){toast('ID upload failed. Check your connection and try again.');restore();return;}
     setBtn('Submitting…');
-    const {error}=await _sb.from('partner_applications').insert({
-      property_name:name,location:loc,owner_name:owner,phone,email,price_per_night:parseInt(price)||0,
-      property_type:type,description:desc,eco_friendly:eco,status:'pending',
-      property_photos:photoUrls,id_document_url:idUrl
-    });
-    if(error){
-      const msg=`Hi PahariPath! I want to list my property:%0A*${name}* at ${loc}%0AHost: ${owner}%0APhone: ${phone}%0AEmail: ${email}%0APrice: ₹${price}/night%0AType: ${type}%0AEco: ${eco?'Yes':'No'}%0A${desc}`;
-      window.open('https://wa.me/919317110366?text='+msg,'_blank');
-      toast('Could not save online. Redirecting to WhatsApp to complete your application.');
+    let res,data={};
+    try{
+      res=await fetch('/api/support',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        action:'partner-apply',propertyName:name,location:loc,ownerName:owner,phone,email,price:parseInt(price),
+        propertyType:type,description:desc,eco,photos:photoRefs,idDoc:idRef})});
+      data=await res.json().catch(()=>({}));
+    }catch(netErr){toast('No internet connection. Please try again.');restore();return;}
+    if(res.ok&&data.success){
+      document.getElementById('ppSteps').style.display='none';
+      [1,2,3].forEach(i=>document.getElementById('ppStep'+i).style.display='none');
+      document.getElementById('ppDone').style.display='block';
+      const box=document.querySelector('#partnerMo .mo-box');if(box)box.scrollTop=0;
       restore();return;
     }
-    document.getElementById('ppSteps').style.display='none';
-    [1,2,3].forEach(i=>document.getElementById('ppStep'+i).style.display='none');
-    document.getElementById('ppDone').style.display='block';
-    const box=document.querySelector('#partnerMo .mo-box');if(box)box.scrollTop=0;
-    _ppBusy=false;if(btn){btn.disabled=false;btn.textContent='Submit for verification';}if(back)back.disabled=false;
+    if(res.status>=400&&res.status<500){toast(data.error||'Please check your details and try again.');restore();return;}
+    // Server problem: let the owner finish over WhatsApp instead of losing the application.
+    const msg=`Hi PahariPath! I want to list my property:\n*${name}* at ${loc}\nHost: ${owner}\nPhone: ${phone}\nEmail: ${email}\nPrice: ₹${price}/night\nType: ${type}\nEco: ${eco?'Yes':'No'}\n${desc}`;
+    window.open('https://wa.me/919317110366?text='+encodeURIComponent(msg),'_blank');
+    toast('Could not save online. Redirecting to WhatsApp to complete your application.');
+    restore();
   }catch(e){
     toast('Something went wrong. Please try again.');restore();
   }
