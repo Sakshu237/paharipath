@@ -113,7 +113,8 @@ module.exports = async (req, res) => {
     // 4. Award.
     const result = await awardPointsForBooking(booking, headers, SUPABASE_URL);
     res.status(200).json(result);
-  } catch (err) {
-    res.status(500).json({ error: 'Server error: ' + err.message });
+  } catch (err) {  
+    console.error('award-points error:', err);
+    res.status(500).json({ error: 'Something went wrong — please try again.' });
   }
 };
