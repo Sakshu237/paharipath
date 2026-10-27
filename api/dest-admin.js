@@ -467,6 +467,13 @@ module.exports = async (req, res) => {
         ...a,
         photo_urls: (await Promise.all((Array.isArray(a.property_photos) ? a.property_photos : []).slice(0, 8).map(p => signStorageRef(p, svcHeaders)))).filter(Boolean),
         id_url: a.id_document_url ? await signStorageRef(a.id_document_url, svcHeaders) : null,
+        registration_url: a.registration_doc ? await signStorageRef(a.registration_doc, svcHeaders) : null,
+        payout: await fetch(`${SUPABASE_URL}/rest/v1/host_payout_details?application_id=eq.${a.id}&select=upi_id,account_number,ifsc,account_holder&limit=1`, { headers: svcHeaders })
+          .then(r => r.json()).then(rows => {
+            const p = Array.isArray(rows) && rows[0];
+            if (!p) return null;
+            return p.upi_id ? `UPI ${p.upi_id}` : p.account_number ? `Bank ••••${String(p.account_number).slice(-4)} · ${p.ifsc} · ${p.account_holder}` : null;
+          }).catch(() => null),
       })));
       res.status(200).json({ success: true, applications });
       return;
@@ -521,8 +528,12 @@ module.exports = async (req, res) => {
       const stayPayload = {
         name: app.property_name, loc: app.location, type: app.property_type || 'Homestay',
         eco: !!app.eco_friendly, pn: app.price_per_night || 0, price: '₹' + (app.price_per_night || 0).toLocaleString() + '/night',
-        rating: '4.5', emoji: '🏡', color: colors[appId % colors.length], contact: app.phone,
+        // No made-up rating: the site shows "New" until real guest reviews arrive.
+        rating: null, emoji: '🏡', color: colors[appId % colors.length], contact: app.phone,
         nights: 2, placeid: 0, status: 'active', host_email: app.email, verified: false, photos: livePhotos,
+        rooms: app.rooms || null, max_guests: app.max_guests || null, address: app.address || null, map_url: app.map_url || null,
+        checkin_time: app.checkin_time || null, checkout_time: app.checkout_time || null, house_rules: app.house_rules || null,
+        registration_no: app.registration_no || null, gstin: app.gstin || null,
       };
       const insStayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays`, {
         method: 'POST', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(stayPayload),
@@ -536,6 +547,12 @@ module.exports = async (req, res) => {
       }
       const newStayRows = await insStayRes.json();
       const newStay = Array.isArray(newStayRows) ? newStayRows[0] : newStayRows;
+      // Link the host's payout details to the new stay.
+      if (newStay && newStay.id) {
+        await fetch(`${SUPABASE_URL}/rest/v1/host_payout_details?application_id=eq.${appId}`, {
+          method: 'PATCH', headers: svcHeaders, body: JSON.stringify({ stay_id: newStay.id, host_email: app.email }),
+        }).catch(() => {});
+      }
 
       const credentialsHtml = loginExisted
         ? `<p>You already have a PahariPath account with this email, so sign in with your existing password at paharipath.in → Host Login. Your listing will appear in your host dashboard.</p>`
@@ -566,6 +583,45 @@ module.exports = async (req, res) => {
         ...(warning ? { warning } : {}),
         ...(!emailSent && !loginExisted ? { tempPassword } : {}),
       });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'payouts-list' — paid bookings whose host payout is due or done
+    // fields: status ('due' | 'paid', default 'due')
+    // ═══════════════════════════════════════════════
+    if (action === 'payouts-list') {
+      const st = req.body.status === 'paid' ? 'paid' : 'due';
+      const br = await fetch(`${SUPABASE_URL}/rest/v1/bookings?payout_status=eq.${st}&select=id,stay_id,stay_name,guest,dates,checkin_date,checkout_date,status,amount,base_amount,gst_amount,paid_amount,cancellation_fee_amount,payout_ref,paid_out_at&order=checkin_date.asc&limit=300`, { headers: svcHeaders });
+      const rows = br.ok ? await br.json() : [];
+      const stayIds = [...new Set(rows.map(r => r.stay_id).filter(Boolean))];
+      const pd = stayIds.length ? await fetch(`${SUPABASE_URL}/rest/v1/host_payout_details?stay_id=in.(${stayIds.join(',')})&select=stay_id,upi_id,account_holder,account_number,ifsc`, { headers: svcHeaders }).then(r => r.json()).catch(() => []) : [];
+      const byStay = {}; (Array.isArray(pd) ? pd : []).forEach(p => { byStay[p.stay_id] = p; });
+      const payouts = rows.map(b => ({
+        ...b,
+        // Host gets the stay price; for a cancelled booking, the cancellation fee the guest paid.
+        host_amount: b.status === 'cancelled' ? (parseInt(b.cancellation_fee_amount) || 0) : (parseInt(b.base_amount) || 0),
+        payout_to: byStay[b.stay_id] || null,
+      }));
+      res.status(200).json({ success: true, payouts });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'payout-mark' — admin records a host payout as sent
+    // fields: bookingId, payoutRef (UTR / UPI ref)
+    // ═══════════════════════════════════════════════
+    if (action === 'payout-mark') {
+      const id = String(req.body.bookingId || '');
+      const ref = String(req.body.payoutRef || '').trim().slice(0, 60);
+      if (!id || !ref) { res.status(400).json({ error: 'Booking and payment reference are required' }); return; }
+      const up = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(id)}&payout_status=eq.due`, {
+        method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' },
+        body: JSON.stringify({ payout_status: 'paid', payout_ref: ref, paid_out_at: new Date().toISOString() }),
+      });
+      const done = up.ok ? await up.json() : [];
+      if (!Array.isArray(done) || !done.length) { res.status(409).json({ error: 'Already marked paid, or not found' }); return; }
+      res.status(200).json({ success: true });
       return;
     }
 
