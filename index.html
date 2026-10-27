@@ -936,6 +936,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <a href="/blog" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Blog</a>
   <a href="/privacy-policy.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Privacy Policy</a>
   <a href="/terms-of-service.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Terms of Service</a>
+  <a href="/refund-policy.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Refund Policy</a>
   <a href="/faq.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">FAQ</a>
   <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
   <a href="#" onclick="openManageBooking()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Manage / Cancel Booking</a>
@@ -1524,7 +1525,21 @@ input[type=range]{flex:1;accent-color:var(--pine)}
         </select>
       </div>
       <div class="fg"><label>Price per night (₹) *</label><input class="fi" type="number" id="pPrice" placeholder="e.g. 2000" inputmode="numeric"/></div>
+      <div class="pp-row">
+        <div class="fg" style="flex:1"><label>Rooms *</label><input class="fi" type="number" id="pRooms" min="1" max="6" placeholder="1–6" inputmode="numeric"/></div>
+        <div class="fg" style="flex:1"><label>Max guests *</label><input class="fi" type="number" id="pMaxGuests" min="1" max="24" placeholder="e.g. 6" inputmode="numeric"/></div>
+      </div>
       <div class="fg"><label>Tell us about your property</label><textarea class="fi" id="pDesc" rows="3" placeholder="What makes your property special? Views, activities, food..."></textarea></div>
+      <div class="fg"><label>Full address *</label><textarea class="fi" id="pAddress" rows="2" placeholder="House / landmark, village, tehsil, district, PIN"></textarea></div>
+      <div class="fg"><label>Google Maps link</label><input class="fi" id="pMapUrl" placeholder="https://maps.app.goo.gl/…"/><div style="font-size:11px;color:var(--stone);margin-top:4px">In Google Maps, drop a pin on your property → Share → Copy link.</div></div>
+      <div class="pp-row">
+        <div class="fg" style="flex:1"><label>Check-in time</label><input class="fi" type="time" id="pCheckin" value="12:00"/></div>
+        <div class="fg" style="flex:1"><label>Check-out time</label><input class="fi" type="time" id="pCheckout" value="10:00"/></div>
+      </div>
+      <div class="fg"><label>House rules</label><textarea class="fi" id="pRules" rows="2" placeholder="e.g. No loud music after 10pm, no smoking indoors, pets on request"></textarea></div>
+      <div style="font-size:12px;font-weight:700;color:var(--pine);margin:6px 0 10px">Registration</div>
+      <div class="fg"><label>HP Tourism homestay registration no. *</label><input class="fi" id="pRegNo" placeholder="From homestay.hp.gov.in"/><div style="font-size:11px;color:var(--stone);margin-top:4px">Homestays in Himachal must be registered with the Tourism Department. You'll upload the certificate in the next step.</div></div>
+      <div class="fg"><label>GSTIN (if you have one)</label><input class="fi" id="pGstin" maxlength="15" placeholder="15-character GSTIN" style="text-transform:uppercase"/></div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
         <input type="checkbox" id="pEco" style="width:16px;height:16px"/>
         <label for="pEco" style="font-size:13px;color:var(--ink)">This is an eco-friendly property (solar, waste management, local food etc.)</label>
@@ -1548,6 +1563,20 @@ input[type=range]{flex:1;accent-color:var(--pine)}
         <label>ID / Ownership proof * (Aadhaar, property papers, etc.)</label>
         <input class="fi" type="file" id="pIdDoc" accept="image/*,.pdf"/>
         <div style="font-size:11px;color:var(--stone);margin-top:4px">Only used by the PahariPath team to verify you. It is not shown to guests.</div>
+      </div>
+      <div class="fg">
+        <label>Homestay registration certificate *</label>
+        <input class="fi" type="file" id="pRegDoc" accept="image/*,.pdf"/>
+        <div style="font-size:11px;color:var(--stone);margin-top:4px">Photo or PDF of your HP Tourism registration. Checked by our team, never shown to guests.</div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--pine);margin:6px 0 4px">How should we pay you? *</div>
+      <div style="font-size:11px;color:var(--stone);margin-bottom:10px">Guests who pay online are paid out to this account after their check-in. Kept private — only the PahariPath team can see it.</div>
+      <div class="fg"><label>UPI ID</label><input class="fi" id="pUpi" placeholder="e.g. yourname@okaxis"/></div>
+      <div style="font-size:11px;color:var(--stone);margin:-4px 0 10px;text-align:center">— or bank account —</div>
+      <div class="fg"><label>Account holder name</label><input class="fi" id="pAccHolder" placeholder="As per bank records"/></div>
+      <div class="pp-row">
+        <div class="fg" style="flex:3"><label>Account number</label><input class="fi" id="pAccNo" inputmode="numeric" maxlength="18" oninput="onlyNums(this)"/></div>
+        <div class="fg" style="flex:2"><label>IFSC</label><input class="fi" id="pIfsc" maxlength="11" style="text-transform:uppercase" placeholder="e.g. SBIN0001234"/></div>
       </div>
       <div class="pp-row">
         <button class="pp-btn pp-btn-ol" style="flex:1" onclick="ppGo(1)">← Back</button>
@@ -1611,7 +1640,8 @@ function ppClose(){
   if(document.getElementById('ppDone').style.display!=='none')ppReset();
 }
 function ppReset(){
-  ['pName','pLoc','pPrice','pDesc','pOwner','pPhone','pEmail'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['pName','pLoc','pPrice','pDesc','pOwner','pPhone','pEmail','pRooms','pMaxGuests','pAddress','pMapUrl','pRules','pRegNo','pGstin','pUpi','pAccHolder','pAccNo','pIfsc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['pIdDoc','pRegDoc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   const t=document.getElementById('pType');if(t)t.selectedIndex=0;
   ['pEco','pAgree'].forEach(id=>{const e=document.getElementById(id);if(e)e.checked=false;});
   const idf=document.getElementById('pIdDoc');if(idf)idf.value='';
@@ -1635,10 +1665,20 @@ function ppValidate(n){
     if(!(parseInt(document.getElementById('pPrice')?.value)>=100)){toast('Enter your price per night (minimum ₹100)');return false;}
     if(!/^[6-9]\d{9}$/.test(ppVal('pPhone'))){toast('Enter a valid 10-digit WhatsApp number');return false;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ppVal('pEmail'))){toast('Enter a valid email address');return false;}
+    const rooms=parseInt(ppVal('pRooms')),guests=parseInt(ppVal('pMaxGuests'));
+    if(!(rooms>=1&&rooms<=6)){toast('Enter the number of rooms (1 to 6 for a homestay)');return false;}
+    if(!(guests>=1&&guests<=24)){toast('Enter the maximum number of guests');return false;}
+    if(ppVal('pAddress').length<10){toast('Enter the full address of your property');return false;}
+    if(!ppVal('pRegNo')){toast('Enter your HP Tourism homestay registration number');return false;}
   }
   if(n===2){
     if(_ppPhotos.length<PP_MIN_PHOTOS){toast('Please add at least '+PP_MIN_PHOTOS+' photos of your property');return false;}
     if(!document.getElementById('pIdDoc')?.files?.[0]){toast('Please add an ID or ownership proof');return false;}
+    if(!document.getElementById('pRegDoc')?.files?.[0]){toast('Please add your homestay registration certificate');return false;}
+    const upi=ppVal('pUpi'),acc=ppVal('pAccNo'),ifsc=ppVal('pIfsc').toUpperCase(),holder=ppVal('pAccHolder');
+    if(!upi&&!acc){toast('Add a UPI ID or a bank account so we can pay you');return false;}
+    if(upi&&!/^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}$/.test(upi)){toast('Enter a valid UPI ID, e.g. name@okaxis');return false;}
+    if(acc&&!(/^\d{9,18}$/.test(acc)&&/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)&&holder)){toast('Check the account number, IFSC and account holder name');return false;}
   }
   return true;
 }
@@ -1667,8 +1707,12 @@ function ppRenderReview(){
     ['Property',ppVal('pName')],['Location',ppVal('pLoc')],['Type',document.getElementById('pType')?.value||''],
     ['Price','₹'+ppEsc(document.getElementById('pPrice')?.value||'')+' / night'],
     ['Eco-friendly',document.getElementById('pEco')?.checked?'Yes':'No'],
+    ['Rooms',ppVal('pRooms')],['Max guests',ppVal('pMaxGuests')],['Address',ppVal('pAddress')],
+    ['Check-in / out',(ppVal('pCheckin')||'—')+' / '+(ppVal('pCheckout')||'—')],
+    ['HP reg. no.',ppVal('pRegNo')],['GSTIN',ppVal('pGstin')||'—'],
     ['Host',ppVal('pOwner')],['WhatsApp',ppVal('pPhone')],['Email',ppVal('pEmail')],
-    ['ID proof',idf?idf.name:'—']
+    ['ID proof',idf?idf.name:'—'],['Registration',document.getElementById('pRegDoc')?.files?.[0]?.name||'—'],
+    ['Payout',ppVal('pUpi')?('UPI '+ppVal('pUpi')):(ppVal('pAccNo')?('Bank ••••'+ppVal('pAccNo').slice(-4)):'—')]
   ];
   document.getElementById('ppReview').innerHTML=rows.map(r=>`<div><b>${r[0]}</b> ${ppEsc(r[1])}</div>`).join('')+(ppVal('pDesc')?`<div style="margin-top:6px"><b>About</b> ${ppEsc(ppVal('pDesc'))}</div>`:'');
   document.getElementById('ppReviewPhotos').innerHTML=_ppPhotos.map((p,i)=>`<div class="pp-ph"><img src="${p.url}" alt="Photo ${i+1}"/></div>`).join('');
@@ -1728,12 +1772,21 @@ async function ppSubmit(){
     const idExt=(idFile.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg';
     const idRef=await ppUpload('host-verification',`id-${ppRand()}.${idExt}`,idFile);
     if(!idRef){toast('ID upload failed. Check your connection and try again.');restore();return;}
+    setBtn('Uploading registration certificate…');
+    const regFile=document.getElementById('pRegDoc').files[0];
+    const regExt=(regFile.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg';
+    const regRef=await ppUpload('host-verification',`reg-${ppRand()}.${regExt}`,regFile);
+    if(!regRef){toast('Certificate upload failed. Check your connection and try again.');restore();return;}
     setBtn('Submitting…');
     let res,data={};
     try{
       res=await fetch('/api/support',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
         action:'partner-apply',propertyName:name,location:loc,ownerName:owner,phone,email,price:parseInt(price),
-        propertyType:type,description:desc,eco,photos:photoRefs,idDoc:idRef})});
+        propertyType:type,description:desc,eco,photos:photoRefs,idDoc:idRef,
+        rooms:parseInt(ppVal('pRooms')),maxGuests:parseInt(ppVal('pMaxGuests')),address:ppVal('pAddress'),mapUrl:ppVal('pMapUrl'),
+        checkinTime:ppVal('pCheckin'),checkoutTime:ppVal('pCheckout'),houseRules:ppVal('pRules'),
+        registrationNo:ppVal('pRegNo'),registrationDoc:regRef,gstin:ppVal('pGstin').toUpperCase(),
+        upi:ppVal('pUpi'),accountHolder:ppVal('pAccHolder'),accountNumber:ppVal('pAccNo'),ifsc:ppVal('pIfsc').toUpperCase()})});
       data=await res.json().catch(()=>({}));
     }catch(netErr){toast('No internet connection. Please try again.');restore();return;}
     if(res.ok&&data.success){
