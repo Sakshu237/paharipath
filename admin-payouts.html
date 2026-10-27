@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Host Payouts — PahariPath Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--pine:#1a3d2b;--sage:#4a7c5f;--ink:#1c2420;--stone:#5a6a5d;--line:#dfe6e0;--cream:#faf9f6;--warn:#8a4526}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--cream);color:var(--ink)}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 16px 60px}
+  h1{color:var(--pine);font-size:24px;margin:0 0 4px}
+  .sub{color:var(--stone);font-size:14px;margin:0 0 20px}
+  .tabs{display:flex;gap:8px;margin-bottom:16px}
+  .tab{min-height:40px;padding:0 16px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font:600 14px inherit;cursor:pointer}
+  .tab.on{background:var(--pine);border-color:var(--pine);color:#fff}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+  .row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px}
+  .name{font-weight:700;font-size:16px}
+  .muted{color:var(--stone);font-size:13px}
+  .amt{font-size:22px;font-weight:700;color:var(--pine)}
+  .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .ready{background:#e3efe6;color:#1f4a32}.wait{background:#fbefe7;color:var(--warn)}
+  .to{background:#f6f1e7;border-radius:10px;padding:10px 12px;font-size:14px;margin:10px 0;word-break:break-all}
+  .mark{display:flex;gap:8px;flex-wrap:wrap}
+  input{min-height:42px;padding:0 12px;border:1.5px solid var(--line);border-radius:10px;font:15px inherit;flex:1;min-width:200px}
+  button.go{min-height:42px;padding:0 16px;border:none;border-radius:10px;background:var(--pine);color:#fff;font:700 14px inherit;cursor:pointer}
+  button.go:disabled{opacity:.5}
+  .total{background:var(--pine);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .err{background:#fde8e4;color:#7a2416;border-radius:10px;padding:12px;margin-bottom:12px}
+  .login{max-width:360px}
+  .login input{width:100%;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" style="color:var(--sage);font-size:13px;text-decoration:none">← Back to PahariPath</a>
+  <h1>Host payouts</h1>
+  <p class="sub">Guests who paid online: what each host is owed, where to send it, and a record of what you've paid. Pay hosts after the guest's check-in.</p>
+
+  <div id="loginBox" class="card login" hidden>
+    <div class="name" style="margin-bottom:10px">Admin login</div>
+    <input id="em" type="email" placeholder="Admin email" autocomplete="username">
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="go" onclick="login()">Log in</button>
+    <div id="loginErr" class="muted" style="margin-top:8px"></div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="tabs">
+      <button class="tab on" id="tDue" onclick="show('due')">To pay</button>
+      <button class="tab" id="tPaid" onclick="show('paid')">Paid</button>
+    </div>
+    <div id="out"></div>
+  </div>
+</div>
+<script>
+const sb = supabase.createClient('https://fcrkfemeirmfhhxhomgw.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const inr = n => '₹' + (Number(n) || 0).toLocaleString('en-IN');
+let tab = 'due';
+
+async function token() { const { data } = await sb.auth.getSession(); return data.session && data.session.access_token; }
+async function api(action, extra) {
+  const r = await fetch('/api/dest-admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, access_token: await token(), ...extra }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || 'Request failed');
+  return j;
+}
+async function login() {
+  const { error } = await sb.auth.signInWithPassword({ email: document.getElementById('em').value.trim(), password: document.getElementById('pw').value });
+  document.getElementById('loginErr').textContent = error ? error.message : '';
+  if (!error) start();
+}
+function show(t) { tab = t; document.getElementById('tDue').classList.toggle('on', t === 'due'); document.getElementById('tPaid').classList.toggle('on', t === 'paid'); load(); }
+
+async function load() {
+  const out = document.getElementById('out');
+  out.innerHTML = '<p class="muted">Loading…</p>';
+  try {
+    const { payouts } = await api('payouts-list', { status: tab });
+    const today = new Date(Date.now() + 330 * 60000).toISOString().slice(0, 10);
+    if (!payouts.length) { out.innerHTML = `<p class="muted">${tab === 'due' ? 'Nothing to pay right now.' : 'No payouts recorded yet.'}</p>`; return; }
+    const total = payouts.reduce((s, p) => s + p.host_amount, 0);
+    const ready = payouts.filter(p => p.checkin_date && p.checkin_date <= today).reduce((s, p) => s + p.host_amount, 0);
+    out.innerHTML = (tab === 'due' ? `<div class="total"><div><b>${inr(ready)}</b> ready to pay now</div><div>${inr(total)} owed in total · ${payouts.length} booking${payouts.length > 1 ? 's' : ''}</div></div>` : '') +
+      payouts.map(p => {
+        const isReady = p.checkin_date && p.checkin_date <= today;
+        const to = p.payout_to ? (p.payout_to.upi_id ? `UPI: <b>${esc(p.payout_to.upi_id)}</b>` : `Bank: <b>${esc(p.payout_to.account_holder)}</b> · A/c ${esc(p.payout_to.account_number)} · IFSC ${esc(p.payout_to.ifsc)}`) : '⚠️ No payout details on file — ask the host for UPI or bank details';
+        return `<div class="card">
+          <div class="row">
+            <div><div class="name">${esc(p.stay_name)}</div><div class="muted">${esc(p.guest)} · ${esc(p.dates)} · Ref ${esc(p.id)}${p.status === 'cancelled' ? ' · <b>cancelled</b> (cancellation fee)' : ''}</div></div>
+            <div style="text-align:right"><div class="amt">${inr(p.host_amount)}</div><div class="muted">guest paid ${inr(p.paid_amount)}${p.gst_amount ? ' · GST ' + inr(p.gst_amount) : ''}</div></div>
+          </div>
+          ${tab === 'due' ? `<div style="margin-top:8px"><span class="pill ${isReady ? 'ready' : 'wait'}">${isReady ? 'Guest has checked in — ready to pay' : 'Wait — check-in on ' + esc(p.checkin_date)}</span></div>
+          <div class="to">${to}</div>
+          <div class="mark"><input id="ref-${esc(p.id)}" placeholder="UTR / UPI reference after you pay"><button class="go" onclick="mark('${esc(p.id)}', this)">Mark as paid</button></div>`
+          : `<div class="to">Paid ${esc((p.paid_out_at || '').slice(0, 10))} · reference <b>${esc(p.payout_ref)}</b></div>`}
+        </div>`;
+      }).join('');
+  } catch (e) {
+    out.innerHTML = `<div class="err">${esc(e.message)}</div>`;
+  }
+}
+async function mark(id, btn) {
+  const ref = document.getElementById('ref-' + id).value.trim();
+  if (!ref) { alert('Enter the UTR / UPI reference of the payment first.'); return; }
+  btn.disabled = true;
+  try { await api('payout-mark', { bookingId: id, payoutRef: ref }); load(); }
+  catch (e) { alert(e.message); btn.disabled = false; }
+}
+async function start() {
+  const t = await token();
+  document.getElementById('loginBox').hidden = !!t;
+  document.getElementById('app').hidden = !t;
+  if (t) load();
+}
+start();
+</script>
+</body>
+</html>
