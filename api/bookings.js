@@ -17,9 +17,12 @@
 //   action: 'lookup'         — guest looks up their booking by ref+phone
 //   action: 'my-bookings'    — traveller dashboard fetches all their bookings
 //   action: 'submit-review'  — guest reviews a stay after checkout
+//   action: 'config'         — public payment settings (online or pay-at-stay, GST rate)
+//   action: 'verify-payment' — confirms a booking after Razorpay checkout (signature checked)
 
 const { tsKey, calcPoints, reverseRef } = require('./_lib/points');
-const { sendEmail } = require('./_lib/email');
+const { cfg, publicCfg, razorpay, verifyCheckoutSignature, confirmPaidBooking, rupees } = require('./_lib/payments');
+const notify = require('./_lib/notify');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
@@ -38,31 +41,7 @@ async function verifyHostEmail(access_token) {
   return user.email || null;
 }
 
-// Sends a booking confirmation email via your existing Zoho Mail
-// (hello@paharipath.in). Never throws — a failed email should never
-// fail a booking, so callers just fire-and-forget this.
-async function sendConfirmationEmail(booking) {
-  if (!booking.guest_email) return;
-  await sendEmail({
-    to: booking.guest_email,
-    subject: `Booking Confirmed — ${String(booking.stay_name).slice(0, 80)} (Ref: ${booking.id})`,
-    html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1a1a">
-        <h2 style="color:#2d5a3d">Your stay is confirmed 🏔️</h2>
-        <p>Hi ${esc(booking.guest || 'traveller')}, here's your booking summary:</p>
-        <table style="width:100%;border-collapse:collapse;margin:16px 0">
-          <tr><td style="padding:6px 0;color:#666">Stay</td><td style="padding:6px 0;font-weight:600">${esc(booking.stay_name)}</td></tr>
-          <tr><td style="padding:6px 0;color:#666">Dates</td><td style="padding:6px 0;font-weight:600">${esc(booking.dates || '—')}</td></tr>
-          <tr><td style="padding:6px 0;color:#666">Nights</td><td style="padding:6px 0;font-weight:600">${esc(booking.nights || '—')}</td></tr>
-          <tr><td style="padding:6px 0;color:#666">Guests</td><td style="padding:6px 0;font-weight:600">${esc(booking.guests || 1)}</td></tr>
-          <tr><td style="padding:6px 0;color:#666">Amount</td><td style="padding:6px 0;font-weight:600">${esc(booking.amount || '—')}</td></tr>
-          <tr><td style="padding:6px 0;color:#666">Reference</td><td style="padding:6px 0;font-weight:600">${esc(booking.id)}</td></tr>
-        </table>
-        <p style="font-size:13px;color:#666">Need to manage or cancel this booking? Visit paharipath.in and use "Manage / Cancel Booking" in the footer with this reference and your phone number.</p>
-        <p style="font-size:13px;color:#666">Questions? Just reply to this email or reach us at hello@paharipath.in</p>
-      </div>`,
-  });
-}
+// Booking emails (guest, host, admin) now live in _lib/notify.js.
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -106,21 +85,26 @@ async function buildBookingRow(input, headers) {
 
   const stayId = parseInt(input.stay_id);
   if (!stayId) return { error: 'Missing stay', status: 400 };
-  const stayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=id,name,pn,type,status`, { headers });
+  const stayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=id,name,pn,type,status,max_guests`, { headers });
   const [stay] = stayRes.ok ? await stayRes.json() : [];
   if (!stay) return { error: 'This stay could not be found', status: 404 };
   if (stay.status && stay.status !== 'active') return { error: 'This stay is not taking bookings right now', status: 409 };
   const pn = parseInt(stay.pn) || 0;
   if (pn <= 0) return { error: 'This stay has no price set yet — please message us on WhatsApp to book', status: 409 };
 
-  // Same formula as recalcBooking() in app.js: stay + 5% + optional eco offset.
+  // Same formula as recalcBooking() in app.js: stay + GST (only when paying
+  // online and GST_RATE is set — see _lib/payments.js) + optional eco offset.
+  const c = cfg();
   const eco = input.eco === true;
   const eco_amount = eco ? Math.min(Math.max(parseInt(input.eco_amount) || 0, 0), 5000) : 0;
   const eco_trees = eco ? Math.min(Math.max(parseInt(input.eco_trees) || 0, 0), 100) : 0;
   const base = pn * nights;
-  const total = base + Math.round(0.05 * base) + eco_amount;
+  const gst = c.payOnline ? Math.round(c.gstRate * base) : 0;
+  const total = base + gst + eco_amount;
 
   const guests = Math.min(Math.max(parseInt(input.guests) || 1, 1), 20);
+  const maxGuests = parseInt(stay.max_guests) || 0;
+  if (maxGuests && guests > maxGuests) return { error: `This stay takes up to ${maxGuests} guest${maxGuests > 1 ? 's' : ''}`, status: 400 };
   const pledges_accepted = Math.min(Math.max(parseInt(input.pledges_accepted) || 0, 0), 4);
   const offbeat = (stay.type || '').toLowerCase().includes('village') || pn < 1500;
   const fmt = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -131,6 +115,7 @@ async function buildBookingRow(input, headers) {
   const now = new Date().toISOString();
 
   return {
+    total,
     row: {
       id, guest, guest_phone, guest_email,
       guest_photo_url: typeof input.guest_photo_url === 'string' && input.guest_photo_url.startsWith(SUPABASE_URL + '/storage/') ? input.guest_photo_url.slice(0, 500) : null,
@@ -138,11 +123,14 @@ async function buildBookingRow(input, headers) {
       dates: fmt(checkin_date) + ' – ' + fmt(checkout_date),
       checkin_date, checkout_date, nights, guests,
       amount: '₹' + total.toLocaleString('en-IN'),
+      base_amount: base, gst_amount: gst,
       eco, eco_amount, eco_trees, offbeat, pledges_accepted,
       privacy_consent: true, privacy_consent_at: now, terms_consent: true, terms_consent_at: now,
       // Forced server-side. payment_id is NOT accepted from the browser —
-      // it must come from a verified Razorpay signature once payments go live.
-      status: 'confirmed', points_awarded: false, payment_id: null,
+      // it is set only after a verified Razorpay payment (verify-payment / webhook).
+      status: c.payOnline ? 'pending_payment' : 'confirmed',
+      payment_status: c.payOnline ? 'pending' : 'pay_at_stay',
+      points_awarded: false, payment_id: null,
     },
   };
 }
@@ -191,6 +179,10 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
+  if ((req.body || {}).action === 'config') {
+    res.status(200).json(publicCfg());
+    return;
+  }
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) {
@@ -236,6 +228,13 @@ module.exports = async (req, res) => {
       const built = await buildBookingRow(input, headers);
       if (built.error) { res.status(built.status).json({ error: built.error }); return; }
       Object.assign(booking, built.row);
+      const pay = cfg();
+
+      // A guest who abandoned an earlier checkout for this stay releases that hold.
+      await fetch(`${SUPABASE_URL}/rest/v1/bookings?guest_phone=eq.${booking.guest_phone}&stay_id=eq.${booking.stay_id}&status=eq.pending_payment`, {
+        method: 'PATCH', headers, body: JSON.stringify({ status: 'expired' }),
+      });
+      const holdSince = new Date(Date.now() - pay.holdMinutes * 60 * 1000).toISOString();
 
       // Server-side date-conflict check. The client already blocks obviously
       // conflicting dates before showing the pay button, but that check runs
@@ -247,7 +246,7 @@ module.exports = async (req, res) => {
       {
         const [conflictRes, blockedRes] = await Promise.all([
           fetch(
-            `${SUPABASE_URL}/rest/v1/bookings?stay_id=eq.${encodeURIComponent(booking.stay_id)}&status=eq.confirmed&checkin_date=lt.${encodeURIComponent(booking.checkout_date)}&checkout_date=gt.${encodeURIComponent(booking.checkin_date)}&select=id`,
+            `${SUPABASE_URL}/rest/v1/bookings?stay_id=eq.${encodeURIComponent(booking.stay_id)}&or=(status.eq.confirmed,and(status.eq.pending_payment,created_at.gt.${encodeURIComponent(holdSince)}))&checkin_date=lt.${encodeURIComponent(booking.checkout_date)}&checkout_date=gt.${encodeURIComponent(booking.checkin_date)}&select=id`,
             { headers }
           ),
           fetch(
@@ -284,7 +283,30 @@ module.exports = async (req, res) => {
         body: JSON.stringify({ user_key: tsKey(booking.guest_phone), guest_name: booking.guest, phone_hint: booking.guest_phone }),
       });
 
-      sendConfirmationEmail(booking); // fire-and-forget, never blocks the response
+      // Online payment: open a Razorpay order for the server-computed amount.
+      // The booking stays "pending_payment" (dates held) until the payment is verified.
+      if (pay.payOnline) {
+        try {
+          const order = await razorpay('/orders', 'POST', {
+            amount: built.total * 100, currency: 'INR', receipt: booking.id,
+            notes: { booking_ref: booking.id, stay: String(booking.stay_name).slice(0, 60) },
+          });
+          await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(booking.id)}`, {
+            method: 'PATCH', headers, body: JSON.stringify({ razorpay_order_id: order.id }),
+          });
+          res.status(200).json({
+            success: true, ref: booking.id, amount: booking.amount, paymentStatus: 'pending',
+            payment: { orderId: order.id, keyId: pay.keyId, amount: order.amount, currency: 'INR', holdMinutes: pay.holdMinutes },
+          });
+        } catch (e) {
+          console.error('Razorpay order failed', e.message);
+          await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(booking.id)}`, { method: 'PATCH', headers, body: JSON.stringify({ status: 'expired' }) });
+          res.status(502).json({ error: 'Payment could not be started. Please try again in a minute, or message us on WhatsApp.' });
+        }
+        return;
+      }
+
+      await notify.bookingConfirmed(booking, headers, SUPABASE_URL);
 
       const waText = encodeURIComponent(
         `✅ Booking Confirmed — PahariPath\n\n` +
@@ -297,7 +319,30 @@ module.exports = async (req, res) => {
       );
       const whatsappUrl = `https://wa.me/91${booking.guest_phone}?text=${waText}`;
 
-      res.status(200).json({ success: true, ref: booking.id, whatsappUrl });
+      res.status(200).json({ success: true, ref: booking.id, amount: booking.amount, paymentStatus: booking.payment_status, whatsappUrl });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // action: 'verify-payment' — after Razorpay checkout succeeds in the
+    // browser. Confirms the booking only if Razorpay's signature checks out.
+    // fields: bookingRef, razorpay_order_id, razorpay_payment_id, razorpay_signature
+    // ═══════════════════════════════════════════════════════
+    if (action === 'verify-payment') {
+      const { bookingRef, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      if (!bookingRef || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) { res.status(400).json({ error: 'Missing payment details' }); return; }
+      const br = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&select=*`, { headers });
+      const [booking] = br.ok ? await br.json() : [];
+      if (!booking || booking.razorpay_order_id !== razorpay_order_id) { res.status(400).json({ error: 'Payment does not match this booking' }); return; }
+      if (!verifyCheckoutSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature)) { res.status(400).json({ error: 'Payment could not be verified. If money was taken, it will be refunded automatically — or contact us.' }); return; }
+      if (booking.payment_status === 'paid') { res.status(200).json({ success: true, ref: booking.id, amount: booking.amount, paymentStatus: 'paid', already: true }); return; }
+      // Amount actually paid, straight from Razorpay (never from the browser).
+      let paidPaise = 0;
+      try { paidPaise = (await razorpay(`/payments/${razorpay_payment_id}`, 'GET')).amount || 0; } catch (e) { paidPaise = rupees(booking.amount) * 100; }
+      const done = await confirmPaidBooking(booking, razorpay_payment_id, paidPaise, headers, SUPABASE_URL);
+      if (done && done.clash) { res.status(409).json({ error: 'Sorry — these dates were booked by someone else while you were paying. Your payment is being refunded in full.' }); return; }
+      if (done) await notify.bookingConfirmed(done, headers, SUPABASE_URL);
+      res.status(200).json({ success: true, ref: booking.id, amount: booking.amount, paymentStatus: 'paid' });
       return;
     }
 
@@ -319,9 +364,20 @@ module.exports = async (req, res) => {
       if (booking.status === 'completed') { res.status(400).json({ error: 'This stay has already been completed and cannot be cancelled' }); return; }
 
       const { feePercent } = calcCancellationFee(booking.checkin_date);
-      const amountNum = parseInt((booking.amount || '0').replace(/[^0-9]/g, '')) || 0;
-      const feeAmount = Math.round(amountNum * feePercent / 100);
-      const refundAmount = amountNum - feeAmount;
+      // Only money actually paid online can be refunded; pay-at-stay bookings owe nothing.
+      const paid = booking.payment_status === 'paid';
+      const amountNum = paid ? (parseInt(booking.paid_amount) || rupees(booking.amount)) : 0;
+      // Carbon offset contributions are non-refundable (Terms 5.3); the fee schedule applies to the rest.
+      const refundable = Math.max(amountNum - (parseInt(booking.eco_amount) || 0), 0);
+      const feeAmount = Math.round(refundable * feePercent / 100);
+      const refundAmount = refundable - feeAmount;
+      let refundId = null, refundStatus = null;
+      if (paid && refundAmount > 0 && booking.payment_id) {
+        try {
+          const rf = await razorpay(`/payments/${booking.payment_id}/refund`, 'POST', { amount: refundAmount * 100, notes: { booking_ref: booking.id, reason: 'guest cancellation' } });
+          refundId = rf.id; refundStatus = 'initiated';
+        } catch (e) { console.error('refund failed', e.message); refundStatus = 'failed'; }
+      }
 
                // Phase 1: take back every ledger award tied to this booking.
          // Bookings awarded before the ledger existed fall back to the old manual reversal below.
@@ -361,10 +417,12 @@ module.exports = async (req, res) => {
           status: 'cancelled', cancelled_at: new Date().toISOString(),
           points_reversed: pointsReversed > 0, points_awarded: false,
           cancellation_fee_percent: feePercent, refund_amount: refundAmount, cancellation_fee_amount: feeAmount,
+          ...(paid ? { refund_id: refundId, refund_status: refundStatus, payout_status: feeAmount > 0 ? 'due' : 'none' } : {}),
         }),
       });
+      await notify.bookingCancelled(booking, paid ? refundAmount : null, headers, SUPABASE_URL);
 
-      res.status(200).json({ success: true, pointsReversed, feePercent, refundAmount, feeAmount, amountNum });
+      res.status(200).json({ success: true, pointsReversed, feePercent, refundAmount, feeAmount, amountNum, paymentStatus: booking.payment_status || 'pay_at_stay', refundStatus });
       return;
     }
 
@@ -378,7 +436,7 @@ module.exports = async (req, res) => {
       if (!bookingRef || !phone) { res.status(400).json({ error: 'Missing bookingRef or phone' }); return; }
 
       const bookingRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&select=id,stay_name,dates,checkin_date,checkout_date,amount,status,nights,guests`,
+        `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&select=id,stay_name,dates,checkin_date,checkout_date,amount,status,nights,guests,payment_status`,
         { headers }
       );
       const bookings = await bookingRes.json();
@@ -404,8 +462,14 @@ module.exports = async (req, res) => {
       if (await ipThrottled(req, 'bk-my-bookings', 10, headers)) { res.status(429).json({ error: 'Too many attempts — please wait a few minutes and try again.' }); return; }
       const { phone } = req.body;
       if (!phone || !/^[6-9]\d{9}$/.test(phone)) { res.status(400).json({ error: 'Invalid phone number' }); return; }
+      // Privacy: a phone number alone is not enough to see someone's trips.
+      // The browser must also hold one booking reference of that phone
+      // (saved after booking or after a "Manage / Cancel Booking" lookup).
+      const proofRef = String(req.body.proofRef || '');
+      const proof = proofRef ? await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(proofRef)}&guest_phone=eq.${phone}&select=id`, { headers }).then(r => r.json()).catch(() => []) : [];
+      if (!Array.isArray(proof) || !proof.length) { res.status(200).json({ bookings: [], needsRef: true }); return; }
       const bookingsRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/bookings?guest_phone=eq.${encodeURIComponent(phone)}&select=id,stay_id,stay_name,dates,checkin_date,checkout_date,amount,status,nights,guests,eco,guest_photo_url&order=created_at.desc`,
+        `${SUPABASE_URL}/rest/v1/bookings?guest_phone=eq.${encodeURIComponent(phone)}&select=id,stay_id,stay_name,dates,checkin_date,checkout_date,amount,status,nights,guests,eco,guest_photo_url,payment_status&status=neq.expired&order=created_at.desc`,
         { headers }
       );
       const bookings = await bookingsRes.json();
