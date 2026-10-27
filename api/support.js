@@ -146,17 +146,44 @@ module.exports = async (req, res) => {
       const price = parseInt(b.price);
       const propertyType = PROPERTY_TYPES.includes(b.propertyType) ? b.propertyType : 'Homestay';
       const eco = b.eco === true;
+      // Listing details guests need, and the HP Home Stay registration (mandatory under the HP Home Stay Rules 2025).
+      const rooms = parseInt(b.rooms);
+      const maxGuests = parseInt(b.maxGuests);
+      const address = clip(b.address, 300);
+      const mapUrl = clip(b.mapUrl, 300);
+      const checkinTime = clip(b.checkinTime, 20);
+      const checkoutTime = clip(b.checkoutTime, 20);
+      const houseRules = clip(b.houseRules, 1000) || '';
+      const registrationNo = clip(b.registrationNo, 60);
+      const gstin = (clip(b.gstin, 15) || '').toUpperCase();
+      // Payout details — stored in a server-only table, never shown on the site.
+      const upi = (clip(b.upi, 60) || '').toLowerCase();
+      const accHolder = clip(b.accountHolder, 100);
+      const accNo = (clip(b.accountNumber, 20) || '').replace(/\s/g, '');
+      const ifsc = (clip(b.ifsc, 11) || '').toUpperCase();
 
       if (!propertyName || !location || !ownerName || !phone || !email) { res.status(400).json({ error: 'Please fill all required fields' }); return; }
       if (!/^[6-9]\d{9}$/.test(phone)) { res.status(400).json({ error: 'Enter a valid 10-digit WhatsApp number' }); return; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { res.status(400).json({ error: 'Enter a valid email address' }); return; }
       if (!(price >= 100 && price <= 100000)) { res.status(400).json({ error: 'Enter a valid price per night (₹100 to ₹1,00,000)' }); return; }
+      if (!(rooms >= 1 && rooms <= 6)) { res.status(400).json({ error: 'Enter the number of rooms (1 to 6 for a homestay)' }); return; }
+      if (!(maxGuests >= 1 && maxGuests <= 24)) { res.status(400).json({ error: 'Enter the maximum number of guests (1 to 24)' }); return; }
+      if (!address || address.length < 10) { res.status(400).json({ error: 'Enter the full address of the property' }); return; }
+      if (mapUrl && !/^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|www\.google\.[a-z.]+\/maps|maps\.google\.[a-z.]+)\//i.test(mapUrl)) { res.status(400).json({ error: 'Map link must be a Google Maps link' }); return; }
+      if (!registrationNo) { res.status(400).json({ error: 'Enter your HP Tourism homestay registration number' }); return; }
+      if (gstin && !/^[0-9]{2}[A-Z0-9]{13}$/.test(gstin)) { res.status(400).json({ error: 'GSTIN should be 15 characters' }); return; }
+      const hasBank = accNo || ifsc || accHolder;
+      if (!upi && !hasBank) { res.status(400).json({ error: 'Add a UPI ID or bank account so we can pay you' }); return; }
+      if (upi && !/^[a-z0-9._-]{2,}@[a-z]{2,}$/.test(upi)) { res.status(400).json({ error: 'Enter a valid UPI ID, e.g. name@okaxis' }); return; }
+      if (hasBank && !(/^\d{9,18}$/.test(accNo) && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc) && accHolder)) { res.status(400).json({ error: 'Check the bank account number, IFSC code and account holder name' }); return; }
 
       const photoRefs = (Array.isArray(b.photos) ? b.photos : []).slice(0, 5)
         .map(p => parseStorageRef(p, ['stay-photos', 'host-verification'])).filter(Boolean);
       if (photoRefs.length < 2) { res.status(400).json({ error: 'Please add at least 2 photos of your property' }); return; }
       const idRef = parseStorageRef(b.idDoc, ['host-verification']);
       if (!idRef) { res.status(400).json({ error: 'Please add an ID or ownership proof' }); return; }
+      const regRef = parseStorageRef(b.registrationDoc, ['host-verification']);
+      if (!regRef) { res.status(400).json({ error: 'Please add your homestay registration certificate' }); return; }
 
       const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
       const ipKey = `partner-ip:${ip}`;
@@ -180,11 +207,22 @@ module.exports = async (req, res) => {
         price_per_night: price, property_type: propertyType, description, eco_friendly: eco, status: 'pending',
         property_photos: photoRefs.map(r => `${SUPABASE_URL}/storage/v1/object/public/${r.bucket}/${r.path}`),
         id_document_url: `${idRef.bucket}/${idRef.path}`,
+        rooms, max_guests: maxGuests, address, map_url: mapUrl || null, checkin_time: checkinTime || null, checkout_time: checkoutTime || null,
+        house_rules: houseRules, registration_no: registrationNo, registration_doc: `${regRef.bucket}/${regRef.path}`, gstin: gstin || null,
       };
       const insRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications`, {
-        method: 'POST', headers: { ...svcHeaders, Prefer: 'return=minimal' }, body: JSON.stringify(row),
+        method: 'POST', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(row),
       });
-      if (!insRes.ok) { res.status(500).json({ error: 'Could not save your application right now. Please try again.' }); return; }
+      if (!insRes.ok) { console.error('partner app insert failed', await insRes.text()); res.status(500).json({ error: 'Could not save your application right now. Please try again.' }); return; }
+      const [savedApp] = await insRes.json().catch(() => [null]);
+      // Payout details in their own server-only table (no browser access at all).
+      if (savedApp && savedApp.id) {
+        const pr = await fetch(`${SUPABASE_URL}/rest/v1/host_payout_details`, {
+          method: 'POST', headers: { ...svcHeaders, Prefer: 'return=minimal' },
+          body: JSON.stringify({ application_id: savedApp.id, host_email: email, upi_id: upi || null, account_holder: accHolder || null, account_number: accNo || null, ifsc: ifsc || null }),
+        });
+        if (!pr.ok) console.error('payout details insert failed', await pr.text());
+      }
 
       // Best-effort emails — sendEmail never throws, and a failed email must not fail the application.
       if (adminEmail) {
@@ -193,7 +231,7 @@ module.exports = async (req, res) => {
           subject: `New host application: ${propertyName}`,
           html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px">
             <h3 style="color:#2d5a3d">New host application</h3>
-            <p><b>${esc(propertyName)}</b> — ${esc(location)}<br/>${esc(propertyType)} · ₹${price}/night<br/>
+            <p><b>${esc(propertyName)}</b> — ${esc(location)}<br/>${esc(propertyType)} · ₹${price}/night · ${rooms} rooms · up to ${maxGuests} guests<br/>HP registration: ${esc(registrationNo)}<br/>
             ${esc(ownerName)} · ${esc(phone)} · ${esc(email)}</p>
             <p>Review it in the admin panel → Host Applications, then approve or reject.</p></div>`,
         });
