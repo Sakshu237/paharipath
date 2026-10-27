@@ -18,7 +18,7 @@
 //   action: 'my-bookings'    — traveller dashboard fetches all their bookings
 //   action: 'submit-review'  — guest reviews a stay after checkout
 
-const { tsKey, calcPoints } = require('./_lib/points');
+const { tsKey, calcPoints, reverseRef } = require('./_lib/points');
 const { sendEmail } = require('./_lib/email');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
