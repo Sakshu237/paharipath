@@ -90,6 +90,7 @@ module.exports = async (req, res) => {
     { loc: 'https://paharipath.in/blog', priority: '0.7', freq: 'weekly', lastmod: mostRecentActivity },
     { loc: 'https://paharipath.in/privacy-policy.html', priority: '0.3', freq: 'yearly', lastmod: LEGAL_LAST_REVISED },
     { loc: 'https://paharipath.in/terms-of-service.html', priority: '0.3', freq: 'yearly', lastmod: LEGAL_LAST_REVISED },
+    { loc: 'https://paharipath.in/refund-policy.html', priority: '0.3', freq: 'yearly', lastmod: LEGAL_LAST_REVISED },
     ...places.map(p => ({
       loc: `https://paharipath.in/destination/${p.slug}`,
       priority: '0.8',
