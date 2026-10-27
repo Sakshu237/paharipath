@@ -33,9 +33,13 @@ function calcPoints(booking) {
 // this is the gate that stops "book then cancel" from ever earning
 // points, since nothing is credited until the stay has begun.
 function checkinHasPassed(booking) {
-  if (!booking.checkin_date) return true; // no date on record — don't block, fail open
-  const today = new Date().toISOString().slice(0, 10);
-  return booking.checkin_date <= today;
+  // Fail CLOSED: a booking with no check-in date never earns points.
+  // (Previously this returned true, so a booking sent without dates
+  // could collect points instantly via /api/award-points.)
+  if (!booking.checkin_date) return false;
+  // Compare in India time — Vercel runs in UTC, 5h30m behind IST.
+  const todayIST = new Date(Date.now() + 330 * 60 * 1000).toISOString().slice(0, 10);
+  return booking.checkin_date <= todayIST;
 }
 
 // Awards points for a single booking: loads/creates the traveller_scores
@@ -43,6 +47,22 @@ function checkinHasPassed(booking) {
 // upserts, then marks the booking as awarded + completed.
 // `headers` must already carry the Supabase service-role auth.
 async function awardPointsForBooking(booking, headers, SUPABASE_URL) {
+  // Atomically claim this booking first: only the request that flips
+  // points_awarded false→true goes on to credit points. Stops a double
+  // award when the daily cron and /api/award-points run at the same time.
+  const claimRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(booking.id)}&points_awarded=not.is.true`,
+    {
+      method: 'PATCH',
+      headers: { ...headers, Prefer: 'return=representation' },
+      body: JSON.stringify({ points_awarded: true }),
+    }
+  );
+  const claimed = claimRes.ok ? await claimRes.json() : [];
+  if (!Array.isArray(claimed) || !claimed.length) {
+    return { points: null, awarded: 0, reasons: ['Points already awarded for this booking'] };
+  }
+
   const { pts, reasons, nights, pledgeCount } = calcPoints(booking);
   const phone = booking.guest_phone;
   const key = tsKey(phone);
@@ -82,6 +102,10 @@ async function awardPointsForBooking(booking, headers, SUPABASE_URL) {
   );
   if (!upsertRes.ok) {
     const errText = await upsertRes.text();
+    // Release the claim so the next cron run can retry this booking.
+    await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(booking.id)}`, {
+      method: 'PATCH', headers, body: JSON.stringify({ points_awarded: false }),
+    });
     throw new Error('Failed to save points: ' + errText);
   }
 
