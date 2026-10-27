@@ -18,7 +18,9 @@ const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 
 module.exports = async (req, res) => {
   const cronSecret = process.env.CRON_SECRET;
- if (cronSecret && req.headers.authorization !== `Bearer ${cronSecret}`) {
+  // Fail CLOSED: if CRON_SECRET is missing from Vercel env vars, refuse
+  // to run instead of letting anyone trigger it.
+  if (!cronSecret || req.headers.authorization !== `Bearer ${cronSecret}`) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
@@ -36,7 +38,8 @@ module.exports = async (req, res) => {
   };
 
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    // India date — Vercel runs in UTC.
+    const today = new Date(Date.now() + 330 * 60 * 1000).toISOString().slice(0, 10);
 
     // All confirmed, not-yet-awarded bookings whose check-in date has
     // arrived (lte today). Cancelled bookings are excluded by the
@@ -66,6 +69,7 @@ module.exports = async (req, res) => {
 
     res.status(200).json({ processed: results.length, results });
   } catch (err) {
-    res.status(500).json({ error: 'Server error: ' + err.message });
+    console.error('complete-stays error:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
