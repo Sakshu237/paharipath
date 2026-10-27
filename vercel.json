@@ -1,12 +1,53 @@
 {
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/destination/:slug", "destination": "/api/destination/:slug" },
-    { "source": "/blog", "destination": "/api/blog-index" },
-    { "source": "/blog/:slug", "destination": "/api/blog/:slug" },
-    { "source": "/host-login", "destination": "/index.html" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/destination/:slug",
+      "destination": "/api/destination/:slug"
+    },
+    {
+      "source": "/blog",
+      "destination": "/api/blog-index"
+    },
+    {
+      "source": "/blog/:slug",
+      "destination": "/api/blog/:slug"
+    },
+    {
+      "source": "/host-login",
+      "destination": "/index.html"
+    }
   ],
   "crons": [
-   { "path": "/api/complete-stays", "schedule": "0 3 * * *" }
+    {
+      "path": "/api/complete-stays",
+      "schedule": "0 3 * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        }
+      ]
+    }
   ]
 }
