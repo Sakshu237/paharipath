@@ -323,9 +323,12 @@ module.exports = async (req, res) => {
       const feeAmount = Math.round(amountNum * feePercent / 100);
       const refundAmount = amountNum - feeAmount;
 
-      let pointsReversed = 0;
-      if (booking.points_awarded) {
-        const { pts, nights, pledgeCount } = calcPoints(booking);
+               // Phase 1: take back every ledger award tied to this booking.
+         // Bookings awarded before the ledger existed fall back to the old manual reversal below.
+         let pointsReversed = 0;
+         try { pointsReversed = Number(await reverseRef(bookingRef, 'Booking cancelled', headers, SUPABASE_URL)) || 0; }
+         catch (e) { console.error('ledger reversal failed', e.message); }
+         if (!pointsReversed && booking.points_awarded) {        const { pts, nights, pledgeCount } = calcPoints(booking);
         const key = tsKey(phone);
         const scoreRes = await fetch(`${SUPABASE_URL}/rest/v1/traveller_scores?user_key=eq.${key}&select=*`, { headers });
         const scoreRows = await scoreRes.json();
