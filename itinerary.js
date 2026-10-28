@@ -116,11 +116,19 @@
     return out;
   }
 
+  // Highlights for a day trip: skip travel/arrival lines, which the trip already covers
+  const TRAVEL_LINE = /^(arrive|arriving|drive|travel|reach|settle|check[ -]?in|begin|start the|head (back|home|down)|return|continue to|walk or drive (up )?to)\b/i;
+  function tripHighlights(q) {
+    const all = placeHighlights(q);
+    const good = all.filter(x => !TRAVEL_LINE.test(x));
+    return good.length >= 2 ? good : [...good, ...all.filter(x => !good.includes(x))];
+  }
+
   function placeHighlights(q) {
     const w = window._itnCache && window._itnCache[q.id];
     const first = w && (middleDaysOf(w)[0] || w[0]);
     if (first && first.items && first.items.length) return first.items.map(clean);
-    const fam = String(q.famousFor || '').split(',').map(s => s.trim()).filter(Boolean);
+    const fam = String(q.famousFor || '').split(',').map(s => s.trim()).filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1));
     return [fam[0] ? `${fam[0]} — the main reason to go` : `Explore ${q.name}`, ...(fam[1] ? [fam[1]] : []), `Walk around ${q.name}`, 'Lunch at a local dhaba'];
   }
 
@@ -148,7 +156,7 @@
       title: `Day trip: ${n.p.name}`,
       items: [
         n.hike ? `Drive to the trailhead for ${n.p.name} (about ${fmtMins(n.mins)}), then hike in` : `Drive to ${n.p.name} — about ${fmtMins(n.mins)}`,
-        ...placeHighlights(n.p).slice(0, 2),
+        ...tripHighlights(n.p).slice(0, 2),
         `Head back to ${p.name} before dark`,
       ],
     });
@@ -283,7 +291,12 @@
       const busy = d.kind !== 'arrival' && d.kind !== 'departure' && wf >= 1.08;
       const slots = slotsFor(d, i);
       if (busy && slots[0] && d.kind !== 'base') slots[0].quiet = isLongWeekend(date) ? 'Long weekend — roads and viewpoints fill up fast, leave before 8 am' : 'Weekend — start before 9 am, it gets busy by late morning';
-      if (!busy && (d.kind === 'nearby' || d.kind === 'local') && slots[0] && wf <= 0.97) slots[0].quiet = 'Weekday — quieter than usual';
+      if (!busy && (d.kind === 'nearby' || d.kind === 'local') && slots[0] && wf <= 0.97) {
+        const di = window.PP_CROWD ? window.PP_CROWD.dayInfo(date) : null;
+        const dow = date.getDay();
+        slots[0].quiet = di && di.holiday && di.holiday.diwali ? 'Diwali — most people are at home, so trails are quiet'
+          : (dow === 0 || dow === 6) ? 'Quieter than a usual weekend' : 'Weekday — quieter than usual';
+      }
       const task = d.kind === 'departure' ? 'Leave an honest review for your host' : TASKS[i % TASKS.length];
       const isDone = done.includes(i);
       const q = place(d.pid);
