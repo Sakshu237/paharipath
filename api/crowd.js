@@ -10,7 +10,11 @@
 //   action: 'admin-set' — admin's own direct bulk crowd edit
 //   action: 'log'       — admin fetches the pending queue + history
 //
+// GET /api/crowd?action=news — public news signals for crowd prediction
+//
 // See the bottom of this file for the exact fields each action needs.
+
+const { getCrowdNews } = require('./_lib/news');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
@@ -26,6 +30,23 @@ async function verifyUser(access_token) {
 }
 
 module.exports = async (req, res) => {
+  // ═══════════════════════════════════════════════════════
+  // GET ?action=news — public, cached at Vercel's CDN for 3h.
+  // Recent Himachal headlines tagged by zone + kind (rush,
+  // snowfall, closure, weather, event) for the crowd predictor.
+  // ═══════════════════════════════════════════════════════
+  if (req.method === 'GET' && (req.query || {}).action === 'news') {
+    try {
+      const items = await getCrowdNews();
+      res.setHeader('Cache-Control', 'public, s-maxage=10800, stale-while-revalidate=3600');
+      res.status(200).json({ updatedAt: new Date().toISOString(), items });
+    } catch (err) {
+      res.setHeader('Cache-Control', 'public, s-maxage=600');
+      res.status(200).json({ updatedAt: new Date().toISOString(), items: [], error: 'news unavailable' });
+    }
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
