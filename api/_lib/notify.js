@@ -1,3 +1,4 @@
+const { notifyEmail } = require('./admin');
 // /api/_lib/notify.js
 // Booking emails for the guest, the host and the admin. Every function
 // here is best-effort: it never throws, so a failed email can never break
@@ -63,7 +64,7 @@ async function hostCancelled(b, stay, refund) {
 }
 
 async function admin(subject, title, b, extra) {
-  const to = process.env.ADMIN_EMAIL;
+  const to = notifyEmail();
   if (!to) return;
   const rows = [row('Stay', b.stay_name), row('Guest', `${b.guest} · ${b.guest_phone}`), row('Dates', b.dates || '—'), row('Payment', payLine(b)), row('Reference', b.id), ...(extra || [])];
   await sendEmail({ to, subject, html: wrap(title, '', rows) });
