@@ -13,6 +13,7 @@
 // needs to appear in vercel.json or anywhere else in the repo.
 
 const { checkinHasPassed, awardPointsForBooking } = require('./_lib/points');
+const { sweepExpired } = require('./_lib/chat');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 
@@ -41,6 +42,10 @@ module.exports = async (req, res) => {
     // India date — Vercel runs in UTC.
     const today = new Date(Date.now() + 330 * 60 * 1000).toISOString().slice(0, 10);
 
+    // Close booking requests the host never answered (also done lazily whenever a chat or inbox is opened).
+    let expiredRequests = 0;
+    try { expiredRequests = await sweepExpired(headers, SUPABASE_URL); } catch (e) { console.error('request expiry sweep failed', e.message); }
+
     // All confirmed, not-yet-awarded bookings whose check-in date has
     // arrived (lte today). Cancelled bookings are excluded by the
     // status=eq.confirmed filter — a cancelled booking never reaches
@@ -52,7 +57,7 @@ module.exports = async (req, res) => {
     const bookings = await bookingsRes.json();
 
     if (!Array.isArray(bookings) || !bookings.length) {
-      res.status(200).json({ processed: 0, results: [] });
+      res.status(200).json({ processed: 0, results: [], expiredRequests });
       return;
     }
 
@@ -67,7 +72,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    res.status(200).json({ processed: results.length, results });
+    res.status(200).json({ processed: results.length, results, expiredRequests });
   } catch (err) {
     console.error('complete-stays error:', err);
     res.status(500).json({ error: 'Server error' });

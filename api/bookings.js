@@ -19,10 +19,20 @@
 //   action: 'submit-review'  — guest reviews a stay after checkout
 //   action: 'config'         — public payment settings (online or pay-at-stay, GST rate)
 //   action: 'verify-payment' — confirms a booking after Razorpay checkout (signature checked)
+//
+// REQUEST-TO-BOOK + CHAT (see _lib/chat.js). While online payment is off
+// (PAY_ONLINE not set), 'create' makes a *request*: the host accepts or
+// declines within 24h and the guest pays the host directly or on arrival.
+//   action: 'messages'       — read a booking's chat (guest: ref+phone or token; host/admin: access_token)
+//   action: 'send'           — post a chat message (contacts hidden until confirmed)
+//   action: 'respond'        — host/admin accepts or declines a request
+//   action: 'host-inbox'     — host's requests + bookings with unread counts
+//   action: 'admin-inbox'    — admin view of all requests
 
 const { tsKey, calcPoints, reverseRef } = require('./_lib/points');
 const { cfg, publicCfg, razorpay, verifyCheckoutSignature, confirmPaidBooking, rupees } = require('./_lib/payments');
 const notify = require('./_lib/notify');
+const chat = require('./_lib/chat');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
@@ -68,6 +78,7 @@ async function buildBookingRow(input, headers) {
   if (!/^[6-9]\d{9}$/.test(guest_phone)) return { error: 'Invalid phone number', status: 400 };
 
   let guest_email = null;
+  if (!input.guest_email && !cfg().payOnline) return { error: "Please add your email — that's how the host's reply reaches you", status: 400 };
   if (input.guest_email) {
     guest_email = String(input.guest_email).trim().toLowerCase().slice(0, 150);
     if (!EMAIL_RE.test(guest_email)) return { error: 'Please enter a valid email address', status: 400 };
@@ -95,7 +106,8 @@ async function buildBookingRow(input, headers) {
   // Same formula as recalcBooking() in app.js: stay + GST (only when paying
   // online and GST_RATE is set — see _lib/payments.js) + optional eco offset.
   const c = cfg();
-  const eco = input.eco === true;
+  // Carbon offset is only collected with online payment (it goes to the NGO partner, not the host).
+  const eco = input.eco === true && c.payOnline;
   const eco_amount = eco ? Math.min(Math.max(parseInt(input.eco_amount) || 0, 0), 5000) : 0;
   const eco_trees = eco ? Math.min(Math.max(parseInt(input.eco_trees) || 0, 0), 100) : 0;
   const base = pn * nights;
@@ -128,10 +140,13 @@ async function buildBookingRow(input, headers) {
       privacy_consent: true, privacy_consent_at: now, terms_consent: true, terms_consent_at: now,
       // Forced server-side. payment_id is NOT accepted from the browser —
       // it is set only after a verified Razorpay payment (verify-payment / webhook).
-      status: c.payOnline ? 'pending_payment' : 'confirmed',
+      // Without online payment a booking is a REQUEST the host accepts or declines.
+      status: c.payOnline ? 'pending_payment' : 'requested',
       payment_status: c.payOnline ? 'pending' : 'pay_at_stay',
       points_awarded: false, payment_id: null,
+      ...(c.payOnline ? {} : { request_expires_at: chat.requestExpiry() }),
     },
+    firstMessage: chat.clipMessage(input.request_message),
   };
 }
 
@@ -234,6 +249,21 @@ module.exports = async (req, res) => {
       await fetch(`${SUPABASE_URL}/rest/v1/bookings?guest_phone=eq.${booking.guest_phone}&stay_id=eq.${booking.stay_id}&status=eq.pending_payment`, {
         method: 'PATCH', headers, body: JSON.stringify({ status: 'expired' }),
       });
+      if (booking.status === 'requested') {
+        // Max 3 open requests per guest at a time, so hosts aren't spammed.
+        const open = await fetch(`${SUPABASE_URL}/rest/v1/bookings?guest_phone=eq.${booking.guest_phone}&stay_id=neq.${booking.stay_id}&status=eq.requested&request_expires_at=gt.${encodeURIComponent(new Date().toISOString())}&select=id`, { headers }).then(r => r.json()).catch(() => []);
+        if (Array.isArray(open) && open.length >= 3) {
+          res.status(429).json({ error: 'You already have 3 requests waiting for a host reply. Please wait for an answer, or withdraw one from "My Trips".' });
+          return;
+        }
+        // A new request for the same stay replaces the guest's older open one.
+        const replaced = await fetch(`${SUPABASE_URL}/rest/v1/bookings?guest_phone=eq.${booking.guest_phone}&stay_id=eq.${booking.stay_id}&status=eq.requested`, {
+          method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' }, body: JSON.stringify({ status: 'cancelled', cancelled_at: new Date().toISOString() }),
+        }).then(r => r.json()).catch(() => []);
+        for (const old of Array.isArray(replaced) ? replaced : []) {
+          await chat.addMessage(old.id, 'system', 'The guest replaced this request with a new one.', headers, SUPABASE_URL).catch(() => {});
+        }
+      }
       const holdSince = new Date(Date.now() - pay.holdMinutes * 60 * 1000).toISOString();
 
       // Server-side date-conflict check. The client already blocks obviously
@@ -306,6 +336,24 @@ module.exports = async (req, res) => {
         return;
       }
 
+      // Request-to-book: save the guest's first message, tell the host, and stop here.
+      if (booking.status === 'requested') {
+        await chat.addMessage(booking.id, 'system', `Request sent. The host has ${chat.REQUEST_HOURS} hours to accept or decline. Nothing is charged — once accepted, you pay the host directly or on arrival.`, headers, SUPABASE_URL).catch(() => {});
+        let first = built.firstMessage || '';
+        if (first) {
+          const m = chat.maskContacts(first);
+          await chat.addMessage(booking.id, 'guest', m.text, headers, SUPABASE_URL, m.masked).catch(e => console.error('first message failed', e.message));
+          first = m.text;
+        }
+        const stay = await chat.getStay(booking.stay_id, headers, SUPABASE_URL);
+        await chat.mailNewRequest(booking, stay, first).catch(e => console.warn('request email failed', e.message));
+        res.status(200).json({
+          success: true, requested: true, ref: booking.id, amount: booking.amount, paymentStatus: 'pay_at_stay',
+          chatToken: chat.chatToken(booking.id), expiresAt: booking.request_expires_at,
+        });
+        return;
+      }
+
       await notify.bookingConfirmed(booking, headers, SUPABASE_URL);
 
       const waText = encodeURIComponent(
@@ -347,21 +395,51 @@ module.exports = async (req, res) => {
     }
 
     // ═══════════════════════════════════════════════════════
+    // Request-to-book + chat actions (logic in _lib/chat.js)
+    // ═══════════════════════════════════════════════════════
+    if (['messages', 'send', 'respond', 'host-inbox', 'admin-inbox'].includes(action)) {
+      if (await ipThrottled(req, 'bk-chat', 120, headers)) { res.status(429).json({ error: 'Too many requests — please wait a few minutes and try again.' }); return; }
+      const ctx = { headers, SUPABASE_URL, SUPABASE_ANON };
+      const body = req.body || {};
+      const [code, out] =
+        action === 'messages' ? await chat.actionMessages(body, ctx) :
+        action === 'send' ? await chat.actionSend(body, ctx) :
+        action === 'respond' ? await chat.actionRespond(body, ctx, notify) :
+        action === 'host-inbox' ? await chat.actionHostInbox(body, ctx) :
+        await chat.actionAdminInbox(body, ctx);
+      res.status(code).json(out);
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════
     // action: 'cancel' — guest cancels their own booking
     // fields: bookingRef, phone
     // ═══════════════════════════════════════════════════════
     if (action === 'cancel') {
       if (await ipThrottled(req, 'bk-cancel', 10, headers)) { res.status(429).json({ error: 'Too many attempts — please wait a few minutes and try again.' }); return; }
-      const { bookingRef, phone } = req.body;
-      if (!bookingRef || !phone) { res.status(400).json({ error: 'Missing bookingRef or phone' }); return; }
+      const { bookingRef } = req.body;
+      let { phone } = req.body;
+      if (!bookingRef || (!phone && !req.body.token)) { res.status(400).json({ error: 'Missing bookingRef or phone' }); return; }
 
       const bookingRes = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&select=*`, { headers });
       const bookings = await bookingRes.json();
       const booking = Array.isArray(bookings) ? bookings[0] : null;
       if (!booking) { res.status(404).json({ error: 'Booking not found' }); return; }
+      // The private chat link (emailed to the guest) may withdraw a still-open request.
+      if (!phone && booking.status === 'requested' && chat.tokenOk(booking.id, req.body.token)) phone = booking.guest_phone;
       if (booking.guest_phone !== String(phone)) { res.status(403).json({ error: 'This phone number does not match the booking on record' }); return; }
       if (booking.status === 'cancelled') { res.status(200).json({ success: true, pointsReversed: 0, message: 'Already cancelled' }); return; }
       if (booking.status === 'completed') { res.status(400).json({ error: 'This stay has already been completed and cannot be cancelled' }); return; }
+      if (['declined', 'expired'].includes(booking.status)) { res.status(200).json({ success: true, pointsReversed: 0, message: `This request is already ${booking.status}` }); return; }
+      if (booking.status === 'requested') {
+        // Withdrawing a request: nothing was paid and no points were given.
+        await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&status=eq.requested`, {
+          method: 'PATCH', headers, body: JSON.stringify({ status: 'cancelled', cancelled_at: new Date().toISOString() }),
+        });
+        await chat.addMessage(bookingRef, 'system', 'The guest withdrew this request.', headers, SUPABASE_URL).catch(() => {});
+        res.status(200).json({ success: true, withdrawn: true, pointsReversed: 0, feePercent: 0, refundAmount: 0, feeAmount: 0, amountNum: 0, paymentStatus: 'pay_at_stay' });
+        return;
+      }
 
       const { feePercent } = calcCancellationFee(booking.checkin_date);
       // Only money actually paid online can be refunded; pay-at-stay bookings owe nothing.
@@ -421,6 +499,7 @@ module.exports = async (req, res) => {
         }),
       });
       await notify.bookingCancelled(booking, paid ? refundAmount : null, headers, SUPABASE_URL);
+      await chat.addMessage(bookingRef, 'system', 'This booking was cancelled by the guest.', headers, SUPABASE_URL).catch(() => {});
 
       res.status(200).json({ success: true, pointsReversed, feePercent, refundAmount, feeAmount, amountNum, paymentStatus: booking.payment_status || 'pay_at_stay', refundStatus });
       return;
@@ -436,7 +515,7 @@ module.exports = async (req, res) => {
       if (!bookingRef || !phone) { res.status(400).json({ error: 'Missing bookingRef or phone' }); return; }
 
       const bookingRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&select=id,stay_name,dates,checkin_date,checkout_date,amount,status,nights,guests,payment_status`,
+        `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingRef)}&select=id,stay_name,dates,checkin_date,checkout_date,amount,status,nights,guests,payment_status,request_expires_at,decline_reason`,
         { headers }
       );
       const bookings = await bookingRes.json();
@@ -469,11 +548,19 @@ module.exports = async (req, res) => {
       const proof = proofRef ? await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(proofRef)}&guest_phone=eq.${phone}&select=id`, { headers }).then(r => r.json()).catch(() => []) : [];
       if (!Array.isArray(proof) || !proof.length) { res.status(200).json({ bookings: [], needsRef: true }); return; }
       const bookingsRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/bookings?guest_phone=eq.${encodeURIComponent(phone)}&select=id,stay_id,stay_name,dates,checkin_date,checkout_date,amount,status,nights,guests,eco,guest_photo_url,payment_status&status=neq.expired&order=created_at.desc`,
+        `${SUPABASE_URL}/rest/v1/bookings?guest_phone=eq.${encodeURIComponent(phone)}&select=id,stay_id,stay_name,dates,checkin_date,checkout_date,amount,status,nights,guests,eco,guest_photo_url,payment_status,request_expires_at,decline_reason,guest_last_read_at&status=neq.expired&order=created_at.desc`,
         { headers }
       );
-      const bookings = await bookingsRes.json();
-      res.status(200).json({ bookings: Array.isArray(bookings) ? bookings : [] });
+      let bookings = await bookingsRes.json();
+      bookings = Array.isArray(bookings) ? bookings : [];
+      try { bookings = await chat.withUnread(bookings, 'guest', headers, SUPABASE_URL); } catch (e) { console.warn('unread count failed', e.message); }
+      // Which completed stays this guest already reviewed (the reviews table is no longer readable from the browser).
+      try {
+        const rv = await fetch(`${SUPABASE_URL}/rest/v1/stay_reviews?guest_phone=eq.${encodeURIComponent(phone)}&select=booking_ref`, { headers }).then(r => r.json());
+        const done = new Set((Array.isArray(rv) ? rv : []).map(r => r.booking_ref));
+        bookings = bookings.map(b => ({ ...b, reviewed: done.has(b.id) }));
+      } catch (e) { console.warn('review lookup failed', e.message); }
+      res.status(200).json({ bookings });
       return;
     }
 
