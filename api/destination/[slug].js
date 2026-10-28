@@ -94,7 +94,7 @@ module.exports = async (req, res) => {
   const bodyText = place.longDesc || place.desc;
   const metaSnippet = bodyText && bodyText.length > 160
     ? bodyText.slice(0, 155).replace(/\s+\S*$/, '') + '…'
-    : `${bodyText} Altitude: ${place.altitude || 'N/A'}. Best time to visit: ${place.bestTime || 'year-round'}. Live crowd tracking and local homestays on PahariPath.`;
+    : `${bodyText} Altitude: ${place.altitude || 'N/A'}. Best time to visit: ${place.bestTime || 'year-round'}. Crowd forecasts and local homestays on PahariPath.`;
   const description = metaSnippet;
   const url = `https://paharipath.in/destination/${place.slug}`;
   const ogImage = 'https://paharipath.in/og-image.jpg';
@@ -180,8 +180,8 @@ ${JSON.stringify({
   <div class="tags">${tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
 
   <div class="cta">
-    <h2>See live crowd levels &amp; book a stay</h2>
-    <p>Check real-time crowd data, weekly forecasts, and local homestays for ${escapeHtml(place.name)} in the full PahariPath app.</p>
+    <h2>See the crowd forecast &amp; book a stay</h2>
+    <p>Check crowd forecasts for any date, and local homestays for ${escapeHtml(place.name)} in the full PahariPath app.</p>
     <a href="https://paharipath.in/?openPlace=${place.id}">Open in PahariPath →</a>
   </div>
 </div>
