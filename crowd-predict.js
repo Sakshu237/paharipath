@@ -672,6 +672,101 @@
     return notes.length ? `<div style="margin-bottom:12px;padding:12px;background:#fff;border-radius:10px;border:1px solid rgba(74,124,95,.15)"><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--stone);margin-bottom:6px">What's driving the crowd</div>${notes.join('')}</div>` : '';
   }
 
+  // ── Interactive crowd meter: summary panel + ring cards that open to a 7-day view ──
+  const METER = { open: null };
+  function meterCSS() {
+    if (document.getElementById('ppMeterCSS')) return;
+    const st = document.createElement('style');
+    st.id = 'ppMeterCSS';
+    st.textContent = `
+      .pp-sum{background:var(--pine);color:#faf9f6;border-radius:16px;padding:14px 16px;margin:0 0 14px;display:flex;flex-direction:column;gap:10px}
+      .pp-sum-l{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#b9d0c0}
+      .pp-sum-n{display:flex;gap:22px}.pp-sum-n div{display:flex;flex-direction:column}
+      .pp-sum-n b{font-family:var(--fd);font-size:32px;line-height:1}.pp-sum-n span{font-size:12px;color:#d7e2da}
+      .pp-sum-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px}.pp-sum-bar div{transition:flex-grow .5s}
+      .pp-cc{background:#fff;border:1.5px solid rgba(74,124,95,.14);border-radius:16px;overflow:hidden;transition:border-color .25s}
+      .pp-cc.open{border-color:var(--sage);grid-column:1/-1}
+      .pp-cc-h{width:100%;display:flex;align-items:center;gap:14px;padding:12px 14px;border:none;background:none;cursor:pointer;text-align:left;font:inherit;color:var(--ink);min-height:72px}
+      .pp-ring{position:relative;width:54px;height:54px;flex:none}
+      .pp-ring svg{display:block;transform:rotate(-90deg)}.pp-ring circle:last-child{transition:stroke-dasharray .6s ease}
+      .pp-ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13.5px}
+      .pp-cc-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+      .pp-cc-t strong{font-size:15.5px}.pp-cc-t span{font-size:12px;color:var(--stone);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .pp-chip{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:12px;white-space:nowrap}
+      .pp-cc-b{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+      .pp-week{display:flex;align-items:flex-end;gap:6px;height:76px;padding:8px 10px 0;background:#f4f7f4;border-radius:10px}
+      .pp-week div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+      .pp-week i{display:block;width:100%;max-width:24px;border-radius:4px 4px 2px 2px}
+      .pp-week em{font-style:normal;font-size:10px;font-weight:600;color:var(--stone);padding-bottom:4px}
+      .pp-acts{display:flex;gap:8px;flex-wrap:wrap}
+      .pp-acts button{flex:1;min-width:110px;min-height:42px;border-radius:10px;font:700 13px var(--fb);cursor:pointer}
+      .pp-acts .p{background:var(--pine);color:#fff;border:none}.pp-acts .s{background:#fff;color:var(--pine);border:1.5px solid var(--pine)}
+      .pp-acts .c{background:#a4532f;color:#fff;border:none}
+      .pp-note{font-size:11.5px;color:#a8710a;background:#fdf3e3;border-radius:8px;padding:6px 9px}`;
+    document.head.appendChild(st);
+  }
+  const lvl = v => v < 40 ? { c: '#3aab66', t: '#1e6b3e', bg: '#e5f2e9', l: 'Quiet' } : v < 70 ? { c: '#e8a020', t: '#8a5a06', bg: '#fbf1dc', l: 'Busy' } : { c: '#e24a4a', t: '#a3261f', bg: '#fde8e5', l: 'Packed' };
+
+  function renderMeter() {
+    const grid = document.getElementById('cgrid');
+    if (!grid || typeof ALL === 'undefined') return false;
+    meterCSS();
+    renderLWBanner(); // also draws the time switch
+    const when = VIEW.date || new Date();
+    const stayIds = (typeof STAYS !== 'undefined' && Array.isArray(STAYS)) ? new Set(STAYS.map(s => s.placeid)) : new Set();
+    const scored = ALL.map(p => ({ p, v: current(p), k: sortKey(p) })).sort((a, b) => a.k - b.k);
+    // summary
+    const inScope = scored.filter(x => x.k < 200);
+    const cnt = { q: inScope.filter(x => x.v < 40).length, b: inScope.filter(x => x.v >= 40 && x.v < 70).length, k: inScope.filter(x => x.v >= 70).length };
+    let sum = document.getElementById('ppSum');
+    if (!sum) { sum = document.createElement('div'); sum.id = 'ppSum'; grid.parentNode.insertBefore(sum, grid); }
+    sum.innerHTML = `<div class="pp-sum" role="status">
+      <div class="pp-sum-l">${VIEW.date ? 'Forecast for ' + esc(fmt(VIEW.date)) : 'Right now across Himachal'}</div>
+      <div class="pp-sum-n"><div><b style="color:#8fdcab">${cnt.q}</b><span>quiet</span></div><div><b style="color:#f3c46b">${cnt.b}</b><span>busy</span></div><div><b style="color:#ff9a8a">${cnt.k}</b><span>packed</span></div></div>
+      <div class="pp-sum-bar" aria-hidden="true"><div style="background:#3aab66;flex-grow:${cnt.q}"></div><div style="background:#e8a020;flex-grow:${cnt.b}"></div><div style="background:#e24a4a;flex-grow:${cnt.k}"></div></div>
+    </div>`;
+    // cards
+    const showAll = typeof crowdAll !== 'undefined' && crowdAll;
+    const list = showAll ? scored : scored.slice(0, 16);
+    const start = dayOnly(when);
+    grid.innerHTML = list.map(({ p, v }) => {
+      const L = lvl(v);
+      const open = METER.open === p.id;
+      const why = topReason(p);
+      let body = '';
+      if (open) {
+        const wk = []; for (let i = 0; i < 7; i++) { const d = addDays(start, i); wk.push({ d, v: predict(p, d, { noNews: i > 2 }).value }); }
+        let bi = 0; wk.forEach((x, i) => { if (x.v < wk[bi].v) bi = i; });
+        body = `<div class="pp-cc-b">
+          <div class="pp-week" aria-label="Next 7 days">${wk.map((x, i) => { const l2 = lvl(x.v); return `<div title="${esc(fmt(x.d))}: ${x.v}%"><i style="height:${Math.max(6, Math.round(x.v * 0.55))}px;background:${l2.c};opacity:${i === bi ? 1 : .55}"></i><em>${esc(x.d.toLocaleDateString('en-IN', { weekday: 'narrow' }))}${x.d.getDate()}</em></div>`; }).join('')}</div>
+          <div style="font-size:13px"><b style="color:#1e6b3e">Quietest: ${esc(fmt(wk[bi].d))} (${wk[bi].v}%)</b>${p.bestTime ? ` <span style="color:var(--stone)">· Best season ${esc(p.bestTime)}</span>` : ''}</div>
+          ${p.crowdNote ? `<div class="pp-note">⚠️ ${esc(p.crowdNote)}</div>` : ''}
+          <div class="pp-acts">
+            <button type="button" class="p" onclick="openPD(${p.id})">Explore</button>
+            <button type="button" class="s" onclick="PP_CROWD.planFor(${p.id})">Plan days</button>
+            ${stayIds.has(p.id) ? `<button type="button" class="c" onclick="openPD(${p.id})">See stays</button>` : ''}
+          </div></div>`;
+      }
+      return `<div class="pp-cc${open ? ' open' : ''}">
+        <button type="button" class="pp-cc-h" aria-expanded="${open}" onclick="PP_CROWD.toggleCard(${p.id})">
+          <span class="pp-ring"><svg width="54" height="54" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="23" fill="none" stroke="#edf0ed" stroke-width="6"></circle><circle cx="27" cy="27" r="23" fill="none" stroke="${L.c}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${Math.round(144.5 * v / 100)} 145"></circle></svg><b style="color:${L.t}">${v}%</b></span>
+          <span class="pp-cc-t"><strong>${p.emoji || ''} ${esc(p.name)}</strong><span>${esc(p.district)}${why ? ' · ' + esc(why) : ''}</span></span>
+          <span class="pp-chip" style="background:${L.bg};color:${L.t}">${L.l}</span>
+        </button>${body}</div>`;
+    }).join('');
+    const more = document.getElementById('crowd-more-btn');
+    more && (more.textContent = showAll ? 'Show less ↑' : 'Show all ' + ALL.length + ' places ↓');
+    return true;
+  }
+  function toggleCard(id) { METER.open = METER.open === id ? null : id; renderMeter(); }
+  function planFor(id) {
+    const p = (typeof ALL !== 'undefined' ? ALL : []).find(x => x.id === id);
+    if (!p) return;
+    try { typeof selectPlanPlace === 'function' && selectPlanPlace(p.id, p.name); } catch (e) { /* ignore */ }
+    const sec = document.getElementById('plansec');
+    sec && sec.scrollIntoView({ behavior: 'smooth' });
+  }
+
   // short reason for list rows
   function topReason(p) {
     const f = predict(p, VIEW.date || new Date()).factors.find(x => x.icon !== '🗓');
