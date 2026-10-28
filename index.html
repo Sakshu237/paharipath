@@ -1046,25 +1046,29 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 </svg><span style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.3px">Pahari<span style="font-weight:400;color:#8fbbaa">Path</span> <span style="font-size:11px;opacity:.6;font-family:sans-serif;font-weight:400">Admin</span></span></div>
         <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Management Dashboard</div>
       </div>
-      <div class="adm-ni act" onclick="adTab('dash',this)">📊 Dashboard</div>
+      <div class="adm-sec" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);padding:14px 16px 4px">Today</div>
+      <div class="adm-ni act" onclick="adTab('control',this)">🧭 Control Centre</div>
       <div class="adm-ni" onclick="adTab('sos',this)" style="color:#ff8a8a"><span id="sosNavIcon">🆘</span> SOS Alerts <span id="sosNavBadge"></span></div>
-      <div class="adm-ni" onclick="adTab('crowd',this)">🚦 Crowd Levels</div>
-      <div class="adm-ni" onclick="adTab('dest',this)">📍 Destinations</div>
-      <div class="adm-ni" onclick="adTab('tasks',this)">🎯 PAHADI Tasks</div>
-      <div class="adm-ni" onclick="adTab('reviews',this)">⭐ Reviews</div>
       <div class="adm-ni" onclick="adTab('support',this)">🎧 Support</div>
+      <div class="adm-ni" onclick="adTab('dash',this)">📊 Stats</div>
+      <div class="adm-sec" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);padding:14px 16px 4px">Bookings &amp; stays</div>
+      <div class="adm-ni" onclick="adTab('book',this)">📋 Bookings (old view)</div>
+      <div class="adm-ni" onclick="adTab('stays',this)">🏡 Stays (full editor)</div>
       <div class="adm-ni" onclick="adTab('hostapps',this)">🏠 Host Applications</div>
-      <div class="adm-ni" onclick="adTab('stays',this)">🏡 Stays</div>
-      <div class="adm-ni" onclick="adTab('book',this)">📋 Bookings</div>
-      <div class="adm-ni" onclick="adTab('eco',this)">🌿 Eco Permits</div>
+      <div class="adm-ni" onclick="adTab('reviews',this)">⭐ Reviews</div>
       <div class="adm-ni" onclick="adTab('feedback',this)">⭐ Host Feedback</div>
-      <div class="adm-ni" onclick="adTab('ngo',this)">🤝 NGO / Clean-ups</div>
+      <div class="adm-sec" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);padding:14px 16px 4px">Content</div>
+      <div class="adm-ni" onclick="adTab('dest',this)">📍 Destinations</div>
+      <div class="adm-ni" onclick="adTab('crowd',this)">🚦 Crowd Levels</div>
       <div class="adm-ni" onclick="adTab('media',this)">📷 Media / 360°</div>
       <div class="adm-ni" onclick="adTab('itinerary',this)">🗺️ Itineraries</div>
-      <div class="adm-ni" onclick="adTab('pins',this)">📍 Community Pins</div>
-      <div class="adm-ni" onclick="adTab('corrections',this)">🛠️ Location Fixes</div>
-      <div class="adm-ni" onclick="adTab('profiles',this)">🏅 Traveller Profiles</div>
       <div class="adm-ni" onclick="adTab('blog',this)">📝 Blog</div>
+      <div class="adm-ni" onclick="adTab('corrections',this)">🛠️ Location Fixes</div>
+      <div class="adm-ni" onclick="adTab('pins',this)">📍 Community Pins</div>
+      <div class="adm-sec" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);padding:14px 16px 4px">Community</div>
+      <div class="adm-ni" onclick="adTab('tasks',this)">🎯 PAHADI Tasks</div>
+      <div class="adm-ni" onclick="adTab('profiles',this)">🏅 Traveller Profiles</div>
+      <div class="adm-ni" onclick="adTab('ngo',this)">🤝 NGO / Clean-ups</div>
       <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:10px">
         <div class="adm-ni" onclick="setView('home')">← Back to Site</div>
         <div class="adm-ni" onclick="adminLogout()" style="color:#f08080;margin-top:4px">🔓 Sign Out</div>
@@ -1188,6 +1192,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="/crowd-predict.js"></script>
 <script src="/app.js"></script>
+<script src="/admin-control.js"></script>
 <script src="/itinerary.js"></script>
 <script src="/seo.js"></script>
 <!-- MANAGE / CANCEL BOOKING MODAL -->
