@@ -74,7 +74,7 @@
 
   var HOME = {
     title:       'PahariPath — Discover Real Himachal Pradesh',
-    description: 'Discover 146+ offbeat destinations in Himachal Pradesh with live crowd tracking. Find peaceful valleys, quiet villages, and real Pahadi experiences. Book directly with local hosts.',
+    description: 'Discover 146+ offbeat destinations in Himachal Pradesh with crowd forecasts. Find peaceful valleys, quiet villages, and real Pahadi experiences. Book directly with local hosts.',
     url:         'https://paharipath.in/',
     image:       'https://paharipath.in/og-image.jpg'
   };
@@ -116,7 +116,7 @@
         "@type": "TravelAgency",
         "@id": "https://paharipath.in/#travelagency",
         "name": "PahariPath",
-        "description": "Offbeat travel discovery platform for Himachal Pradesh with live crowd tracking and direct local homestay bookings.",
+        "description": "Offbeat travel discovery platform for Himachal Pradesh with crowd forecasts and direct local homestay bookings.",
         "url": "https://paharipath.in/",
         "areaServed": {
           "@type": "State",
@@ -136,7 +136,7 @@
     var title    = dest.name + ' Travel Guide — Himachal Pradesh | PahariPath';
     var desc     = dest.description
                    ? dest.description.slice(0, 155)
-                   : 'Explore ' + dest.name + ' in ' + (dest.district || 'Himachal Pradesh') + '. Live crowd tracking, local homestays, and travel tips on PahariPath.';
+                   : 'Explore ' + dest.name + ' in ' + (dest.district || 'Himachal Pradesh') + '. Crowd forecasts, local homestays, and travel tips on PahariPath.';
 
     // Update browser URL
     history.pushState({ destination: slug }, title, pageUrl);
@@ -218,7 +218,7 @@
     setMeta('og:url', HOME.url);
     setMeta('og:type', 'website');
     setMeta('twitter:title', 'PahariPath — Real Himachal Pradesh');
-    setMeta('twitter:description', 'Live crowd tracking for 146+ HP destinations. Find quiet valleys and book local stays.');
+    setMeta('twitter:description', 'Crowd forecasts for 146+ HP destinations. Find quiet valleys and book local stays.');
     setCanonical(HOME.url);
     setJsonLd(HOME_JSONLD);
   }
