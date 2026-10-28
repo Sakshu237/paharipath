@@ -35,6 +35,10 @@
   const isDeparture = t => /depart|return|head (home|back)|leave/i.test(t || '');
   // Same weekday factors the forecast uses (Sun..Sat).
   const WEEKDAY = [1.3, 1, 0.95, 0.95, 0.97, 1.15, 1.5];
+  // Day busyness: uses the crowd prediction engine (holidays, long weekends,
+  // bridge days) when loaded, else the simple weekday table above.
+  const dayFactor = d => (window.PP_CROWD ? window.PP_CROWD.dayInfo(d).m : WEEKDAY[d.getDay()]);
+  const isLongWeekend = d => !!(window.PP_CROWD && (window.PP_CROWD.dayInfo(d).run || {}).isLong);
 
   const TYPES = [['family', 'Family'], ['friends', 'Friends / solo'], ['couple', 'Couple']];
   const PACES = [['relaxed', 'Relaxed'], ['packed', 'Packed']];
@@ -191,7 +195,7 @@
     const preBase = blocks.findIndex(b => b.kind === 'base');
     const end = preBase === -1 ? blocks.length : preBase;
     const dates = Array.from({ length: end }, (_, i) => addDays(c.start, i + 1));
-    const slots = dates.map((d, i) => ({ i, wf: WEEKDAY[d.getDay()] }));
+    const slots = dates.map((d, i) => ({ i, wf: dayFactor(d) }));
     const tripBlocks = blocks.slice(0, end).filter(b => b.kind === 'nearby');
     const otherBlocks = blocks.slice(0, end).filter(b => b.kind !== 'nearby');
     let moved = null;
@@ -275,10 +279,10 @@
 
     html += plan.days.map((d, i) => {
       const date = addDays(c.start, i);
-      const wf = WEEKDAY[date.getDay()];
-      const busy = d.kind !== 'arrival' && d.kind !== 'departure' && wf >= 1.15;
+      const wf = dayFactor(date);
+      const busy = d.kind !== 'arrival' && d.kind !== 'departure' && wf >= 1.08;
       const slots = slotsFor(d, i);
-      if (busy && slots[0] && d.kind !== 'base') slots[0].quiet = 'Weekend — start before 9 am, it gets busy by late morning';
+      if (busy && slots[0] && d.kind !== 'base') slots[0].quiet = isLongWeekend(date) ? 'Long weekend — roads and viewpoints fill up fast, leave before 8 am' : 'Weekend — start before 9 am, it gets busy by late morning';
       if (!busy && (d.kind === 'nearby' || d.kind === 'local') && slots[0] && wf <= 0.97) slots[0].quiet = 'Weekday — quieter than usual';
       const task = d.kind === 'departure' ? 'Leave an honest review for your host' : TASKS[i % TASKS.length];
       const isDone = done.includes(i);
