@@ -774,7 +774,7 @@
   }
 
   window.PP_CROWD = {
-    predict, now, current, setView, sortKey, dayInfo, monthDowAvg, upcomingLongWeekends,
+    predict, now, current, setView, sortKey, renderMeter, toggleCard, planFor, dayInfo, monthDowAvg, upcomingLongWeekends,
     setNews, loadNews, newsFor, renderWhy, renderLWBanner, forecastNotes, topReason,
     get news() { return NEWS; }, get newsLoadedAt() { return NEWS_LOADED_AT; },
     _data: { HOLIDAYS, EVENTS, SCHOOL_BREAKS, PROFILE },

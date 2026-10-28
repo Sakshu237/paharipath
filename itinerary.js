@@ -72,7 +72,7 @@
   const SLOW_DAY = ['Long breakfast in the sun — no alarm today', 'Village walk — say "Ram Ram" to everyone you pass', 'Afternoon rest with a book and chai', 'Evening with your host family'];
 
   // ── state ──────────────────────────────────────────────────────────────
-  const S = { ctx: null, type: null, pace: 'relaxed', added: [], nearby: null, nearbyLoading: null, lastKey: '' };
+  const S = { ctx: null, type: null, pace: 'relaxed', added: [], nearby: null, nearbyLoading: null, lastKey: '', open: [0] };
 
   function loadNearby() {
     if (S.nearby) return Promise.resolve(S.nearby);
@@ -285,6 +285,25 @@
     if (plan.base) notes.push(`Halfway through, we move you to ${esc(plan.base.p.name)} — less driving and a new valley to wake up in.`);
     if (notes.length) html += `<div class="itn-note">${notes.join(' ')}</div>`;
 
+    // trip summary: quiet / busier days, day trips, task progress, open-all
+    const dayKind = plan.days.map((d, i) => {
+      if (d.kind === 'arrival' || d.kind === 'departure') return 'edge';
+      return dayFactor(addDays(c.start, i)) >= 1.08 ? 'busy' : 'calm';
+    });
+    const nQuiet = dayKind.filter(k => k === 'calm').length, nBusy = dayKind.filter(k => k === 'busy').length;
+    const nTrips = plan.days.filter(d => d.kind === 'nearby').length;
+    const pct = Math.round(100 * done.length / plan.days.length);
+    const allOpen = S.open.length >= plan.days.length;
+    html += `<div class="itn-summary">
+        <div class="itn-chips">
+          ${nQuiet ? `<span class="itn-chip calm">${nQuiet} quiet day${nQuiet > 1 ? 's' : ''}</span>` : ''}
+          ${nBusy ? `<span class="itn-chip busy">${nBusy} busier day${nBusy > 1 ? 's' : ''}</span>` : ''}
+          ${nTrips ? `<span class="itn-chip">${nTrips} nearby day trip${nTrips > 1 ? 's' : ''}</span>` : ''}
+        </div>
+        <div class="itn-prog"><div class="itn-pbar"><div style="width:${pct}%"></div></div><span>${done.length} of ${plan.days.length} responsible tasks</span></div>
+        <button type="button" class="itn-openall" onclick="ppItn.openAll()">${allOpen ? 'Close all days' : 'Open all days'}</button>
+      </div>`;
+
     html += plan.days.map((d, i) => {
       const date = addDays(c.start, i);
       const wf = dayFactor(date);
@@ -302,23 +321,25 @@
       const q = place(d.pid);
       const tag = d.kind === 'nearby' ? `<button type="button" class="itn-tag" onclick="ppItn.peek(${d.pid})">Nearby · ${esc(q.name)} · ${esc(fmtMins(d.mins))}${d.hike ? ' + hike' : ''}${d.from ? ' from ' + esc(d.from) : ''} — see what's there ›</button>`
         : d.kind === 'base' ? `<button type="button" class="itn-tag base" onclick="ppItn.peek(${d.pid})">Change of base · ${esc(p.name)} → ${esc(q.name)} — see what's there ›</button>` : '';
-      return `<div class="itn-day">
+      const open = S.open.includes(i);
+      return `<div class="itn-day${open ? ' open' : ''}">
         <div class="itn-dhead">
           <div class="itn-drow"><span class="itn-dlabel">Day ${i + 1} · ${esc(dayName(date))}</span>
-            ${d.kind === 'arrival' || d.kind === 'departure' ? '' : `<span class="itn-crowd ${busy ? 'busy' : 'calm'}">${busy ? 'Busier day' : 'Quiet day'}</span>`}</div>
-          <div class="itn-dtitle">${esc(d.title)}</div>${tag}
+            <span style="display:flex;gap:6px;align-items:center">${d.kind === 'arrival' || d.kind === 'departure' ? '' : `<span class="itn-crowd ${busy ? 'busy' : 'calm'}">${busy ? 'Busier day' : 'Quiet day'}</span>`}${isDone ? '<span class="itn-donemark" title="Task done">✓</span>' : ''}</span></div>
+          <button type="button" class="itn-dtoggle" aria-expanded="${open}" onclick="ppItn.toggleDay(${i})"><span class="itn-dtitle">${esc(d.title)}</span><span class="itn-chev" aria-hidden="true">${open ? '▴' : '▾'}</span></button>
+          ${open ? tag : `<div class="itn-peek">${esc(slots.map(s => s.time).join(' · '))} · tap to see the day</div>`}
         </div>
-        <div class="itn-slots">${slots.map(s => `<div class="itn-slot"><div><div class="itn-time">${esc(s.time)}</div><div class="itn-part">${esc(s.part)}</div></div>
+        ${open ? `<div class="itn-slots">${slots.map(s => `<div class="itn-slot"><div><div class="itn-time">${esc(s.time)}</div><div class="itn-part">${esc(s.part)}</div></div>
           <div><div class="itn-text">${esc(s.text)}</div>${s.note ? `<div class="itn-snote">${esc(s.note)}</div>` : ''}${s.quiet ? `<span class="itn-quiet">${esc(s.quiet)}</span>` : ''}</div></div>`).join('')}</div>
         <div class="itn-moment"><div class="itn-mlbl">Pahari moment</div>${esc(moments[i % moments.length])}</div>
         <button type="button" class="itn-task${isDone ? ' done' : ''}" onclick="ppItn.toggleTask(${i})" aria-pressed="${isDone}">
           <span class="itn-box" aria-hidden="true">${isDone ? '✓' : ''}</span>
           <span class="itn-tbody"><span class="itn-tlbl">Responsible task</span><span>${esc(task)}</span></span>
-        </button>
+        </button>` : ''}
       </div>`;
     }).join('');
 
-    html += `<div class="itn-sum">${done.length} of ${plan.days.length} responsible tasks done · PAHADI points for these are coming soon</div>
+    html += `<div class="itn-sum">PAHADI points for responsible tasks are coming soon</div>
       <button type="button" class="itn-share" onclick="ppItn.share()">Send this plan to WhatsApp</button>`;
     el.innerHTML = html;
     S.lastPlan = plan;
@@ -381,6 +402,8 @@
     setType(k) { S.type = k; render(); },
     setPace(k) { S.pace = k; render(); },
     toggleTask(i) { const d = getDone(); const at = d.indexOf(i); at >= 0 ? d.splice(at, 1) : d.push(i); setDone(d); render(); },
+    toggleDay(i) { const at = S.open.indexOf(i); at >= 0 ? S.open.splice(at, 1) : S.open.push(i); render(); },
+    openAll() { const n = (S.lastPlan && S.lastPlan.days.length) || 0; S.open = S.open.length >= n ? [] : Array.from({ length: n }, (_, i) => i); render(); },
     toggleAdd(id) { const at = S.added.indexOf(id); at >= 0 ? S.added.splice(at, 1) : S.added.push(id); closeSheet(); render(); peek(id); },
     peek, close: closeSheet,
     share() {
@@ -400,7 +423,7 @@
   // Called from runFC() in app.js.
   window.ppRenderItinerary = function (ctx) {
     const key = ctx.place.id + '|' + ctx.start.toISOString().slice(0, 10) + '|' + ctx.nights;
-    if (key.split('|')[0] !== S.lastKey.split('|')[0]) S.added = [];       // new place → clear added trips
+    if (key.split('|')[0] !== S.lastKey.split('|')[0]) { S.added = []; S.open = [0]; }   // new place → clear added trips, open day 1 only
     S.lastKey = key;
     S.ctx = ctx;
     if (!S.type) { const t = String(ctx.travellers || '2'); S.type = t === '1' ? 'friends' : t === '2' ? 'couple' : 'family'; }
@@ -441,8 +464,21 @@
       .itn-dtitle{font-family:var(--fd);font-size:24px;font-weight:700;line-height:1.15;color:var(--pine)}
       .itn-tag{align-self:flex-start;min-height:36px;border:none;border-radius:999px;padding:6px 12px;font:700 12px var(--fb);background:#eaf0f6;color:#23466b;cursor:pointer;text-align:left}
       .itn-tag.base{background:#f6f1e7;color:#7a5a22}
-      .itn-slots{padding:4px 16px}
-      .itn-slot{display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px;padding:12px 0;border-bottom:1px dashed #e3e9e4}
+      .itn-slots{margin:4px 16px 4px 24px;padding:0 0 0 14px;border-left:2px solid #dfe7e1}
+      .itn-slot{position:relative;display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px;padding:12px 0;border-bottom:1px dashed #e3e9e4}
+      .itn-slot::before{content:'';position:absolute;left:-21px;top:16px;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--sage)}
+      .itn-dtoggle{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:44px;padding:0;border:none;background:none;cursor:pointer;text-align:left;font:inherit;color:inherit}
+      .itn-chev{flex:none;width:32px;height:32px;border-radius:50%;background:#e6ece7;color:var(--pine);display:flex;align-items:center;justify-content:center;font-size:14px}
+      .itn-day:not(.open) .itn-dhead{border-bottom:none}
+      .itn-peek{font-size:12.5px;color:#5a6a5d}
+      .itn-donemark{width:22px;height:22px;border-radius:50%;background:var(--pine);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+      .itn-summary{background:rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin:8px 0 14px;display:flex;flex-direction:column;gap:10px}
+      .itn-chips{display:flex;flex-wrap:wrap;gap:6px}
+      .itn-chip{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff}
+      .itn-chip.calm{background:#e3efe6;color:#1f4a32}.itn-chip.busy{background:#fbefe7;color:#8a4526}
+      .itn-prog{display:flex;align-items:center;gap:10px;font-size:12.5px;color:rgba(255,255,255,.85)}
+      .itn-pbar{flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden}.itn-pbar div{height:100%;background:#9fd3b0;transition:width .4s}
+      .itn-openall{align-self:flex-start;min-height:40px;border:1.5px solid rgba(255,255,255,.35);background:none;color:#fff;border-radius:999px;padding:6px 14px;font:600 13px var(--fb);cursor:pointer}
       .itn-slot:last-child{border-bottom:none}
       .itn-time{font-size:14px;font-weight:700}.itn-part{font-size:11px;color:#5a6a5d;text-transform:uppercase;letter-spacing:.06em}
       .itn-text{font-size:15px;line-height:1.45}.itn-snote{font-size:13px;color:#4f5f52;margin-top:4px;line-height:1.45}
