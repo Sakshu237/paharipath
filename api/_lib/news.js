@@ -53,6 +53,7 @@ const KIND_WORDS = {
   event: ['festival', 'mela', 'fair', 'carnival', 'utsav', 'dussehra', 'shivratri', 'मेला', 'उत्सव', 'दशहरा', 'शिवरात्रि', 'कार्निवल'],
 };
 // headlines that say a road REOPENED are not closures
+const ENDED = /\b(conclud\w*|conclusion|ends|ended|culminat\w*|wraps up|comes to an end)\b|समापन|संपन्न|समाप्त/i;
 const REOPEN = /\b(reopen|reopened|restored|resumes?|cleared)\b|बहाल|खुल/i;
 
 const decode = s => String(s || '')
@@ -93,6 +94,8 @@ function classify(item) {
   for (const [k, words] of Object.entries(KIND_WORDS)) if (words.some(w => hasWord(t, w))) kinds.push(k);
   let k2 = kinds;
   if (REOPEN.test(t)) k2 = k2.filter(k => k !== 'closure');
+  // a festival that has ENDED doesn't bring more crowd
+  if (ENDED.test(t)) k2 = k2.filter(k => k !== 'event');
   // "jam" from a landslide is a closure story, not a tourist rush
   if (k2.includes('closure') && k2.includes('rush') && !/tourist|पर्यटक|सैलानी|weekend/i.test(t)) k2 = k2.filter(k => k !== 'rush');
   return { ...item, zones: [...zones], kinds: k2 };
