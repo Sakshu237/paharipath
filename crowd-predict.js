@@ -383,7 +383,7 @@
 
     if (closed) push('❄️', 'Snowbound season — access usually closed', season);
     else if (season >= 1.12) push(t.best.snow && SNOW_BOOST[month] ? '🏂' : '🌸', t.best.snow && SNOW_BOOST[month] ? 'Snow season — peak demand' : (t.type === 'low' ? 'Peak pilgrimage / winter season' : 'Peak tourist season'), season);
-    else if (season <= 0.78) push(month >= 6 && month <= 8 && t.type !== 'high' ? '🌧' : '🍂', month >= 6 && month <= 8 && t.type !== 'high' ? 'Monsoon — low season' : (t.type === 'low' && (month === 4 || month === 5) ? 'Summer heat — low season here' : 'Off season'), season);
+    else if (season <= 0.78) push(month >= 6 && month <= 8 && t.type !== 'high' ? '🌧' : '🍂', month >= 6 && month <= 8 && t.type !== 'high' ? 'Monsoon — low season' : (t.type === 'low' && (month === 4 || month === 5) ? 'Summer heat — low season here' : inBest ? 'Shoulder season — few visitors' : 'Off season'), season);
 
     // ── day type (weekend / long weekend / weekday) ──
     const di = dayInfo(d);
@@ -543,14 +543,97 @@
       const pv = predict(p, lw.peakDay);
       lwHtml = `<div style="margin-top:8px;font-size:12px;color:var(--stone)">📅 Next long weekend <b style="color:var(--ink)">${lw.label}</b>: expect <b style="color:${lvlColor(pv.value)}">${pv.value}% · ${pv.level}</b> here</div>`;
     }
-    el.innerHTML = `<div style="margin-top:10px">${chips || '<span style="font-size:11px;color:var(--stone)">A typical day for this place</span>'}</div>${lwHtml}${newsHtml}
+    el.innerHTML = `<div style="margin-top:10px">${chips || '<span style="font-size:11px;color:var(--stone)">A typical day for this place</span>'}</div>${dayStripHtml(p)}${lwHtml}${newsHtml}
       <div style="margin-top:6px;font-size:10px;color:var(--stone);opacity:.8">Predicted from calendar, season, local festivals${NEWS.length ? ' &amp; today\'s news' : ''}${p.crowdNote ? ' + host report' : ''}</div>`;
+    wireDayStrip(p);
+  }
+
+  // ── 14-day tappable strip: pick a day, see its crowd and why ──
+  function dayStripHtml(p) {
+    const today = dayOnly(new Date());
+    const days = [];
+    let best = 0;
+    for (let i = 0; i < 14; i++) {
+      const d = addDays(today, i);
+      const r = predict(p, d, { noNews: i > 2 });
+      days.push({ d, r });
+      if (r.value < days[best].r.value) best = i;
+    }
+    const btn = (x, i) => {
+      const h = Math.max(6, Math.round(x.r.value * 0.34));
+      const lw = x.r.day.run && x.r.day.run.isLong;
+      return `<button type="button" data-ppday="${i}" aria-label="${esc(fmt(x.d))}: ${x.r.value}% ${esc(x.r.level)}" style="flex:1 0 0;min-width:0;border:none;background:transparent;padding:4px 0 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:8px">
+        <span style="display:flex;align-items:flex-end;height:34px"><span style="display:block;width:14px;height:${h}px;border-radius:3px;background:${lvlColor(x.r.value)};opacity:.85"></span></span>
+        <span style="font-size:9.5px;font-weight:${i === 0 ? 700 : 500};color:${lw ? '#a8401f' : 'var(--stone)'}">${i === 0 ? 'Today' : x.d.toLocaleDateString('en-IN', { weekday: 'narrow' }) + x.d.getDate()}</span>
+      </button>`;
+    };
+    return `<div style="margin-top:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--stone);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Pick a day · next 2 weeks</div>
+      <div id="ppDayStrip" style="display:flex;gap:2px">${days.map(btn).join('')}</div>
+      <div id="ppDayInfo" data-best="${best}" style="font-size:12px;margin-top:6px;min-height:34px"></div>
+    </div>`;
+  }
+  function wireDayStrip(p) {
+    const strip = document.getElementById('ppDayStrip');
+    const info = document.getElementById('ppDayInfo');
+    if (!strip || !info) return;
+    const today = dayOnly(new Date());
+    const best = +info.dataset.best || 0;
+    const show = i => {
+      const d = addDays(today, i);
+      const r = predict(p, d, { noNews: i > 2 });
+      strip.querySelectorAll('button').forEach((b, j) => { b.style.background = j === i ? '#eef3ef' : 'transparent'; b.setAttribute('aria-pressed', j === i ? 'true' : 'false'); });
+      const why = r.factors.filter(f => f.icon !== '🗓').slice(0, 2).map(f => `${f.icon} ${esc(f.text)}`).join(' · ');
+      info.innerHTML = `<b>${esc(fmt(d))}</b>: <b style="color:${lvlColor(r.value)}">${r.value}% · ${r.level}</b>${i === best ? ' <span style="color:#1e6b3e;font-weight:700">· quietest day</span>' : ''}${why ? `<div style="color:var(--stone);margin-top:2px">${why}</div>` : ''}`;
+    };
+    strip.addEventListener('click', e => { const b = e.target.closest('button[data-ppday]'); if (b) show(+b.dataset.ppday); });
+    show(best);
+  }
+
+  // ── Crowd meter time switch: Right now / This weekend / Next long weekend ──
+  const VIEW = { mode: 'now', date: null, label: '' };
+  function viewOptions() {
+    const today = dayOnly(new Date());
+    const dow = today.getDay();
+    const sat = dow === 6 || dow === 0 ? today : addDays(today, 6 - dow);
+    const opts = [{ mode: 'now', label: 'Right now', date: null }, { mode: 'weekend', label: dow === 0 ? 'Today (Sunday)' : 'This weekend', date: sat }];
+    const lw = upcomingLongWeekends(today, 60).filter(w => w.end >= today)[0];
+    if (lw) opts.push({ mode: 'lw', label: 'Next long weekend', date: lw.peakDay, sub: lw.label });
+    return opts;
+  }
+  function current(p) {
+    if (VIEW.mode === 'now' || !VIEW.date) return now(p).value;
+    return predict(p, VIEW.date).value;
+  }
+  // sort key for "quietest first" lists: closed & off-season places sink to the bottom
+  function sortKey(p) {
+    const r = predict(p, VIEW.date || new Date());
+    return current(p) + (r.closed ? 200 : r.inSeason ? 0 : 60);
+  }
+  function setView(mode) {
+    const o = viewOptions().find(x => x.mode === mode) || viewOptions()[0];
+    VIEW.mode = o.mode; VIEW.date = o.date; VIEW.label = o.date ? fmt(o.date) : '';
+    try { typeof renderCrowd === 'function' && renderCrowd(); } catch (e) { /* ignore */ }
+    try { typeof renderMap === 'function' && renderMap(); } catch (e) { /* ignore */ }
+  }
+  function renderTimeSwitch() {
+    const grid = document.getElementById('cgrid');
+    if (!grid) return;
+    let el = document.getElementById('ppTime');
+    if (!el) { el = document.createElement('div'); el.id = 'ppTime'; grid.parentNode.insertBefore(el, document.getElementById('ppLW') || grid); }
+    const opts = viewOptions();
+    if (!opts.some(o => o.mode === VIEW.mode)) { VIEW.mode = 'now'; VIEW.date = null; }
+    el.innerHTML = `<div role="group" aria-label="Show crowd for" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px">
+      ${opts.map(o => `<button type="button" aria-pressed="${VIEW.mode === o.mode}" onclick="PP_CROWD.setView('${o.mode}')" style="min-height:40px;padding:8px 14px;border-radius:20px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid ${VIEW.mode === o.mode ? 'var(--pine)' : 'rgba(74,124,95,.25)'};background:${VIEW.mode === o.mode ? 'var(--pine)' : '#fff'};color:${VIEW.mode === o.mode ? '#fff' : 'var(--ink)'}">${o.label}${o.sub ? ` <span style="font-weight:400;opacity:.8">· ${esc(o.sub)}</span>` : ''}</button>`).join('')}
+      ${VIEW.date ? `<span style="font-size:12px;color:var(--stone)">Forecast for ${esc(VIEW.label)}</span>` : ''}
+    </div>`;
   }
 
   // Long-weekend heads-up above the crowd meter list
   function renderLWBanner() {
     const grid = document.getElementById('cgrid');
     if (!grid || typeof ALL === 'undefined') return;
+    renderTimeSwitch();
     let el = document.getElementById('ppLW');
     const lw = upcomingLongWeekends(new Date(), 30).filter(w => w.end >= dayOnly(new Date()))[0];
     if (!lw) { if (el) el.remove(); return; }
@@ -591,12 +674,12 @@
 
   // short reason for list rows
   function topReason(p) {
-    const f = predict(p, new Date()).factors.find(x => x.icon !== '🗓');
+    const f = predict(p, VIEW.date || new Date()).factors.find(x => x.icon !== '🗓');
     return f ? `${f.icon} ${f.text}` : '';
   }
 
   window.PP_CROWD = {
-    predict, now, dayInfo, monthDowAvg, upcomingLongWeekends,
+    predict, now, current, setView, sortKey, dayInfo, monthDowAvg, upcomingLongWeekends,
     setNews, loadNews, newsFor, renderWhy, renderLWBanner, forecastNotes, topReason,
     get news() { return NEWS; }, get newsLoadedAt() { return NEWS_LOADED_AT; },
     _data: { HOLIDAYS, EVENTS, SCHOOL_BREAKS, PROFILE },
