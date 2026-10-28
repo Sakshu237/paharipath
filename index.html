@@ -692,7 +692,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <div class="sec-hd">
     <div>
       <h2 class="sec-t">Live <span>Crowd Meter</span></h2>
-      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — green means go now. Click to explore.</p>
+      <p style="font-size:13px;color:var(--stone);margin-top:5px">Sorted quietest first — predicted from holidays, long weekends, season, local festivals &amp; today's news. Click to explore.</p>
     </div>
     <div style="text-align:right">
       <div class="lp" style="display:inline-flex;margin-bottom:5px"><div class="ld"></div> Live</div>
@@ -1101,7 +1101,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
           <div class="pd-loc" id="pddist"></div>
         </div>
         <div class="pd-box">
-          <div class="pd-bl"><div class="ld"></div> Live crowd now</div>
+          <div class="pd-bl"><div class="ld"></div> Crowd now</div>
           <div style="height:8px;background:#eee;border-radius:4px;margin-bottom:7px"><div id="pdcbar" style="height:100%;border-radius:4px;transition:width .9s"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:12px"><span id="pdcpct" style="color:var(--stone)"></span><span id="pdcpill" class="cp"></span></div>
         </div>
@@ -1182,6 +1182,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/crowd-predict.js"></script>
 <script src="/app.js"></script>
 <script src="/itinerary.js"></script>
 <script src="/seo.js"></script>
