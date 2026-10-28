@@ -9,6 +9,7 @@
 //
 // REQUEST BODY (POST, JSON): { action, ...fields, access_token }
 
+const { isAdminEmail, notifyEmail } = require('./_lib/admin');
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 
@@ -59,7 +60,7 @@ async function verifyAdmin(access_token, adminEmail) {
   if (!userRes.ok) return { errorReason: 'Your login session has expired — please log out and back in' };
   const user = await userRes.json();
   if (!user.email) return { errorReason: 'Could not read the account email from this session' };
-  if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+  if (!isAdminEmail(user.email)) {
     return { errorReason: `Logged in as ${user.email}, which does not match the ADMIN_EMAIL set on the server` };
   }
   return { user };

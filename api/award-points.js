@@ -17,6 +17,7 @@
 
 const { checkinHasPassed, awardPointsForBooking, award, addBadge, tsKey } = require('./_lib/points');
 
+const { isAdminEmail, notifyEmail } = require('./_lib/admin');
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 const PHONE_RE = /^[6-9]\d{9}$/;
@@ -35,7 +36,7 @@ async function verifyAdmin(access_token) {
   const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${access_token}` } });
   if (!r.ok) return null;
   const u = await r.json();
-  return u.email && u.email.toLowerCase() === adminEmail.toLowerCase() ? u : null;
+  return u.email && isAdminEmail(u.email) ? u : null;
 }
 
 // This endpoint was previously wide open: no auth (fine, it's called by

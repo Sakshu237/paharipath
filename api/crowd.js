@@ -16,6 +16,7 @@
 
 const { getCrowdNews } = require('./_lib/news');
 
+const { isAdminEmail, notifyEmail } = require('./_lib/admin');
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 
@@ -117,7 +118,7 @@ module.exports = async (req, res) => {
       if (!adminEmail) { res.status(500).json({ error: 'Server not configured — missing ADMIN_EMAIL' }); return; }
       const user = await verifyUser(access_token);
       if (!user) { res.status(401).json({ error: 'Session expired — please log in again' }); return; }
-      if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+      if (!isAdminEmail(user.email)) {
         res.status(403).json({ error: 'Only the admin account can review crowd updates' });
         return;
       }
@@ -159,7 +160,7 @@ module.exports = async (req, res) => {
       if (!adminEmail) { res.status(500).json({ error: 'Server not configured — missing ADMIN_EMAIL' }); return; }
       const user = await verifyUser(access_token);
       if (!user) { res.status(401).json({ error: 'Session expired — please log in again' }); return; }
-      if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+      if (!isAdminEmail(user.email)) {
         res.status(403).json({ error: 'Only the admin account can do this' });
         return;
       }
@@ -186,7 +187,7 @@ module.exports = async (req, res) => {
       if (!adminEmail) { res.status(500).json({ error: 'Server not configured — missing ADMIN_EMAIL' }); return; }
       const user = await verifyUser(access_token);
       if (!user) { res.status(401).json({ error: 'Session expired — please log in again' }); return; }
-      if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+      if (!isAdminEmail(user.email)) {
         res.status(403).json({ error: 'Only the admin account can view this' });
         return;
       }

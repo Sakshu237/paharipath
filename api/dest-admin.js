@@ -33,6 +33,7 @@
 //   action: 'task-propose'   — HOST submits a task idea for admin review (any logged-in user)
 //   action: 'task-review'    — admin approves or rejects a pending proposal
 
+const { isAdminEmail, notifyEmail } = require('./_lib/admin');
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 const { sendEmail } = require('./_lib/email');
@@ -56,7 +57,7 @@ async function verifyAdmin(access_token, adminEmail) {
   if (!access_token) return { errorReason: 'No login session was sent with this request — please log out and back in' };
   const user = await verifyUser(access_token);
   if (!user) return { errorReason: 'Your login session has expired — please log out and back in' };
-  if (user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+  if (!isAdminEmail(user.email)) {
     return { errorReason: `Logged in as ${user.email}, which does not match the ADMIN_EMAIL set on the server` };
   }
   return { user };
@@ -637,6 +638,119 @@ module.exports = async (req, res) => {
       });
       if (!upd.ok) { res.status(400).json({ error: 'Reject failed: ' + await upd.text() }); return; }
       res.status(200).json({ success: true });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ADMIN CONTROL — runs with the service key, so it works on every
+    // row no matter what the database's row rules say. Admin only.
+    // ═══════════════════════════════════════════════════════════════
+
+    // action: 'stays-list' — every stay, including hidden / paused ones
+    if (action === 'stays-list') {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/stays?select=*&order=id.asc`, { headers: svcHeaders });
+      if (!r.ok) { res.status(400).json({ error: 'Could not load stays: ' + await r.text() }); return; }
+      res.status(200).json({ success: true, stays: await r.json() });
+      return;
+    }
+
+    // action: 'stay-update' — fields: id, changes{ only the keys below }
+    if (action === 'stay-update') {
+      const id = parseInt(req.body.id);
+      const c = req.body.changes || {};
+      if (!id) { res.status(400).json({ error: 'Missing stay id' }); return; }
+      const STATUSES = ['active', 'paused', 'full', 'hidden'];
+      const patch = {};
+      if (c.status !== undefined) {
+        if (!STATUSES.includes(c.status)) { res.status(400).json({ error: 'Status must be one of: ' + STATUSES.join(', ') }); return; }
+        patch.status = c.status;
+      }
+      if (c.verified !== undefined) patch.verified = !!c.verified;
+      if (c.eco !== undefined) patch.eco = !!c.eco;
+      if (c.name !== undefined) { const v = String(c.name).trim(); if (v.length < 2 || v.length > 80) { res.status(400).json({ error: 'Name must be 2–80 characters' }); return; } patch.name = v; }
+      if (c.loc !== undefined) patch.loc = String(c.loc).trim().slice(0, 120);
+      if (c.type !== undefined) patch.type = String(c.type).trim().slice(0, 40);
+      if (c.contact !== undefined) patch.contact = String(c.contact).trim().slice(0, 40);
+      if (c.host_email !== undefined) {
+        const v = String(c.host_email).trim().toLowerCase();
+        if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { res.status(400).json({ error: 'Host email looks wrong' }); return; }
+        patch.host_email = v || null;
+      }
+      if (c.pn !== undefined) {
+        const pn = parseInt(c.pn);
+        if (!(pn >= 0 && pn <= 200000)) { res.status(400).json({ error: 'Price per night looks wrong' }); return; }
+        patch.pn = pn; patch.price = '₹' + pn.toLocaleString('en-IN') + '/night';
+      }
+      if (c.placeid !== undefined) patch.placeid = parseInt(c.placeid) || 0;
+      if (c.max_guests !== undefined) patch.max_guests = parseInt(c.max_guests) || null;
+      if (!Object.keys(patch).length) { res.status(400).json({ error: 'Nothing to change' }); return; }
+      const up = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${id}`, {
+        method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(patch),
+      });
+      const rows = up.ok ? await up.json() : null;
+      if (!up.ok || !rows || !rows.length) { res.status(400).json({ error: 'Update failed' + (up.ok ? ' — stay not found' : ': ' + await up.text()) }); return; }
+      res.status(200).json({ success: true, stay: rows[0] });
+      return;
+    }
+
+    // action: 'bookings-list' — every booking (newest first)
+    // fields: status (optional filter), limit (default 300)
+    if (action === 'bookings-list') {
+      const lim = Math.min(1000, Math.max(1, parseInt(req.body.limit) || 300));
+      const st = String(req.body.status || '').replace(/[^a-z_]/g, '');
+      const q = `${SUPABASE_URL}/rest/v1/bookings?select=*${st ? '&status=eq.' + st : ''}&order=created_at.desc&limit=${lim}`;
+      const r = await fetch(q, { headers: svcHeaders });
+      if (!r.ok) { res.status(400).json({ error: 'Could not load bookings: ' + await r.text() }); return; }
+      res.status(200).json({ success: true, bookings: await r.json() });
+      return;
+    }
+
+    // action: 'booking-update' — fields: id, status
+    // Admin can confirm a request, cancel, or mark a no-show.
+    // ('completed' is set automatically after check-in by the daily job,
+    //  which also awards PAHADI points — so it isn't set by hand here.)
+    if (action === 'booking-update') {
+      const id = String(req.body.id || '');
+      const status = String(req.body.status || '');
+      const ALLOWED = ['requested', 'confirmed', 'cancelled', 'no_show'];
+      if (!id || !/^[A-Za-z0-9_-]{3,40}$/.test(id)) { res.status(400).json({ error: 'Missing or invalid booking reference' }); return; }
+      if (!ALLOWED.includes(status)) { res.status(400).json({ error: 'Status must be one of: ' + ALLOWED.join(', ') }); return; }
+      const patch = { status };
+      if (status === 'cancelled') patch.cancelled_at = new Date().toISOString();
+      const up = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(id)}&status=neq.completed`, {
+        method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(patch),
+      });
+      const rows = up.ok ? await up.json() : null;
+      if (!up.ok) { res.status(400).json({ error: 'Update failed: ' + await up.text() }); return; }
+      if (!rows || !rows.length) { res.status(409).json({ error: 'Not found, or the stay is already completed' }); return; }
+      res.status(200).json({ success: true, booking: rows[0] });
+      return;
+    }
+
+    // action: 'dashboard' — what needs attention today
+    if (action === 'dashboard') {
+      const today = new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10); // IST date
+      const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
+      const get = async (path) => { try { const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: svcHeaders }); return r.ok ? await r.json() : []; } catch (e) { return []; } };
+      const [requested, upcoming, recent, apps, stays] = await Promise.all([
+        get(`bookings?status=eq.requested&select=id,stay_name,guest,guest_phone,dates,checkin_date,created_at&order=created_at.asc&limit=50`),
+        get(`bookings?status=eq.confirmed&checkin_date=gte.${today}&select=id,stay_name,guest,guest_phone,dates,checkin_date&order=checkin_date.asc&limit=20`),
+        get(`bookings?created_at=gte.${encodeURIComponent(weekAgo)}&select=id,status,amount&limit=500`),
+        get(`partner_applications?status=eq.pending&select=id,created_at&limit=100`),
+        get(`stays?select=id,status`),
+      ]);
+      const count = (arr, f) => (Array.isArray(arr) ? arr.filter(f).length : 0);
+      res.status(200).json({
+        success: true,
+        today,
+        requested: Array.isArray(requested) ? requested : [],
+        upcoming: Array.isArray(upcoming) ? upcoming : [],
+        bookingsThisWeek: Array.isArray(recent) ? recent.length : 0,
+        cancelledThisWeek: count(recent, b => b.status === 'cancelled'),
+        pendingHostApplications: Array.isArray(apps) ? apps.length : 0,
+        staysLive: count(stays, s => (s.status || 'active') === 'active'),
+        staysHidden: count(stays, s => s.status === 'hidden'),
+      });
       return;
     }
 
