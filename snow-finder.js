@@ -23,6 +23,7 @@
     forecastFailed: false,
     loading: null,
     showAll: false,
+    fromFinder: false,
     layer: null,
     layerOn: false
   };
@@ -270,15 +271,17 @@
       var b = e.target.closest('.ppsf-item');
       if (!b) return;
       var id = +b.getAttribute('data-id');
-      close();
-      if (typeof openPD === 'function') openPD(id);
+      if (typeof openPD !== 'function') return;
+      state.fromFinder = true;
+      close(true);
+      openPD(id);
     });
   }
 
   var lastFocus = null;
   function open() {
     buildModal();
-    lastFocus = document.activeElement;
+    if (el.overlay.hidden) lastFocus = document.activeElement;
     if (!state.date) state.date = chips()[0].d;
     el.overlay.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -286,12 +289,35 @@
     render();
     ensureData().then(function () { render(); }, function () { render(true); });
   }
-  function close() {
+  function close(keepFocus) {
     if (!el.overlay) return;
     el.overlay.hidden = true;
     document.body.style.overflow = '';
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
+    if (keepFocus !== true && lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
   }
+
+  /* ---------- coming back from a destination opened from the finder ---------- */
+  // Back (button or phone back) returns to the finder with the same date and results.
+  function backToFinder() {
+    if (!state.fromFinder) return;
+    state.fromFinder = false;
+    open();
+  }
+  if (typeof window.closePD === 'function') {
+    var origClosePD = window.closePD;
+    window.closePD = function () {
+      var r = origClosePD.apply(this, arguments);
+      backToFinder();
+      return r;
+    };
+  }
+  window.addEventListener('popstate', function () {
+    if (!state.fromFinder) return;
+    var pd = document.getElementById('pd');
+    if (pd) { pd.style.display = 'none'; pd.classList.remove('open'); }
+    document.body.style.overflow = '';
+    backToFinder();
+  });
 
   function setDate(d) {
     state.date = d;
