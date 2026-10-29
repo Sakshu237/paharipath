@@ -187,7 +187,9 @@
     '.ppsf-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}' +
     '.ppsf-pop{font-family:var(--fb,sans-serif)}.ppsf-pop b{font-size:14px;color:#1c2420}.ppsf-pop span{display:block;font-size:12px;margin-top:4px;color:#36423e}' +
     '.ppsf-pop button{margin-top:8px;padding:5px 12px;border:0;border-radius:8px;background:var(--pine,#1a3d2b);color:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer}' +
-    '.map-filter-btn.snow-btn.act{background:#1a4a85;border-color:#1a4a85;color:#fff}';
+    '.map-filter-btn.snow-btn.act{background:#1a4a85;border-color:#1a4a85;color:#fff}' +
+    // Keep everything inside the map (legend, zoom, Add a Place) below the sticky top menu when scrolling.
+    '#lfmap-wrap{isolation:isolate}';
 
   var COLORS = { 3: ['#1A4A85', '#5B9BE6'], 2: ['#9A5300', '#F2A541'], 1: ['#7C8783', '#C9D0CD'] };
 
@@ -509,4 +511,5 @@
 
   /* ---------- public API ---------- */
   window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet };
+  injectCSS();
 })();
