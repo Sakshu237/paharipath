@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PahariPath — Media Fix</title>
+<meta name="robots" content="noindex, nofollow"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f3; color: #1a1a1a; margin: 0; padding: 24px 16px 80px; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 22px; color: #1a3d2b; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #6b7c6e; margin-bottom: 24px; }
+  .card { background: #fff; border: 1px solid rgba(74,124,95,.15); border-radius: 14px; padding: 8px 20px; margin-bottom: 16px; }
+  .status { font-size: 13px; padding: 10px 14px; border-radius: 10px; margin-bottom: 16px; }
+  .status.warn { background: #fdf3e3; color: #9b6c1a; }
+  .status.ok { background: #e6f4ec; color: #1a6b3c; }
+  .status.err { background: #fdeaea; color: #9b2020; }
+  button { background: #1a3d2b; color: #fff; border: none; padding: 13px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  .row { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0ee; font-size: 13px; }
+  .row:last-child { border-bottom: none; }
+  .row img { width: 72px; height: 50px; object-fit: cover; border-radius: 6px; background: #eee; flex-shrink: 0; }
+  .vid { width: 72px; height: 50px; border-radius: 6px; background: #1a3d2b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .info { flex: 1; min-width: 0; }
+  .info b { display: block; }
+  .info span { color: #6b7c6e; font-size: 12px; }
+  .pill { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .pill.pending { background: #f0f0ee; color: #888; }
+  .pill.ok { background: #e6f4ec; color: #1a6b3c; }
+  .pill.fail { background: #fdeaea; color: #9b2020; }
+  .count { font-size: 13px; color: #6b7c6e; margin: 4px 0 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Destination Media Fix</h1>
+  <div class="sub">Replaces bad photos and adds missing photos/videos in place_media, using your own admin login. Existing media is kept.</div>
+
+  <div id="statusBox" class="status warn">Checking your login session…</div>
+
+  <div class="card"><div id="list"></div></div>
+  <div class="count" id="countLine"></div>
+
+  <button id="runBtn" onclick="runAll()" disabled>Checking login…</button>
+</div>
+
+<script>
+const SUPABASE_URL = "https://fcrkfemeirmfhhxhomgw.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// replace: [old photo link contains this, new photo]   addImage / addVideo: added if not already there
+const CHANGES = [
+  { id: 21,  name: 'Grahan',                   replace: ['gstatic.com', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Grahan_Village%2C_Kasol_2014.jpg/1280px-Grahan_Village%2C_Kasol_2014.jpg'], credit: 'Kappiri · CC BY-SA 4.0' },
+  { id: 58,  name: 'Naddi',                    replace: ['gstatic.com', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/Village_of_Naddi_04.jpg/1280px-Village_of_Naddi_04.jpg'], credit: 'Bernard Gagnon · CC BY-SA 4.0' },
+  { id: 92,  name: 'Bon Monastery',            replace: ['gstatic.com', 'https://upload.wikimedia.org/wikipedia/commons/4/46/The_Bon_Monastery_Entrance%2C_Dolanji.jpg'], credit: 'Amrit Thapa · CC BY-SA 3.0' },
+  { id: 103, name: 'Deotsidh Baba Balak Nath', replace: ['gstatic.com', 'https://upload.wikimedia.org/wikipedia/commons/c/c2/Baba_Balak_Nath_temple.jpg'], addVideo: 'https://www.youtube.com/watch?v=ZYB9LQzRUMw', credit: 'Rajthakurdxb · CC BY-SA 4.0' },
+  { id: 104, name: 'Chintpurni Temple',        replace: ['gstatic.com', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Chintpurni_Devi_%282%29.JPG/1280px-Chintpurni_Devi_%282%29.JPG'], credit: 'Guptaele · CC BY-SA 4.0' },
+  { id: 61,  name: 'Pong Dam Wetlands',        replace: ['theindia.co.in', 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Pong_Dam_1.JPG/1280px-Pong_Dam_1.JPG'], credit: 'Vikasjariyal · CC BY-SA 3.0' },
+  { id: 6,   name: 'Haripurdhar',              addImage: 'https://upload.wikimedia.org/wikipedia/commons/0/07/Bhangaini_Maa_Temple.jpg', credit: 'subhas4u · CC BY-SA 4.0' },
+  { id: 44,  name: 'Chalal',                   addVideo: 'https://www.youtube.com/watch?v=WHvGNsm9MVg' },
+  { id: 51,  name: 'Pin Valley',               addVideo: 'https://www.youtube.com/watch?v=IvR1L4X0Q30' },
+  { id: 52,  name: 'Chicham Bridge',           addVideo: 'https://www.youtube.com/watch?v=COZYJR-pehY' },
+  { id: 63,  name: 'Manikaran',                addVideo: 'https://www.youtube.com/watch?v=9225jNpefRA' },
+  { id: 80,  name: 'Kangra Fort',              addVideo: 'https://www.youtube.com/watch?v=SB7_VfZFvjo' },
+  { id: 84,  name: 'Jawalamukhi',              addVideo: 'https://www.youtube.com/watch?v=nf-nwIQtfhU' },
+  { id: 87,  name: 'Shimla',                   addVideo: 'https://www.youtube.com/watch?v=L5qOb9F2ER0' },
+  { id: 99,  name: 'Gobind Sagar Lake',        addVideo: 'https://www.youtube.com/watch?v=bUbH9sLZR_0' },
+  { id: 102, name: 'Sujanpur Tira',            addVideo: 'https://www.youtube.com/watch?v=yqytS4nzDr4' },
+  { id: 116, name: 'Kinner Kailash Trek',      addVideo: 'https://www.youtube.com/watch?v=JhXRNts2guc' },
+  { id: 141, name: 'Bhakra Dam',               addVideo: 'https://www.youtube.com/watch?v=GBA-pl4etQc' }
+];
+
+const listEl = document.getElementById('list');
+const countLine = document.getElementById('countLine');
+const statusBox = document.getElementById('statusBox');
+const runBtn = document.getElementById('runBtn');
+
+function describe(c) {
+  const parts = [];
+  if (c.replace) parts.push('Replace photo');
+  if (c.addImage) parts.push('Add photo');
+  if (c.addVideo) parts.push('Add video');
+  return parts.join(' + ') + (c.credit ? ' · 📷 ' + c.credit : '');
+}
+
+listEl.innerHTML = CHANGES.map(c => {
+  const img = (c.replace && c.replace[1]) || c.addImage;
+  return `<div class="row">
+    ${img ? `<img src="${img}" alt="">` : `<div class="vid">▶</div>`}
+    <div class="info"><b>${c.name}</b><span>${describe(c)}</span></div>
+    <span class="pill pending" id="pill-${c.id}">Pending</span>
+  </div>`;
+}).join('');
+countLine.textContent = `${CHANGES.length} places to update`;
+
+async function checkLogin() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    statusBox.className = 'status err';
+    statusBox.innerHTML = 'You are not logged in. Open your main PahariPath site in another tab, log in as admin, then reload this page.';
+    runBtn.textContent = 'Not logged in';
+    return;
+  }
+  statusBox.className = 'status ok';
+  statusBox.textContent = `Logged in as ${session.user.email}. Ready to update ${CHANGES.length} places.`;
+  runBtn.disabled = false;
+  runBtn.textContent = `Apply all ${CHANGES.length} changes`;
+}
+checkLogin();
+
+async function runAll() {
+  runBtn.disabled = true;
+  runBtn.textContent = 'Saving…';
+  let ok = 0, fail = 0;
+  for (const c of CHANGES) {
+    const pill = document.getElementById(`pill-${c.id}`);
+    pill.textContent = 'Saving…';
+    try {
+      const { data: row, error: readErr } = await sb.from('place_media').select('*').eq('place_id', c.id).maybeSingle();
+      if (readErr) throw readErr;
+      let images = [...(row?.images || [])];
+      let videos = [...(row?.videos || [])];
+      if (c.replace) {
+        images = images.filter(u => !u.includes(c.replace[0]));
+        images.unshift(c.replace[1]);
+      }
+      if (c.addImage) images.push(c.addImage);
+      if (c.addVideo) videos.push(c.addVideo);
+      images = [...new Set(images)];
+      videos = [...new Set(videos)];
+      const { error } = await sb.from('place_media').upsert({ place_id: c.id, images, videos }, { onConflict: 'place_id' });
+      if (error) throw error;
+      pill.className = 'pill ok'; pill.textContent = '✓ Saved'; ok++;
+    } catch (e) {
+      pill.className = 'pill fail'; pill.textContent = 'Failed'; fail++;
+      console.error(c.name, e);
+    }
+    countLine.textContent = `${ok} saved, ${fail} failed, ${CHANGES.length - ok - fail} remaining`;
+  }
+  runBtn.textContent = `Done — ${ok} saved, ${fail} failed`;
+  statusBox.className = fail ? 'status warn' : 'status ok';
+  statusBox.textContent = fail
+    ? `Finished with ${fail} failure(s). Make sure you're logged in as the admin account, then reload this page to retry.`
+    : `All ${ok} places updated! Check a destination page, then you can delete this file from your repo.`;
+}
+</script>
+</body>
+</html>
