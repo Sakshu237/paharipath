@@ -578,7 +578,7 @@ module.exports = async (req, res) => {
 
       const stayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=host_email`, { headers });
       const [stay] = await stayRes.json();
-      if (!stay || stay.host_email !== hostEmail) { res.status(403).json({ error: 'This is not your listing' }); return; }
+      if (!stay || String(stay.host_email || '').toLowerCase() !== String(hostEmail).toLowerCase()) { res.status(403).json({ error: 'This is not your listing' }); return; }
 
       const bkRes = await fetch(
         `${SUPABASE_URL}/rest/v1/bookings?stay_id=eq.${stayId}&status=in.(confirmed,completed)&select=id,guest,checkin_date,checkout_date,status,amount,created_at`,
@@ -586,6 +586,39 @@ module.exports = async (req, res) => {
       );
       const bookings = await bkRes.json();
       res.status(200).json({ success: true, bookings: Array.isArray(bookings) ? bookings : [] });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // action: 'host-stay' — the few listing changes a host may make themselves:
+    // open / mark fully booked, and the private WhatsApp number PahariPath uses
+    // to reach them. Price, name, photos, verified badge etc. are admin-only.
+    // fields: stayId, changes { status?: 'active'|'full', host_phone? }, access_token
+    // ═══════════════════════════════════════════════════════
+    if (action === 'host-stay') {
+      const stayId = parseInt(req.body.stayId);
+      const hostEmail = await verifyHostEmail(req.body.access_token);
+      if (!hostEmail) { res.status(403).json({ error: 'Please log in again' }); return; }
+      if (!stayId) { res.status(400).json({ error: 'Missing stayId' }); return; }
+      const sr = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=host_email,status`, { headers });
+      const [stay] = sr.ok ? await sr.json() : [];
+      if (!stay || String(stay.host_email || '').toLowerCase() !== String(hostEmail).toLowerCase()) { res.status(403).json({ error: 'This is not your listing' }); return; }
+      const c = req.body.changes || {};
+      const patch = {};
+      if (c.status !== undefined) {
+        if (!['active', 'full'].includes(c.status)) { res.status(400).json({ error: 'You can only open bookings or mark the stay fully booked' }); return; }
+        if (!['active', 'full'].includes(stay.status || 'active')) { res.status(409).json({ error: 'This listing is paused by PahariPath — please contact us to reopen it' }); return; }
+        patch.status = c.status;
+      }
+      if (c.host_phone !== undefined) {
+        const v = String(c.host_phone).replace(/\D/g, '').slice(-10);
+        if (!/^[6-9]\d{9}$/.test(v)) { res.status(400).json({ error: 'Please enter a 10-digit mobile number' }); return; }
+        patch.host_phone = v;
+      }
+      if (!Object.keys(patch).length) { res.status(400).json({ error: 'Nothing to change' }); return; }
+      const up = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}`, { method: 'PATCH', headers, body: JSON.stringify(patch) });
+      if (!up.ok) { const t = await up.text(); res.status(400).json({ error: /host_phone/.test(t) ? 'host_phone column missing' : 'Could not save — please try again' }); return; }
+      res.status(200).json({ success: true });
       return;
     }
 
