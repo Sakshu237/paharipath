@@ -464,6 +464,23 @@
     layerOff(String(b.getAttribute('onclick') || '').indexOf('mapFilter') === -1);
   }, true);
 
+  /* ---------- Explore section "❄️ Snow" filter ---------- */
+  // Returns the ids of places with snow likely or possible this coming weekend.
+  // Uses the live forecast once loaded; until then the altitude estimate, then refreshes the grid.
+  function snowSet() {
+    var date = chips()[0].d;
+    var places = state.places || buildPlaces();
+    var out = new Set();
+    places.forEach(function (p, i) { if (assess(p, i, date).lvl >= 2) out.add(p.id); });
+    if (!state.places) {
+      ensureData().then(function () {
+        var b = document.querySelector('.pf-btn.act');
+        if (b && /plFilter\('snow'/.test(b.getAttribute('onclick') || '') && typeof plFilter === 'function') plFilter('snow', b);
+      }, function () { /* keep the estimate */ });
+    }
+    return out;
+  }
+
   /* ---------- public API ---------- */
-  window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate };
+  window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet };
 })();
