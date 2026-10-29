@@ -37,6 +37,8 @@ const { isAdminEmail, notifyEmail } = require('./_lib/admin');
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 const { sendEmail } = require('./_lib/email');
+const chat = require('./_lib/chat');
+const notify = require('./_lib/notify');
 
 // Any logged-in user (host or traveller) — just checks the token is valid.
 async function verifyUser(access_token) {
@@ -717,6 +719,30 @@ module.exports = async (req, res) => {
       if (!ALLOWED.includes(status)) { res.status(400).json({ error: 'Status must be one of: ' + ALLOWED.join(', ') }); return; }
       const patch = { status };
       if (status === 'cancelled') patch.cancelled_at = new Date().toISOString();
+      if (status === 'confirmed') {
+        // Confirming must never double-book. A pending request goes through the same
+        // accept flow as the host (date check, guest email, chat note, overlapping
+        // requests declined); any other row gets the same date check before it is confirmed.
+        const cur = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(id)}&select=id,status,stay_id,checkin_date,checkout_date`, { headers: svcHeaders }).then(r => r.json()).catch(() => []);
+        const b = Array.isArray(cur) ? cur[0] : null;
+        if (!b) { res.status(404).json({ error: 'Booking not found' }); return; }
+        if (b.status === 'requested') {
+          const [code, out] = await chat.actionRespond({ bookingRef: id, decision: 'accept', access_token }, { headers: svcHeaders, SUPABASE_URL, SUPABASE_ANON }, notify);
+          res.status(code).json(code === 200 ? { success: true, booking: { ...(out.booking || {}), id, status: 'confirmed' } } : out);
+          return;
+        }
+        if (b.stay_id && b.checkin_date && b.checkout_date) {
+          const [conf, blocked] = await Promise.all([
+            fetch(`${SUPABASE_URL}/rest/v1/bookings?stay_id=eq.${b.stay_id}&id=neq.${encodeURIComponent(id)}&status=in.(confirmed,pending_payment)&checkin_date=lt.${b.checkout_date}&checkout_date=gt.${b.checkin_date}&select=id`, { headers: svcHeaders }).then(r => r.json()).catch(() => []),
+            fetch(`${SUPABASE_URL}/rest/v1/host_blocked_dates?stay_id=eq.${b.stay_id}&blocked_date=gte.${b.checkin_date}&blocked_date=lt.${b.checkout_date}&select=id`, { headers: svcHeaders }).then(r => r.json()).catch(() => []),
+          ]);
+          if ((Array.isArray(conf) && conf.length) || (Array.isArray(blocked) && blocked.length)) {
+            res.status(409).json({ error: 'Cannot confirm — these dates overlap another confirmed booking or host-blocked dates for this stay.' });
+            return;
+          }
+        }
+        patch.confirmed_at = new Date().toISOString();
+      }
       const up = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(id)}&status=neq.completed`, {
         method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(patch),
       });
