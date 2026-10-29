@@ -164,6 +164,21 @@ async function handleAction(action, req, res, headers) {
     if (!PHONE_RE.test(phone)) { res.status(400).json({ error: 'Enter a valid 10-digit mobile' }); return; }
     if (await countRecentAttempts(`profile-ip:${ip}`, headers) >= 20) { res.status(429).json({ error: 'Too many requests — please slow down' }); return; }
     await logAttempt(`profile-ip:${ip}`, headers);
+    // A profile that already has a name or photo belongs to whoever proved this phone
+    // with a booking reference. Without that proof, anyone could rename or re-photo
+    // another traveller just by knowing their number. Brand-new numbers can still set up a profile.
+    const existing = await fetch(`${SUPABASE_URL}/rest/v1/traveller_scores?user_key=eq.${encodeURIComponent(tsKey(phone))}&select=guest_name,photo_url&limit=1`, { headers }).then(r => r.json()).catch(() => []);
+    const claimed = Array.isArray(existing) && existing[0] && (existing[0].guest_name || existing[0].photo_url);
+    if (claimed) {
+      const proofRef = String(b.proofRef || '');
+      const proof = /^PP[A-Z0-9]{6,12}$/.test(proofRef)
+        ? await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(proofRef)}&guest_phone=eq.${phone}&select=id`, { headers }).then(r => r.json()).catch(() => [])
+        : [];
+      if (!Array.isArray(proof) || !proof.length) {
+        res.status(403).json({ error: 'For privacy, open “Manage / Cancel Booking” once with your booking reference on this device, then edit your profile.' });
+        return;
+      }
+    }
     const row = { user_key: tsKey(phone), phone_hint: phone };
     const name = clip(b.name, 80).replace(/[<>]/g, '');
     if (name) row.guest_name = name;
