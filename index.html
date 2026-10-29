@@ -690,6 +690,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <button class="fb" onclick="fltr(this,'culture')">Culture</button>
     <button class="fb" onclick="fltr(this,'trek')">Trek</button>
     <button class="fb" onclick="fltrStays(this)">🏡 Has Stays</button>
+    <button class="fb" onclick="PPSnow.open()">❄️ Find Snow</button>
   </div>
   <a class="hero-credit" href="https://commons.wikimedia.org/wiki/File:The_Holy_Meadow_of_Shangarh,_Sainj_Valley.jpg" target="_blank" rel="noopener">📷 Shangarh meadow · Rajani Gairshail · CC BY 4.0</a>
 </section>
@@ -789,6 +790,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
           <button class="map-filter-btn" onclick="mapFilter('spiritual',this)">Spiritual</button>
           <button class="map-filter-btn" onclick="mapFilter('offbeat',this)">Offbeat</button>
           <button class="map-filter-btn" onclick="mapFilter('hasstays',this)">🏡 Has Stays</button>
+          <button class="map-filter-btn snow-btn" id="snowMapBtn" onclick="PPSnow.mapToggle()">❄️ Snow</button>
           <button class="map-filter-btn" onclick="locateMe()" title="Find nearest places to you">📍 Near Me</button>
         </div>
       </div>
@@ -1198,6 +1200,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 <script src="/admin-control.js"></script>
 <script src="/itinerary.js"></script>
 <script src="/seo.js"></script>
+<script src="/snow-finder.js"></script>
 <!-- MANAGE / CANCEL BOOKING MODAL -->
 <div id="manageBookingMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
   <div class="mo-box" style="max-width:460px">
