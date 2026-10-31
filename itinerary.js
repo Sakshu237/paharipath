@@ -218,13 +218,22 @@
     // 5. Arrival and departure.
     const first = written && isArrival(written[0].title) ? written[0] : null;
     const last = written && written.length > 1 && isDeparture(written[written.length - 1].title) ? written[written.length - 1] : null;
+    // Journey from the traveller's city (only when they used "Suggest a place for me").
+    const trip = window.PPTrip && window.PPTrip.travel ? window.PPTrip.travel(p) : null;
+    const goLine = trip
+      ? `Travel from ${trip.from} to ${p.name} — ${trip.label} ${trip.route}${trip.hours > 9 ? '. Start before sunrise, or break the journey overnight on the way' : trip.hours > 5 ? '. Leave early to reach by afternoon' : ''}`
+      : `Travel to ${p.name}`;
     const arrival = { kind: 'arrival', pid: p.id, title: `Arrive in ${p.name}`,
-      items: [`Travel to ${p.name}${c.high ? ' — you are above 3,000 m, so take it slow today' : ''}`, 'Check in and settle into your stay',
+      items: [`${goLine}${c.high ? ' — you are above 3,000 m, so take it slow today' : ''}`, 'Check in and settle into your stay',
         ...(first ? first.items.map(clean).slice(-2) : [`Evening walk around ${p.name}`, 'Dinner at your stay — ask for a local dish'])] };
     const endPlace = base ? base.p : p;
+    const back = trip ? window.PPTrip.travel(endPlace) : null;
+    const homeLine = back
+      ? `Head back to ${back.from} — ${back.label} ${back.route}; ${back.hours > 8 ? 'leave by 8 am or plan a night halt' : 'leave by noon to drive in daylight'}`
+      : 'Head home — leave by noon to drive in daylight';
     const departure = { kind: 'departure', pid: endPlace.id, title: 'One last morning, then home',
-      items: last ? ['Early walk at golden hour', ...last.items.map(clean).slice(0, 2), 'Head home — leave by noon to drive in daylight']
-        : ['Early walk at golden hour', 'Breakfast and check-out', `Local shopping — ${c.shop || 'pickles, shawls and honey'}`, 'Head home — leave by noon to drive in daylight'] };
+      items: last ? ['Early walk at golden hour', ...last.items.map(clean).slice(0, 2), homeLine]
+        : ['Early walk at golden hour', 'Breakfast and check-out', `Local shopping — ${c.shop || 'pickles, shawls and honey'}`, homeLine] };
 
     return { days: [arrival, ...blocks, departure], moved, base };
   }
@@ -426,6 +435,7 @@
     if (key.split('|')[0] !== S.lastKey.split('|')[0]) { S.added = []; S.open = [0]; }   // new place → clear added trips, open day 1 only
     S.lastKey = key;
     S.ctx = ctx;
+    if (window.PP_FINDER) { S.type = window.PP_FINDER.type || S.type; S.pace = window.PP_FINDER.pace || S.pace; window.PP_FINDER = null; }   // set by trip-finder.js
     if (!S.type) { const t = String(ctx.travellers || '2'); S.type = t === '1' ? 'friends' : t === '2' ? 'couple' : 'family'; }
     injectStyles();
     render();
