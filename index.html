@@ -825,7 +825,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:32px">
       <div>
         <div class="plan-t">Plan your <em style="font-family:var(--fd);font-style:italic">trip</em></div>
-        <p class="plan-s">Pick a place and date — get crowd forecast, weather, road safety & a day-by-day itinerary</p>
+        <p class="plan-s">Pick a place and date — or let us suggest one — and get crowd forecast, weather, road safety & a day-by-day itinerary</p>
       </div>
       <button onclick="detectLocation()" style="background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);color:#fff;padding:10px 18px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb);display:flex;align-items:center;gap:8px;white-space:nowrap">
         <span id="locBtnIcon">📍</span> <span id="locBtnText">Use my location</span>
@@ -1201,6 +1201,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 <script src="/itinerary.js"></script>
 <script src="/seo.js"></script>
 <script src="/snow-finder.js"></script>
+<script src="/trip-finder.js"></script>
 <!-- MANAGE / CANCEL BOOKING MODAL -->
 <div id="manageBookingMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
   <div class="mo-box" style="max-width:460px">
