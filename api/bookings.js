@@ -423,9 +423,24 @@ module.exports = async (req, res) => {
     // ═══════════════════════════════════════════════════════
     if (host.ACTIONS[action]) {
       const isWrite = ['host-listing', 'host-photos', 'host-setup', 'host-rate-guest'].includes(action);
-      if (await ipThrottled(req, isWrite ? 'bk-host-w' : 'bk-host-r', isWrite ? 60 : 200, headers)) { res.status(429).json({ error: 'Too many requests — please wait a few minutes and try again.' }); return; }
-      const [code, out] = await host.ACTIONS[action](req.body || {}, { headers, SUPABASE_URL, SUPABASE_ANON });
-      res.status(code).json(out);
+      // Rate limit without making the host wait for it: the count and the log run alongside
+      // the real work. Reads run at the same time as the count; writes wait for the count first.
+      const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+      const key = `${isWrite ? 'bk-host-w' : 'bk-host-r'}:${ip}`, max = isWrite ? 60 : 200;
+      const countP = countRecentAttempts(key, headers).catch(() => 0);
+      const logP = logAttempt(key, headers).catch(() => {});
+      const run = () => host.ACTIONS[action](req.body || {}, { headers, SUPABASE_URL, SUPABASE_ANON });
+      let result;
+      if (isWrite) {
+        if ((await countP) >= max) { await logP; res.status(429).json({ error: 'Too many requests — please wait a few minutes and try again.' }); return; }
+        result = await run();
+      } else {
+        const [n, r] = await Promise.all([countP, run()]);
+        if (n >= max) { await logP; res.status(429).json({ error: 'Too many requests — please wait a few minutes and try again.' }); return; }
+        result = r;
+      }
+      await logP;
+      res.status(result[0]).json(result[1]);
       return;
     }
 
