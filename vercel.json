@@ -1,4 +1,7 @@
 {
+  "regions": [
+    "bom1"
+  ],
   "rewrites": [
     {
       "source": "/sitemap.xml",
