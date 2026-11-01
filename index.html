@@ -914,7 +914,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 
     </div>
   </div>
-</div>
   <div class="about-sec">
   <h2 class="about-t">Why PahariPath?</h2>
   <p class="about-d">Himachal Pradesh is far more than Manali, Shimla, and Kasol. PahariPath forecasts how busy all 146 destinations will be, flags fragile areas, suggests quiet alternatives, and connects you directly with local homestays. No tourist-speak. No corporate stays. Just honest travel.</p>
@@ -939,7 +938,6 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <!-- Hidden access: type "pahari" anywhere for admin, go to /#host for host login -->
 <div style="margin-top:12px;height:20px" id="secretZone" onclick="handleSecretClick()"></div>
 </footer>
-</div>
 <div style="margin-top:10px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
   <a href="/blog" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Blog</a>
   <a href="/privacy-policy.html" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Privacy Policy</a>
@@ -949,7 +947,8 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <a href="#" onclick="showPartnerForm()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">List Your Property</a>
   <a href="#" onclick="openManageBooking()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Manage / Cancel Booking</a>
   <a href="#" onclick="openSupportMo()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Help & Support</a>
-  <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us</a></div><!-- /home -->
+  <a href="mailto:hello@paharipath.in" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Contact Us</a></div>
+</div><!-- /home -->
 
 <!-- ADMIN LOGIN -->
 <!-- HOST LOGIN -->
@@ -959,6 +958,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div style="width:52px;height:52px;background:var(--pine);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px">🏡</div>
       <div style="font-family:var(--fd);font-size:26px;color:var(--pine);margin-bottom:6px">Host Login</div>
       <p style="font-size:13px;color:var(--stone);margin-bottom:28px;line-height:1.6">Welcome back. Manage your PahariPath listing, view bookings and guest feedback.</p>
+      <div id="hjContinue"></div>
       <div style="margin-bottom:14px;text-align:left">
         <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px">Email</label>
         <input type="email" id="hostEmail" class="fi" placeholder="your@email.com" onkeydown="if(event.key==='Enter')document.getElementById('hostPass').focus()"/>
@@ -966,11 +966,13 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div style="margin-bottom:20px;text-align:left">
         <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:5px">Password</label>
         <input type="password" id="hostPass" class="fi" placeholder="••••••••" onkeydown="if(event.key==='Enter')doHostLogin()"/>
+        <div style="text-align:right;margin-top:6px"><a href="#" onclick="hjForgotPassword();return false;" style="font-size:12px;color:var(--pine)">Forgot password?</a></div>
       </div>
       <div id="hostLoginErr" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:10px 14px;font-size:13px;color:#9b2020;margin-bottom:14px;text-align:left"></div>
       <button onclick="doHostLogin()" style="width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Sign In →</button>
       <button onclick="setView('home')" style="width:100%;padding:10px;background:none;border:none;font-size:13px;color:var(--stone);cursor:pointer;margin-top:12px;font-family:var(--fb)">← Back to site</button>
-      <p style="font-size:11px;color:var(--stone);margin-top:16px;opacity:.6">Not registered? <a href="#" onclick="showHostRegister()" style="color:var(--pine);font-weight:600">Register as a Host →</a></p>
+      <p style="font-size:12px;color:var(--stone);margin-top:16px">Applied already? <a href="#" onclick="hjCheckApplication();return false;" style="color:var(--pine);font-weight:600">Check application status</a></p>
+      <p style="font-size:11px;color:var(--stone);margin-top:6px;opacity:.7">Not a host yet? <a href="#" onclick="showHostRegister();return false;" style="color:var(--pine);font-weight:600">List your property →</a></p>
     </div>
   </div>
 </div>
@@ -997,7 +999,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <div style="background:#fff;border-bottom:1px solid #eee;padding:0 24px;display:flex;gap:0;overflow-x:auto">
       <button class="htab act" onclick="hTab('overview',this)">📊 Overview</button>
       <button class="htab" onclick="hTab('bookings',this)">📋 Requests &amp; Bookings</button>
-      <button class="htab" onclick="hTab('guests',this)">👥 Guests</button>
+      <button class="htab" onclick="hTab('guests',this)">👥 Guests &amp; Reviews</button>
       <button class="htab" onclick="hTab('listing',this)">🏡 My Listing</button>
       <button class="htab" onclick="hTab('calendar',this)">📅 Calendar</button>
       <button class="htab" onclick="hTab('crowd',this)">🚦 Crowd Update</button>
@@ -1060,6 +1062,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="adm-ni" onclick="adTab('book',this)">📋 Bookings (old view)</div>
       <div class="adm-ni" onclick="adTab('stays',this)">🏡 Stays (full editor)</div>
       <div class="adm-ni" onclick="adTab('hostapps',this)">🏠 Host Applications</div>
+      <div class="adm-ni" onclick="adTab('onboarding',this)">🧭 Host Onboarding</div>
       <div class="adm-ni" onclick="adTab('reviews',this)">⭐ Reviews</div>
       <div class="adm-ni" onclick="adTab('feedback',this)">⭐ Host Feedback</div>
       <div class="adm-sec" style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);padding:14px 16px 4px">Content</div>
@@ -1198,6 +1201,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 <script src="/crowd-predict.js"></script>
 <script src="/app.js"></script>
 <script src="/admin-control.js"></script>
+<script src="/host.js"></script>
 <script src="/itinerary.js"></script>
 <script src="/seo.js"></script>
 <script src="/snow-finder.js"></script>
@@ -1606,7 +1610,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <div class="pp-rev" id="ppReview"></div>
       <div id="ppReviewPhotos" class="pp-grid"></div>
       <div style="background:#fff8e6;border:1px solid #f0dca0;border-radius:10px;padding:10px 14px;font-size:12px;color:#6b5311;margin-bottom:14px;line-height:1.6">
-        <b>What happens next:</b> your application goes to the PahariPath team for verification. We contact you on WhatsApp within 48 hours. Once approved, your listing goes live and your host login is emailed to you.
+        <b>What happens next:</b> your application goes to the PahariPath team for verification. We contact you on WhatsApp within 48 hours. Once approved, your host login is emailed to you — finish a short setup (about 10 minutes) and your listing goes live.
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:16px">
         <input type="checkbox" id="pAgree" style="width:16px;height:16px;margin-top:2px"/>
@@ -1622,7 +1626,8 @@ input[type=range]{flex:1;accent-color:var(--pine)}
     <div id="ppDone" style="display:none;text-align:center;padding:20px 4px">
       <div style="font-size:44px;margin-bottom:8px">✅</div>
       <div style="font-family:var(--fd);font-size:22px;color:var(--pine);font-weight:600;margin-bottom:8px">Application received</div>
-      <p style="font-size:13px;color:var(--stone);line-height:1.7;margin-bottom:18px">Thank you! Our team will verify your details and contact you on WhatsApp within 48 hours. After approval your listing goes live and your host login is emailed to you.</p>
+      <p style="font-size:13px;color:var(--stone);line-height:1.7;margin-bottom:18px">Thank you! Our team will verify your details and contact you on WhatsApp within 48 hours. After approval your host login is emailed to you — finish a short setup and your listing goes live.</p>
+      <p style="font-size:12px;color:var(--stone);line-height:1.6;margin:-8px 0 18px">Check progress any time: <a href="#" onclick="ppClose();hjCheckApplication();return false;" style="color:var(--pine);font-weight:600">Check application status</a> (also on the Host Login page).</p>
       <button class="pp-btn" onclick="ppClose()">Close</button>
     </div>
   </div>
