@@ -25,7 +25,7 @@ const { sendEmail } = require('./email');
 const { isAdminEmail, notifyEmail } = require('./admin');
 
 const SITE = 'https://paharipath.in';
-const REQUEST_HOURS = 48;
+const REQUEST_HOURS = 24; // decided Oct 2026: hosts get 24h to answer a request
 const MAX_LEN = 1000;
 const NOTIFY_GAP_MIN = 15; // at most one "new message" email per side every 15 minutes
 const OPEN_STATUSES = ['requested', 'confirmed', 'completed'];
