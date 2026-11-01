@@ -62,6 +62,20 @@ async function ownStay(stayId, email, ctx) {
   return s && String(s.host_email || '').toLowerCase() === email ? s : null;
 }
 
+// Checks the login and loads the stay at the same time (two network calls in parallel,
+// instead of one after the other). Returns { email, stay } or { error: [code, body] }.
+async function authOwnStay(body, ctx) {
+  const id = parseInt(body.stayId);
+  const [email, rows] = await Promise.all([
+    sessionEmail(body.access_token, ctx.SUPABASE_URL, ctx.SUPABASE_ANON),
+    id ? fetch(`${ctx.SUPABASE_URL}/rest/v1/stays?id=eq.${id}&select=*`, { headers: ctx.headers }).then(r => (r.ok ? r.json() : [])).catch(() => []) : [],
+  ]);
+  if (!email) return { error: [403, { error: 'Please log in again' }] };
+  const stay = rows[0];
+  if (!stay || String(stay.host_email || '').toLowerCase() !== email) return { error: [403, { error: 'This is not your listing' }] };
+  return { email, stay };
+}
+
 async function patchStay(id, patch, ctx) {
   const r = await fetch(`${ctx.SUPABASE_URL}/rest/v1/stays?id=eq.${parseInt(id)}`, {
     method: 'PATCH', headers: { ...ctx.headers, Prefer: 'return=representation' }, body: JSON.stringify(patch),
@@ -120,17 +134,18 @@ async function actionStays(body, ctx) {
 
 // 'host-dashboard' — bookings, reviews and guest-feedback status for one stay.
 async function actionDashboard(body, ctx) {
-  const email = await sessionEmail(body.access_token, ctx.SUPABASE_URL, ctx.SUPABASE_ANON);
-  if (!email) return [403, { error: 'Please log in again' }];
-  const stay = await ownStay(body.stayId, email, ctx);
-  if (!stay) return [403, { error: 'This is not your listing' }];
+  const a = await authOwnStay(body, ctx);
+  if (a.error) return a.error;
+  const { email, stay } = a;
   const U = ctx.SUPABASE_URL, H = { headers: ctx.headers };
   const fields = 'id,guest,guest_phone,dates,checkin_date,checkout_date,nights,guests,amount,base_amount,status,payment_status,payout_status,payout_ref,paid_out_at,created_at,request_expires_at';
+  // Bookings and reviews load together.
+  const reviewsP = fetch(`${U}/rest/v1/stay_reviews?stay_id=eq.${stay.id}&select=*&order=created_at.desc&limit=50`, H).catch(() => ({ ok: false }));
   let br = await fetch(`${U}/rest/v1/bookings?stay_id=eq.${stay.id}&status=in.(requested,confirmed,completed,declined,expired,cancelled,no_show)&select=${fields}&order=checkin_date.desc&limit=300`, H);
   if (!br.ok) // older databases without the payout columns
     br = await fetch(`${U}/rest/v1/bookings?stay_id=eq.${stay.id}&status=in.(requested,confirmed,completed,declined,expired,cancelled,no_show)&select=id,guest,guest_phone,dates,checkin_date,checkout_date,nights,guests,amount,base_amount,status,payment_status,created_at,request_expires_at&order=checkin_date.desc&limit=300`, H);
   const bookings = (br.ok ? await br.json() : []).map(b => (b.status === 'confirmed' || b.status === 'completed') ? b : { ...b, guest_phone: null });
-  const rr = await fetch(`${U}/rest/v1/stay_reviews?stay_id=eq.${stay.id}&select=*&order=created_at.desc&limit=50`, H);
+  const rr = await reviewsP;
   const reviews = (rr.ok ? await rr.json() : []).filter(x => x.status !== 'hidden')
     .map(x => ({ rating: x.rating, comment: x.comment, guest_name: x.guest_name, created_at: x.created_at, booking_ref: x.booking_ref }));
   const refs = bookings.filter(b => b.status === 'completed' || b.status === 'confirmed').map(b => b.id);
@@ -144,10 +159,9 @@ async function actionDashboard(body, ctx) {
 
 // 'host-listing' — the listing fields a host edits directly.
 async function actionListing(body, ctx) {
-  const email = await sessionEmail(body.access_token, ctx.SUPABASE_URL, ctx.SUPABASE_ANON);
-  if (!email) return [403, { error: 'Please log in again' }];
-  const stay = await ownStay(body.stayId, email, ctx);
-  if (!stay) return [403, { error: 'This is not your listing' }];
+  const a = await authOwnStay(body, ctx);
+  if (a.error) return a.error;
+  const { email, stay } = a;
   const c = body.changes || {};
   const patch = {};
   if (c.description !== undefined) {
@@ -193,10 +207,9 @@ async function actionListing(body, ctx) {
 // 'host-photos' — op: 'submit' (new photos → approval queue), 'withdraw' (a pending one),
 // 'remove' (a live one, keeping at least 2), 'cover' (make a live photo the first one).
 async function actionPhotos(body, ctx) {
-  const email = await sessionEmail(body.access_token, ctx.SUPABASE_URL, ctx.SUPABASE_ANON);
-  if (!email) return [403, { error: 'Please log in again' }];
-  const stay = await ownStay(body.stayId, email, ctx);
-  if (!stay) return [403, { error: 'This is not your listing' }];
+  const a = await authOwnStay(body, ctx);
+  if (a.error) return a.error;
+  const { email, stay } = a;
   const live = arr(stay.photos).slice(), pending = arr(stay.pending_photos).slice();
   const op = body.op;
   const publicUrl = name => `${ctx.SUPABASE_URL}/storage/v1/object/public/stay-photos/${name}`;
@@ -242,10 +255,9 @@ async function actionPhotos(body, ctx) {
 
 // 'host-setup' — step: 'agree' | 'calendar' | 'go-live'
 async function actionSetup(body, ctx) {
-  const email = await sessionEmail(body.access_token, ctx.SUPABASE_URL, ctx.SUPABASE_ANON);
-  if (!email) return [403, { error: 'Please log in again' }];
-  const stay = await ownStay(body.stayId, email, ctx);
-  if (!stay) return [403, { error: 'This is not your listing' }];
+  const a = await authOwnStay(body, ctx);
+  if (a.error) return a.error;
+  const { email, stay } = a;
   const now = new Date().toISOString();
   let patch;
   if (body.step === 'agree') {
