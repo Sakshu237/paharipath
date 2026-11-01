@@ -104,12 +104,16 @@
   }
 
   async function enterDashboard(email) {
+    // Start loading the last-used stay's dashboard at the same time as the stay list.
+    let keep0 = '';
+    try { keep0 = localStorage.getItem('pp_host_stay') || ''; } catch (e) { /* private mode */ }
+    H.data = null; H.dataFor = null;
+    if (parseInt(keep0)) fetchData(parseInt(keep0));
     const d = await api('host-stays');
     if (d.error) { toast(d.error); return false; }
     H.email = d.email || email || '';
     H.stays = d.stays || [];
     H.amenities = d.amenityOptions || [];
-    H.data = null; H.dataFor = null;
     _hostUser = (await _sb.auth.getUser()).data.user;
     _hostStays = H.stays;
     let keep = '';
@@ -231,15 +235,47 @@
   // ════════════════════════════════════════════════════════════════════
   // 2. DATA FOR THE CURRENT STAY
   // ════════════════════════════════════════════════════════════════════
+  // Tabs show the last loaded data straight away. If it is over a minute old it is
+  // refreshed in the background and the open tab redraws quietly when the new data lands.
+  let refreshing = null;
+  function fetchData(id, fresh) {
+    if (!fresh && refreshing && refreshing.id === id) return refreshing.p;
+    const p = api('host-dashboard', { stayId: id }).then(d => {
+      refreshing = null;
+      if (d.error) return d;
+      d._at = Date.now();
+      if (!stay() || stay().id === id) { H.data = d; H.dataFor = id; }
+      return d;
+    });
+    refreshing = { id, p };
+    return p;
+  }
   async function loadData(force) {
     const s = stay();
     if (!s || !s.id) return null;
-    if (!force && H.data && H.dataFor === s.id && Date.now() - H.data._at < 60000) return H.data;
-    const d = await api('host-dashboard', { stayId: s.id });
+    const have = H.data && H.dataFor === s.id;
+    if (have && !force) {
+      if (Date.now() - H.data._at > 60000) {
+        const tab = currentTab();
+        fetchData(s.id).then(d => { if (!d.error && currentTab() === tab && stay() && stay().id === s.id) redraw(tab); });
+      }
+      return H.data;
+    }
+    const d = await fetchData(s.id, force);
     if (d.error) { toast(d.error); return null; }
-    d._at = Date.now();
-    H.data = d; H.dataFor = s.id;
     return d;
+  }
+  function currentTab() {
+    const b = document.querySelector('.htab.act');
+    const m = b && (b.getAttribute('onclick') || '').match(/hTab\('(\w+)'/);
+    return m ? m[1] : '';
+  }
+  function redraw(tab) {
+    const s = stay();
+    if (!document.getElementById('view-host')?.classList.contains('active') || !s) return;
+    if (tab === 'overview' && !s.setup_pending) renderOverview();
+    else if (tab === 'guests') renderGuests();
+    else if (tab === 'earnings') renderEarnings();
   }
   function replaceStay(updated) {
     if (!updated) return;
@@ -639,7 +675,7 @@
 
   // Switching stays: reset the cache, then show the right first screen.
   const origSwitch = hostSwitchStay;
-  hostSwitchStay = function (id) { H.data = null; return origSwitch.call(this, id); };
+  hostSwitchStay = function (id) { H.data = null; H.dataFor = null; return origSwitch.call(this, id); };
   window.hostSwitchStay = hostSwitchStay;
 
   // ════════════════════════════════════════════════════════════════════
