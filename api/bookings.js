@@ -28,11 +28,15 @@
 //   action: 'respond'        — host/admin accepts or declines a request
 //   action: 'host-inbox'     — host's requests + bookings with unread counts
 //   action: 'admin-inbox'    — admin view of all requests
+//
+// HOST DASHBOARD (see _lib/host.js): host-stays, host-dashboard, host-listing,
+// host-photos, host-setup, host-rate-guest, and public stay-info.
 
 const { tsKey, calcPoints, reverseRef } = require('./_lib/points');
 const { cfg, publicCfg, razorpay, verifyCheckoutSignature, confirmPaidBooking, rupees } = require('./_lib/payments');
 const notify = require('./_lib/notify');
 const chat = require('./_lib/chat');
+const host = require('./_lib/host');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
@@ -412,6 +416,20 @@ module.exports = async (req, res) => {
     }
 
     // ═══════════════════════════════════════════════════════
+    // Host dashboard + onboarding actions (logic in _lib/host.js):
+    //   host-stays, host-dashboard, host-listing, host-photos, host-setup,
+    //   host-rate-guest — all need the host's access_token
+    //   stay-info — public: description + amenities for the stay page
+    // ═══════════════════════════════════════════════════════
+    if (host.ACTIONS[action]) {
+      const isWrite = ['host-listing', 'host-photos', 'host-setup', 'host-rate-guest'].includes(action);
+      if (await ipThrottled(req, isWrite ? 'bk-host-w' : 'bk-host-r', isWrite ? 60 : 200, headers)) { res.status(429).json({ error: 'Too many requests — please wait a few minutes and try again.' }); return; }
+      const [code, out] = await host.ACTIONS[action](req.body || {}, { headers, SUPABASE_URL, SUPABASE_ANON });
+      res.status(code).json(out);
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════
     // action: 'cancel' — guest cancels their own booking
     // fields: bookingRef, phone
     // ═══════════════════════════════════════════════════════
@@ -600,13 +618,14 @@ module.exports = async (req, res) => {
       const hostEmail = await verifyHostEmail(req.body.access_token);
       if (!hostEmail) { res.status(403).json({ error: 'Please log in again' }); return; }
       if (!stayId) { res.status(400).json({ error: 'Missing stayId' }); return; }
-      const sr = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=host_email,status`, { headers });
+      const sr = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=*`, { headers });
       const [stay] = sr.ok ? await sr.json() : [];
       if (!stay || String(stay.host_email || '').toLowerCase() !== String(hostEmail).toLowerCase()) { res.status(403).json({ error: 'This is not your listing' }); return; }
       const c = req.body.changes || {};
       const patch = {};
       if (c.status !== undefined) {
         if (!['active', 'full'].includes(c.status)) { res.status(400).json({ error: 'You can only open bookings or mark the stay fully booked' }); return; }
+        if (stay.setup_pending) { res.status(409).json({ error: 'Finish your setup checklist first — your listing goes live from the Setup tab' }); return; }
         if (!['active', 'full'].includes(stay.status || 'active')) { res.status(409).json({ error: 'This listing is paused by PahariPath — please contact us to reopen it' }); return; }
         patch.status = c.status;
       }

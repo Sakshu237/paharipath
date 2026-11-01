@@ -242,10 +242,39 @@ module.exports = async (req, res) => {
         subject: 'We received your PahariPath listing request',
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
           <h2 style="color:#2d5a3d">Thanks, ${esc(ownerName)}!</h2>
-          <p>We received your request to list <b>${esc(propertyName)}</b> on PahariPath. Our team will verify your details and contact you on WhatsApp within 48 hours. Once approved, your listing goes live and your host login is emailed to you.</p></div>`,
+          <p>We received your request to list <b>${esc(propertyName)}</b> on PahariPath. Our team will verify your details and contact you on WhatsApp within 48 hours.</p>
+          <p>Once approved, your host login is emailed to you. You then finish a short setup (about 10 minutes) and your listing goes live.</p>
+          <p style="font-size:13px;color:#666">You can check your application any time: <a href="https://paharipath.in/host-login">paharipath.in/host-login</a> → "Check application status", using this email and your WhatsApp number.</p></div>`,
       });
 
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true, applicationId: savedApp && savedApp.id ? savedApp.id : null });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'partner-status' — PUBLIC, rate-limited. An applicant checks their
+    // application with the email + WhatsApp number they applied with (both must match).
+    // ═══════════════════════════════════════════════
+    if (action === 'partner-status') {
+      const email = (clip(req.body.email, 150) || '').toLowerCase();
+      const phone = (clip(req.body.phone, 10) || '');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^[6-9]\d{9}$/.test(phone)) { res.status(400).json({ error: 'Enter the email and 10-digit WhatsApp number you applied with' }); return; }
+      const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+      const key = `partner-status:${ip}`;
+      if (await countRecentAttempts(key, svcHeaders) >= MAX_ATTEMPTS * 2) { res.status(429).json({ error: 'Too many checks — please wait a few minutes.' }); return; }
+      await logAttempt(key, svcHeaders);
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?email=eq.${encodeURIComponent(email)}&phone=eq.${encodeURIComponent(phone)}&select=*&order=created_at.desc&limit=1`, { headers: svcHeaders });
+      const a = (r.ok ? await r.json() : [])[0];
+      if (!a) { res.status(404).json({ error: 'No application found with this email and number. Check both, or apply from "List your property".' }); return; }
+      const out = { status: a.status, propertyName: a.property_name, appliedAt: a.created_at };
+      if (a.status === 'pending' && a.info_request) out.infoRequest = a.info_request;
+      if (a.status === 'rejected' && a.public_reason) out.reason = a.public_reason; // only what the admin chose to share
+      if (a.status === 'approved') {
+        const sr = await fetch(`${SUPABASE_URL}/rest/v1/stays?host_email=eq.${encodeURIComponent(email)}&select=*&order=id.desc&limit=1`, { headers: svcHeaders });
+        const st = (sr.ok ? await sr.json() : [])[0];
+        out.live = !!(st && !st.setup_pending && st.status !== 'hidden');
+      }
+      res.status(200).json(out);
       return;
     }
 

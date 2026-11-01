@@ -39,6 +39,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const { sendEmail } = require('./_lib/email');
 const chat = require('./_lib/chat');
 const notify = require('./_lib/notify');
+const { setupChecklist } = require('./_lib/host');
 
 // Any logged-in user (host or traveller) — just checks the token is valid.
 async function verifyUser(access_token) {
@@ -496,6 +497,9 @@ module.exports = async (req, res) => {
       if (!app) { res.status(404).json({ error: 'Application not found' }); return; }
       if (app.status !== 'pending') { res.status(409).json({ error: `This application is already ${app.status}.` }); return; }
       if (!app.email) { res.status(400).json({ error: 'This application has no email on file — cannot create a host login. Contact them to get one, then retry.' }); return; }
+      // The stay must be linked to its village so the host's crowd + itinerary tools work.
+      const placeId = parseInt(req.body.placeId) || 0;
+      if (!placeId) { res.status(400).json({ error: 'Pick the destination (village) this stay belongs to, then approve.' }); return; }
 
       // Claim it first, so a double-click or a second admin tab can never create two listings.
       const claimRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}&status=eq.pending`, {
@@ -533,7 +537,11 @@ module.exports = async (req, res) => {
         eco: !!app.eco_friendly, pn: app.price_per_night || 0, price: '₹' + (app.price_per_night || 0).toLocaleString() + '/night',
         // No made-up rating: the site shows "New" until real guest reviews arrive.
         rating: null, emoji: '🏡', color: colors[appId % colors.length], contact: app.phone,
-        nights: 2, placeid: 0, status: 'active', host_email: app.email, verified: false, photos: livePhotos,
+        // Approved stays start HIDDEN in setup mode; the host makes them live from their
+        // dashboard once the setup checklist is complete (see _lib/host.js).
+        nights: 2, placeid: placeId, status: 'hidden', setup_pending: true, setup_steps: {},
+        host_email: String(app.email).toLowerCase(), verified: false, photos: livePhotos,
+        description: app.description || null, host_phone: /^[6-9]\d{9}$/.test(String(app.phone || '')) ? app.phone : null,
         rooms: app.rooms || null, max_guests: app.max_guests || null, address: app.address || null, map_url: app.map_url || null,
         checkin_time: app.checkin_time || null, checkout_time: app.checkout_time || null, house_rules: app.house_rules || null,
         registration_no: app.registration_no || null, gstin: app.gstin || null,
@@ -558,16 +566,17 @@ module.exports = async (req, res) => {
       }
 
       const credentialsHtml = loginExisted
-        ? `<p>You already have a PahariPath account with this email, so sign in with your existing password at paharipath.in → Host Login. Your listing will appear in your host dashboard.</p>`
+        ? `<p>You already have a PahariPath account with this email, so sign in with your existing password at <a href="https://paharipath.in/host-login">paharipath.in/host-login</a>. Your listing will appear in your host dashboard.</p>`
         : `<p><b>Email:</b> ${esc(app.email)}<br/><b>Temporary password:</b> ${esc(tempPassword)}</p>
-          <p style="font-size:13px;color:#666">Log in at paharipath.in → Host Login, and change your password from your host dashboard after your first login.</p>`;
+          <p style="font-size:13px;color:#666">Log in at <a href="https://paharipath.in/host-login">paharipath.in/host-login</a> — you'll be asked to choose your own password the first time.</p>`;
       const emailSent = await sendEmail({
         to: app.email,
-        subject: 'Welcome to PahariPath — your listing is live',
+        subject: 'Welcome to PahariPath — you\'re approved',
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
           <h2 style="color:#2d5a3d">You're approved, ${esc(app.owner_name)}! 🎉</h2>
-          <p>${esc(app.property_name)} is now live on PahariPath.</p>
+          <p><b>${esc(app.property_name)}</b> has been verified by PahariPath.</p>
           ${credentialsHtml}
+          <p><b>One last step:</b> after you log in, the <b>Setup</b> tab shows a short checklist — describe your stay, set check-in times and house rules, block the dates you're away and accept the host agreement. It takes about 10 minutes. As soon as it's done, tap <b>Go live</b> and travellers can find you.</p>
         </div>`,
       });
 
@@ -634,11 +643,104 @@ module.exports = async (req, res) => {
     if (action === 'host-app-reject') {
       const appId = parseInt(req.body.applicationId);
       if (!appId) { res.status(400).json({ error: 'Missing applicationId' }); return; }
+      const notes = String(req.body.notes || '').trim().slice(0, 1000);
       const upd = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}`, {
-        method: 'PATCH', headers: svcHeaders,
-        body: JSON.stringify({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: user.email, admin_notes: req.body.notes || '' }),
+        method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' },
+        body: JSON.stringify({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: user.email, admin_notes: notes,
+          ...(req.body.notify === true ? { public_reason: notes || null } : {}) }),
       });
       if (!upd.ok) { res.status(400).json({ error: 'Reject failed: ' + await upd.text() }); return; }
+      const [app] = await upd.json().catch(() => []);
+      // fields: notify (true = email the applicant; the reason is included)
+      let emailSent = false;
+      if (req.body.notify === true && app && app.email) {
+        emailSent = await sendEmail({
+          to: app.email,
+          subject: 'About your PahariPath listing request',
+          html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+            <p>Namaste ${esc(app.owner_name)},</p>
+            <p>Thank you for applying to list <b>${esc(app.property_name)}</b> on PahariPath. We are not able to approve it right now.</p>
+            ${notes ? `<p><b>Reason:</b> ${esc(notes)}</p>` : ''}
+            <p>If this can be fixed, you are welcome to apply again. Questions: reply to this email or write to hello@paharipath.in.</p></div>`,
+        });
+      }
+      res.status(200).json({ success: true, emailSent });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // action: 'host-app-info' — ask the applicant for something before deciding.
+    // The application stays pending; the applicant sees the question by email
+    // and in "Check application status". fields: applicationId, message
+    // ═══════════════════════════════════════════════
+    if (action === 'host-app-info') {
+      const appId = parseInt(req.body.applicationId);
+      const message = String(req.body.message || '').trim().slice(0, 1000);
+      if (!appId || message.length < 5) { res.status(400).json({ error: 'Write what you need from the applicant' }); return; }
+      const upd = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}&status=eq.pending`, {
+        method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' },
+        body: JSON.stringify({ info_request: message, info_requested_at: new Date().toISOString() }),
+      });
+      if (!upd.ok) { const t = await upd.text(); res.status(400).json({ error: /info_request/.test(t) ? 'Run host-onboarding.sql in Supabase first' : 'Could not save: ' + t }); return; }
+      const [app] = await upd.json().catch(() => []);
+      if (!app) { res.status(409).json({ error: 'This application is no longer pending' }); return; }
+      const emailSent = await sendEmail({
+        to: app.email,
+        subject: 'PahariPath needs one more thing for your listing',
+        html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+          <p>Namaste ${esc(app.owner_name)},</p>
+          <p>We're reviewing <b>${esc(app.property_name)}</b> and need one more thing before we can approve it:</p>
+          <p style="background:#f6f1e7;border-radius:8px;padding:12px">${esc(message)}</p>
+          <p>Please reply to this email or send it on WhatsApp to +91 93171 10366.</p></div>`,
+      });
+      res.status(200).json({ success: true, emailSent });
+      return;
+    }
+
+    // ═══════════════════════════════════════════════
+    // HOST ONBOARDING (admin): stays still in setup, photos waiting for review,
+    // and stays with no destination linked.
+    // ═══════════════════════════════════════════════
+    if (action === 'onboarding-list') {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/stays?select=*&order=id.asc`, { headers: svcHeaders });
+      if (!r.ok) { res.status(400).json({ error: 'Could not load stays: ' + await r.text() }); return; }
+      const all = await r.json();
+      const rows = all.filter(s => s.setup_pending || (Array.isArray(s.pending_photos) && s.pending_photos.length) || (s.host_email && !(parseInt(s.placeid) > 0)))
+        .map(s => ({
+          id: s.id, name: s.name, loc: s.loc, status: s.status, host_email: s.host_email, host_phone: s.host_phone || s.contact || null,
+          placeid: s.placeid, setup_pending: !!s.setup_pending, photos: Array.isArray(s.photos) ? s.photos : [],
+          pending_photos: Array.isArray(s.pending_photos) ? s.pending_photos : [], checklist: setupChecklist(s),
+        }));
+      res.status(200).json({ success: true, stays: rows });
+      return;
+    }
+
+    // action: 'photo-review' — fields: stayId, photo (url), decision 'approve'|'reject'
+    if (action === 'photo-review') {
+      const id = parseInt(req.body.stayId), photo = String(req.body.photo || '');
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${id}&select=*`, { headers: svcHeaders });
+      const s = (r.ok ? await r.json() : [])[0];
+      if (!s) { res.status(404).json({ error: 'Stay not found' }); return; }
+      const pending = Array.isArray(s.pending_photos) ? s.pending_photos : [];
+      if (!pending.includes(photo)) { res.status(409).json({ error: 'That photo was already handled — refresh' }); return; }
+      const patch = { pending_photos: pending.filter(x => x !== photo) };
+      if (req.body.decision === 'approve') patch.photos = (Array.isArray(s.photos) ? s.photos : []).concat(photo).slice(0, 15);
+      const up = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${id}`, { method: 'PATCH', headers: svcHeaders, body: JSON.stringify(patch) });
+      if (!up.ok) { res.status(400).json({ error: 'Could not save: ' + await up.text() }); return; }
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // action: 'onboarding-force-live' — admin puts a stay live without the host finishing setup. fields: stayId
+    if (action === 'onboarding-force-live') {
+      const id = parseInt(req.body.stayId);
+      if (!id) { res.status(400).json({ error: 'Missing stay' }); return; }
+      const up = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${id}`, {
+        method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' },
+        body: JSON.stringify({ status: 'active', setup_pending: false, went_live_at: new Date().toISOString() }),
+      });
+      const rows = up.ok ? await up.json() : [];
+      if (!rows.length) { res.status(400).json({ error: 'Could not update the stay' }); return; }
       res.status(200).json({ success: true });
       return;
     }
