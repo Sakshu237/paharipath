@@ -100,10 +100,12 @@ async function buildBookingRow(input, headers) {
 
   const stayId = parseInt(input.stay_id);
   if (!stayId) return { error: 'Missing stay', status: 400 };
-  const stayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=id,name,pn,type,status,max_guests`, { headers });
+  const stayRes = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${stayId}&select=id,name,pn,type,status,max_guests,host_email`, { headers });
   const [stay] = stayRes.ok ? await stayRes.json() : [];
   if (!stay) return { error: 'This stay could not be found', status: 404 };
   if (stay.status && stay.status !== 'active') return { error: 'This stay is not taking bookings right now', status: 409 };
+  // A request needs a real host to answer it — stays without a host login are "coming soon".
+  if (!stay.host_email) return { error: "This stay is coming soon and isn't taking bookings yet", status: 409 };
   const pn = parseInt(stay.pn) || 0;
   if (pn <= 0) return { error: 'This stay has no price set yet — please message us on WhatsApp to book', status: 409 };
 
@@ -199,7 +201,17 @@ module.exports = async (req, res) => {
     return;
   }
   if ((req.body || {}).action === 'config') {
-    res.status(200).json(publicCfg());
+    // Also tell the site which stays have a real host (a host login), so the
+    // others can show "Coming soon" instead of a Request button.
+    const out = publicCfg();
+    const sk = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (sk) {
+      try {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/stays?host_email=not.is.null&host_email=neq.&select=id`, { headers: { apikey: sk, Authorization: `Bearer ${sk}` } });
+        if (r.ok) out.bookableStayIds = (await r.json()).map(s => s.id);
+      } catch (e) { /* fall back: site shows every stay, server still checks */ }
+    }
+    res.status(200).json(out);
     return;
   }
 
@@ -239,7 +251,7 @@ module.exports = async (req, res) => {
         countRecentAttempts(ipKey, headers),
       ]);
       if (phoneCount >= MAX_ATTEMPTS || ipCount >= MAX_ATTEMPTS) {
-        res.status(429).json({ error: `Too many booking attempts. Please wait ${WINDOW_MINUTES} minutes and try again, or contact us on WhatsApp to book directly.` });
+        res.status(429).json({ error: `Too many booking attempts. Please wait ${WINDOW_MINUTES} minutes and try again.` });
         return;
       }
       await Promise.all([logAttempt(phoneKey, headers), logAttempt(ipKey, headers)]);

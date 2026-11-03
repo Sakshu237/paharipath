@@ -57,7 +57,10 @@
     return appPlaces().map(function (p) {
       var c = coords[p.id] || (isFinite(p.lat) && isFinite(p.lng) ? [p.lat, p.lng] : null);
       if (!c) return null;
-      return { id: p.id, name: p.name, district: p.district || '', lat: +c[0], lng: +c[1], alt: parseAlt(p.altitude) };
+      var alt = parseAlt(p.altitude);
+      // Trek-only: no road to the spot itself — not where a family goes to 'see snow'.
+      var trek = (p.vibes || []).indexOf('trek') >= 0 || /\b(Trek|Peak|Kund)\b/.test(p.name) || alt >= 4500;
+      return { id: p.id, name: p.name, district: p.district || '', lat: +c[0], lng: +c[1], alt: alt, trek: trek };
     }).filter(Boolean);
   }
 
@@ -138,7 +141,7 @@
 
   function results(date) {
     return state.places.map(function (p, i) { return Object.assign({}, p, assess(p, i, date)); })
-      .sort(function (a, b) { return b.lvl - a.lvl || b.score - a.score; });
+      .sort(function (a, b) { return b.lvl - a.lvl || (a.trek ? 1 : 0) - (b.trek ? 1 : 0) || b.score - a.score; });
   }
 
   /* ---------- styles (uses the site's --pine, --fb, --fd variables) ---------- */
@@ -372,7 +375,8 @@
           (meta ? '<span class="ppsf-meta">' + esc(meta) + '</span>' : '') + '</span>' +
           '<span class="ppsf-badge">' + esc(r.badge) + '</span></span>' +
           '<span class="ppsf-note">' + esc(r.note) + '</span>' +
-          (r.lvl === 3 && r.alt >= 2400 ? '<span class="ppsf-road">⚠️ Roads can be blocked for a day or two after heavy snow. Check before you go.</span>' : '') +
+          (r.trek ? '<span class="ppsf-road">🥾 Trek only — for experienced trekkers with a guide, not a drive-up spot.</span>' : '') +
+          (!r.trek && r.lvl === 3 && r.alt >= 2400 ? '<span class="ppsf-road">⚠️ Roads can be blocked for a day or two after heavy snow. Check before you go.</span>' : '') +
           '</button>';
       }).join('');
 

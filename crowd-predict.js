@@ -769,7 +769,9 @@
 
   // short reason for list rows
   function topReason(p) {
-    const f = predict(p, VIEW.date || new Date()).factors.find(x => x.icon !== '🗓');
+    const r = predict(p, VIEW.date || new Date());
+    // A rush "in the area" is about somewhere else nearby; don't show it on a place that is itself quiet.
+    const f = r.factors.find(x => x.icon !== '🗓' && !(x.icon === '📰' && / in the area$/.test(x.text) && r.value < 30));
     return f ? `${f.icon} ${f.text}` : '';
   }
 
