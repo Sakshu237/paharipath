@@ -275,89 +275,236 @@
   // dur = how long the visit takes (last sensible start = close - dur).
   // To fix a timing, edit this table — every itinerary uses it.
   const DOW = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
-  const VENUES = [
-    { re: /s(h)?obha singh/i,                  name: 'Sobha Singh Art Gallery', open: 570, close: 1050, dur: 60 },
-    { re: /andretta pottery|pottery (studio|society)/i, name: 'Andretta Pottery', open: 600, close: 1020, dur: 45 },
-    { re: /roerich/i,                          name: 'Roerich Art Gallery', open: 540, close: 1020, closed: [1], dur: 60 },
-    { re: /bhuri singh/i,                      name: 'Bhuri Singh Museum', open: 600, close: 1020, closed: [1], dur: 60 },
-    { re: /norbulingka/i,                      name: 'Norbulingka Institute', open: 540, close: 1020, dur: 75 },
-    { re: /kangra fort/i,                      name: 'Kangra Fort', open: 540, close: 1020, closed: [5], dur: 90 },
-    // generic types — conservative hours
-    { re: /museum|galler(y|ies)|exhibition/i,  name: 'it', open: 600, close: 1020, closed: [1], dur: 60, soft: true },
-    { re: /institute|workshop|weav|handloom|craft (centre|center|society)|co-?operative/i, name: 'it', open: 600, close: 1020, dur: 45, soft: true },
-    { re: /tea (factory|estate|garden)/i,      name: 'the tea factory', open: 540, close: 1020, dur: 60, soft: true },
-    { re: /\bfort\b|palace|castle/i,           name: 'it', open: 570, close: 1050, dur: 75, soft: true },
-    { re: /ropeway|cable car/i,                name: 'the ropeway', open: 570, close: 1050, dur: 60, soft: true },
-    { re: /\bzoo\b|sanctuary|nature park|deer park/i, name: 'it', open: 600, close: 1020, dur: 75, soft: true },
-    { re: /monaster|gompa/i,                   name: 'the monastery', open: 360, close: 1080, dur: 45, soft: true },
-    { re: /market|bazaar|shopping/i,           name: 'the market', open: 600, close: 1230, dur: 45, soft: true },
-    { re: /temple|mandir|gurudwara|church/i,   name: 'it', open: 330, close: 1260, dur: 30, soft: true },
-    { re: /sunrise/i, sun: 'rise' },
-    { re: /sunset/i,  sun: 'set' },
-    { re: /\b(trek|hike|climb|summit)\b/i,     name: 'the trek', open: 330, close: 720, dur: 0, trek: true },
-  ];
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const SUNRISE = [435, 425, 400, 365, 335, 320, 330, 350, 370, 390, 410, 430];
+  const sunriseOf = d => SUNRISE[d.getMonth()];
+  // National holidays most government museums shut on (MM-DD).
+  const GAZETTED = ['01-26', '08-15', '10-02'];
+  const mmdd = d => `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const isoDay = d => `${d.getFullYear()}-${mmdd(d)}`;
+  const inRange = (d, [a, b]) => { const x = mmdd(d); return a <= b ? x >= a && x <= b : x >= a || x <= b; };
+  const monthsLabel = ms => { const s = [...ms].sort((a, b) => a - b); return `${MON[s[0] - 1]}–${MON[s[s.length - 1] - 1]}`; };
+
+  /* Opening hours & rules for every timed thing in our itineraries.
+   * First match wins, so specific places sit above generic types.
+   *   open / close  minutes after midnight, or 'sunrise' / 'sunset'
+   *   dur           minutes the visit takes (last start = close - dur)
+   *   closed        weekdays shut (0 = Sun … 6 = Sat)
+   *   breaks        [[from, to]] lunch breaks
+   *   gaz           shut on 26 Jan, 15 Aug, 2 Oct
+   *   dates         extra closed dates 'YYYY-MM-DD' (festivals)
+   *   shut          closed date ranges every year ['MM-DD','MM-DD']
+   *   months        months it runs (1-12); outside them:
+   *     offText     replace the activity with this text, or
+   *     warn        keep it but add this warning
+   *   after         only after dark (stargazing, bonfire)
+   *   first         must be the first thing in the day (trek starts, prayers)
+   *   tip           always-shown practical tip
+   *   soft          typical hours for the type, not verified for this place
+   * To correct a timing, edit the line — every itinerary uses this table. */
+  const VENUES = [
+    // ── verified, named places ──
+    { re: /s(h)?obha singh/i, name: 'Sobha Singh Art Gallery', open: 570, close: 1050, dur: 60 },
+    { re: /andretta pottery|pottery (studio|society)|pottery studios?/i, name: 'the pottery studios', open: 600, close: 1020, dur: 45 },
+    { re: /roerich/i, name: 'Roerich Art Gallery', open: 540, close: 1020, closed: [1], dur: 60 },
+    { re: /bhuri singh/i, name: 'Bhuri Singh Museum', open: 600, close: 1020, closed: [1], gaz: true, dur: 60 },
+    { re: /norbulingka/i, name: 'Norbulingka Institute', open: 540, close: 1020, dur: 75 },
+    { re: /tibet(an)? museum/i, name: 'Tibet Museum', open: 540, close: 1020, closed: [6], breaks: [[780, 840]], gaz: true, dur: 60,
+      dates: ['2026-11-01', '2026-12-10', '2026-12-15', '2026-12-16', '2027-01-01'] },
+    { re: /kangra fort|largest fort in the himalayas|fort's long history/i, name: 'Kangra Fort', open: 540, close: 1050, dur: 90, tip: 'The small museum inside is shut on Fridays' },
+    { re: /masroor|masrur|rock(-| )cut temple|ellora/i, name: 'Masroor Rock Temple', open: 'sunrise', close: 'sunset', dur: 60, tip: 'ASI site — small entry ticket' },
+    { re: /hikkim|highest post office/i, name: 'Hikkim post office', open: 600, close: 1020, closed: [0], dur: 30, tip: 'Carry cash for postcards and stamps' },
+    { re: /rohtang/i, name: 'Rohtang Pass', noHours: true, open: 'sunrise', close: 840, closed: [2], months: [5, 6, 7, 8, 9, 10], dur: 180, first: true,
+      tip: 'Leave by 6 am, be back by afternoon · Permit needed (rohtangpermits.nic.in) — released 10 am & 4 pm, none on Tuesdays',
+      offText: 'Rohtang is snowbound now — go to Gulaba or Solang for snow instead' },
+    { re: /paragliders land|watch(ing)? (the )?paraglid/i, name: 'paraglider landings', open: 720, close: 'sunset', dur: 45, shut: ['07-15', '09-15'],
+      offText: 'Paragliding is grounded 15 Jul – 15 Sep (monsoon ban) — evening walk through the Tibetan colony instead' },
+    { re: /paraglid/i, name: 'paragliding', open: 570, close: 900, dur: 90, shut: ['07-15', '09-15'], tip: 'Calmest air is mid-morning — book your tandem a day ahead; flights stop in bad weather',
+      offText: 'Paragliding is grounded 15 Jul – 15 Sep (monsoon ban) — ask your host about a valley walk instead' },
+    { re: /monkey point/i, name: 'Monkey Point', open: 540, close: 1020, dur: 60, soft: true, tip: 'It is inside an Air Force area — carry photo ID' },
+    { re: /toy train/i, name: 'the toy train', open: 420, close: 960, dur: 120, soft: true, tip: 'Runs to a fixed timetable — book on IRCTC and pick a morning train' },
+    { re: /trout hatchery/i, name: 'the trout hatchery', open: 600, close: 1020, dur: 60, soft: true },
+    { re: /fossil park/i, name: 'the fossil park', open: 600, close: 1050, dur: 60, soft: true },
+    { re: /tea (factory|estate|garden)/i, name: 'the tea factory', open: 540, close: 1020, dur: 60, soft: true },
+    { re: /bhakra dam/i, name: 'Bhakra Dam', open: 540, close: 1020, dur: 90, soft: true, tip: 'Entry is controlled — carry photo ID and check the visitor pass rules at Nangal' },
+    { re: /malana/i, name: 'Malana', open: 'sunrise', close: 'sunset', dur: 120, tip: 'Village rule: never touch walls, shrines or people — fines apply' },
+    // ── seasonal treks, passes & lakes: keep, but warn outside the season ──
+    { re: /chandra ?tal/i, name: 'Chandratal', season: [6, 7, 8, 9, 10], warn: 'Road usually open only Jun–Oct' },
+    { re: /kheerganga|kheer ganga/i, name: 'Kheerganga', season: [4, 5, 6, 7, 8, 9, 10, 11], warn: 'The trail is usually snowed in Dec–Mar' },
+    { re: /suraj tal|kunzum|baralacha|sarchu/i, name: 'the high road', season: [6, 7, 8, 9, 10], warn: 'Usually snowbound Nov–May — check road status' },
+    { re: /manimahesh/i, name: 'Manimahesh', season: [6, 7, 8, 9], warn: 'The trek is open roughly Jun–Sep only' },
+    { re: /pin.?parvati/i, name: 'Pin Parvati Pass', season: [7, 8, 9], warn: 'Crossable only Jul–Sep' },
+    { re: /kinner kailash/i, name: 'Kinner Kailash', season: [7, 8], warn: 'The parikrama is done in Jul–Aug only' },
+    { re: /sar pass|hamta|indrahar|chanderkhani|bhrigu|beas kund/i, name: 'this pass', season: [5, 6, 7, 8, 9, 10], warn: 'Snowbound outside May–Oct — needs a guide and gear in shoulder season' },
+    { re: /jalori|sereolesar/i, name: 'Jalori', season: [3, 4, 5, 6, 7, 8, 9, 10, 11], warn: 'Jalori road can close with snow Dec–Feb — check before you go' },
+    { re: /migratory|pong (dam|wetland)/i, name: 'Pong wetlands', season: [11, 12, 1, 2], warn: 'Migratory birds are here Nov–Feb only' },
+    { re: /\b(ski|skiing)\b|snow activit|snow-season/i, name: 'snow activities', season: [12, 1, 2, 3],
+      offText: 'Snow play needs Dec–Mar — enjoy the ridge views and a slow walk instead' },
+    { re: /trout fishing|rod-and-line|\bfishing\b/i, name: 'trout fishing', season: [3, 4, 5, 6, 7, 8, 9, 10],
+      tip: 'Needs a fishing licence from the Fisheries office — your host can arrange it',
+      offText: 'Trout fishing is closed for breeding (Nov–Feb) — riverside walk and a look at the trout farms instead' },
+    // ── light & time of day ──
+    { re: /morning prayers|early morning prayer|puja at dawn/i, name: 'morning prayers', fixed: 'dawn', first: true },
+    { re: /aarti/i, name: 'aarti', fixed: 'sunset' },
+    { re: /sunrise/i, fixed: 'sunrise', first: true },
+    { re: /sunset/i, fixed: 'sunset' },
+    { re: /stargaz|night sky|bonfire|campfire/i, name: 'stargazing', after: true },
+    // ── trek starts must be the morning; descents must end in daylight ──
+    { re: /\b(start|begin|early start|set off)\b(?![^.]*\b(back|down|return)\b)[^.]*\b(trek|hike|climb|pilgrimage)|^(trek|hike|climb) (up|to|toward|into)\b|^trek or drive up|^early climb|^gain altitude/i,
+      name: 'the trek', open: 'sunrise', close: 660, dur: 0, first: true, trek: true },
+    { re: /\b(trek|hike|walk) (back|down)|^descend|^return trek|trek back out/i, name: 'the descent', open: 'sunrise', close: 'sunset', dur: 180, trek: true },
+    // A day trip takes the day: start in the morning, block ~4 hours.
+    { re: /^day trip\b/i, name: 'the day trip', open: 'sunrise', close: 780, dur: 240, first: true, noHours: true },
+    // ── generic types: typical hours, confirm locally ──
+    { re: /museum|galler(y|ies)|exhibition/i, name: 'it', open: 600, close: 1020, dur: 60, soft: true, gaz: true },
+    { re: /institute|workshop|weav|handloom|craft (centre|center|society)|co-?operative/i, name: 'it', open: 600, close: 1020, dur: 45, soft: true },
+    { re: /\bfort\b|palace|castle/i, name: 'it', open: 570, close: 1050, dur: 75, soft: true },
+    { re: /ropeway|cable car/i, name: 'the ropeway', open: 570, close: 1050, dur: 60, soft: true, tip: 'Shuts in high wind or bad weather' },
+    { re: /\bzoo\b|sanctuary|nature park|deer park/i, name: 'it', open: 600, close: 1020, dur: 75, soft: true },
+    { re: /monaster|gompa|nunnery/i, name: 'the monastery', open: 360, close: 1080, dur: 45, soft: true, tip: 'Walk clockwise, ask before photos inside' },
+    { re: /hot spring|natural bath|ritual bath/i, name: 'the hot springs', open: 330, close: 1260, dur: 45, soft: true },
+    { re: /gurudwara|langar/i, name: 'the gurudwara', open: 300, close: 1320, dur: 45, soft: true, tip: 'Cover your head; langar is free — help wash up if you can' },
+    { re: /church/i, name: 'the church', open: 540, close: 1080, dur: 30, soft: true },
+    { re: /temple|mandir|shrine|shaktipeeth|lingam/i, name: 'it', open: 330, close: 1260, dur: 45, soft: true },
+    { re: /market|bazaar|shopping/i, name: 'the market', open: 600, close: 1230, dur: 60, soft: true },
+    { re: /caf[eé]/i, name: 'the cafés', open: 570, close: 1290, dur: 60, soft: true },
+    { re: /post office/i, name: 'the post office', open: 600, close: 1020, closed: [0], dur: 30, soft: true },
+    { re: /waterfall|viewpoint|\bfalls\b|meadow|orchard|lakeside|riverside|valley views|forest/i, name: 'it', open: 'sunrise', close: 'sunset', dur: 60, daylight: true },
+  ];
   const venueOf = text => VENUES.find(v => v.re.test(text || '')) || null;
+  const tOf = (x, date) => x === 'sunrise' ? sunriseOf(date) : x === 'sunset' ? sunsetOf(date) : x;
   const parseClock = str => {
     const m = /(\d{1,2}):(\d{2})\s*(am|pm)/i.exec(str || '');
     if (!m) return null;
     let h = +m[1] % 12; if (/pm/i.test(m[3])) h += 12;
     return h * 60 + +m[2];
   };
-  const hoursLabel = v => `${fmtClock(v.open)} – ${fmtClock(v.close)}${v.closed ? `, closed ${v.closed.map(d => DOW[d]).join(' & ')}` : ''}`;
+  const shortClock = m => fmtClock(m).replace(':00', '');
+  const hoursLabel = (v, date) => {
+    if (v.open == null) return '';
+    const o = v.open === 'sunrise' ? 'sunrise' : shortClock(tOf(v.open, date));
+    const c = v.close === 'sunset' ? 'sunset' : shortClock(tOf(v.close, date));
+    return `${o} – ${c}${v.breaks ? ` (lunch ${v.breaks.map(b => `${shortClock(b[0])}–${shortClock(b[1])}`).join(', ')})` : ''}${v.closed ? `, closed ${v.closed.map(d => DOW[d]).join(' & ')}` : ''}`;
+  };
+  // Is the place running on this date at all? Returns '' or why not.
+  function closedOn(v, date) {
+    if (v.closed && v.closed.includes(date.getDay())) return `closed on ${DOW[date.getDay()]}`;
+    if (v.gaz && GAZETTED.includes(mmdd(date))) return 'closed for the national holiday';
+    if (v.dates && v.dates.includes(isoDay(date))) return 'closed for a festival that day';
+    if (v.shut && inRange(date, v.shut)) return 'not running on these dates';
+    if (v.months && !v.months.includes(date.getMonth() + 1)) return 'out of season';
+    return '';
+  }
   // Can this activity happen at minute m on this date? Returns the time to use.
   function fitAt(v, m, date) {
-    if (v.sun === 'rise') { const r = SUNRISE[date.getMonth()]; return m <= r + 120 ? { ok: true, m: r - 20 } : { ok: false, why: 'sun' }; }
-    if (v.sun === 'set') { const st = sunsetOf(date); return m >= st - 240 && m <= st + 15 ? { ok: true, m: st - 40 } : { ok: false, why: 'sun' }; }
-    if (v.closed && v.closed.includes(date.getDay())) return { ok: false, why: 'closed' };
-    if (m < v.open) return { ok: true, m: v.open, shifted: true };
-    if (m > v.close - v.dur) return { ok: false, why: 'late' };
-    if (!v.trek && m + v.dur > sunsetOf(date) + 60 && v.close <= 1050) return { ok: false, why: 'late' };
+    const why = closedOn(v, date);
+    if (why) return { ok: false, why, season: !!(v.shut || v.months) };
+    if (v.fixed) {
+      const at = v.fixed === 'sunrise' ? sunriseOf(date) - 20 : v.fixed === 'dawn' ? Math.max(sunriseOf(date) - 30, 360) : sunsetOf(date) - 40;
+      return { ok: true, m: at };
+    }
+    if (v.after) return { ok: true, m: Math.max(m, sunsetOf(date) + 75) };
+    if (v.open == null) return { ok: true, m };
+    const open = tOf(v.open, date), close = tOf(v.close, date);
+    if (m < open) m = open;
+    for (const [a, b] of v.breaks || []) if (m < b && m + v.dur > a) m = b;
+    if (m > close - v.dur) return { ok: false, why: v.trek ? 'too late to start safely' : 'it shuts before you can get there' };
     return { ok: true, m };
   }
-  const placeName = (v, text) => v.name && v.name !== 'it' && !/^the /.test(v.name) ? v.name : clean(text).replace(/^(visit|explore|see|walk (to|through)|head to)\s+/i, '').split(/[,—–(]/)[0].trim();
+  const placeName = (v, text) => v.name && v.name !== 'it' && !/^(the|this) /.test(v.name) ? v.name : clean(text).replace(/^(visit|explore|see|stop (at|by)|walk (to|through)|head to)\s+(the\s+)?/i, '').split(/[,—–(]/)[0].trim();
+  // Turn "If visiting in October…", "(June-September)", "in winter (Jan-Feb)"
+  // into months, but only when the line is conditional on the season.
+  const MONTHS_RE = /\b(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|june?|july?|aug(ust)?|sep(t(ember)?)?|oct(ober)?|nov(ember)?|dec(ember)?)\b/gi;
+  const monthNo = s => ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(s.slice(0, 3).toLowerCase()) + 1;
+  function seasonOf(text) {
+    if (!/\bif\b|in season|season-|seasonal|skip it|outside this|optionally|\(\s*[a-z]+\s*[-–]\s*[a-z]+\s*\)/i.test(text)) return null;
+    const ms = (text.match(MONTHS_RE) || []).map(monthNo).filter(Boolean);
+    let set = null;
+    if (ms.length >= 2) { set = []; for (let m = ms[0], k = 0; k < 12; k++, m = m % 12 + 1) { set.push(m); if (m === ms[1]) break; } }
+    else if (ms.length === 1) set = [ms[0]];
+    else if (/\bwinter\b/i.test(text)) set = [12, 1, 2];
+    else if (/\bspring\b|blossom/i.test(text)) set = [3, 4];
+    else if (/\bmonsoon\b/i.test(text)) set = [7, 8, 9];
+    return set;
+  }
+  // Drop season-bound lines that don't apply on this date, and their
+  // "Otherwise…/Or…" alternatives when the main line does apply.
+  function seasonFilter(items, date) {
+    const mo = date.getMonth() + 1, out = [];
+    let prev = null;   // null = no conditional before, true = kept, false = dropped
+    items.forEach(x => {
+      if (/^(otherwise|or)\b/i.test(clean(x)) && prev !== null) { if (prev === false) out.push(clean(x).replace(/^(otherwise|or)\s*,?\s*/i, '').replace(/^./, c => c.toUpperCase())); prev = null; return; }
+      const set = seasonOf(x);
+      if (set) { prev = set.includes(mo); if (prev) out.push(x); return; }
+      prev = null; out.push(x);
+    });
+    return out;
+  }
 
-  // Runs every day of the plan through the opening-hours check. Anything
-  // that would be closed (or too late) moves to the next day it fits;
-  // a visit that can't fit anywhere is flagged instead of shown at a wrong time.
+  // Runs every day of the plan through the rules above. Anything closed
+  // (or too late) moves to the next day it fits; out-of-season lines are
+  // swapped for what works now; nothing is ever shown at a wrong time.
   function scheduleAll(plan) {
     const t = TIMES[S.type] || TIMES.couple;
     const out = [];
-    // Same place already in the plan (placed, or written for a later day)?
-    const sameVenue = (it, text) => it.v.soft ? clean(text).toLowerCase() === clean(it.text).toLowerCase() : it.v.re.test(text);
+    const usedOff = new Set();
+    let carry = [];
+    const lower = x => clean(x).toLowerCase();
+    const sameVenue = (it, text) => it.v.soft || it.v.daylight ? lower(text) === lower(it.text) : it.v.re.test(text);
     const alreadyPlanned = (it, i) => out.some(day => day.some(x => sameVenue(it, x.text)))
-      || plan.days.slice(i + 1).some(d => d.items.some(x => sameVenue(it, x)))
-      || false;
-    const movedSlot = (it, m, i, was) => ({
+      || plan.days.slice(i + 1).some(d => d.items.some(x => sameVenue(it, x)));
+    const info = (v, date, note) => {
+      const parts = [note];
+      if (v.open != null && !v.trek && !v.daylight && !v.noHours) parts.push(`Open ${hoursLabel(v, date)}${v.soft ? ' — usual hours, confirm with your host' : ''}`);
+      if (v.tip) parts.push(v.tip);
+      return parts.filter(Boolean).join(' · ');
+    };
+    const movedSlot = (it, m, i, date) => ({
       time: fmtClock(m), m, part: partOf(m),
       text: clean(it.text).replace(/^(early )?(morning|midday|afternoon|evening|late)\s+(visit|trip|walk)\s+(to|at)?\s*/i, 'Visit '),
-      note: [it.note, it.v.sun || it.v.trek ? '' : `Open ${hoursLabel(it.v)}${it.v.soft ? ' — usual hours, confirm with your host' : ''}`].filter(Boolean).join(' · '),
-      quiet: it.from === i ? `Planned earlier — ${was}` : `Moved from Day ${it.from + 1} — ${was}` });
-    let carry = [];
+      note: info(it.v, date, it.note),
+      quiet: it.from === i ? `Planned earlier — ${it.why}` : `Moved from Day ${it.from + 1} — ${it.why}` });
+
     plan.days.forEach((d, i) => {
       const date = addDays(S.ctx.start, i);
+      const sunset = sunsetOf(date);
       const raw = slotsFor(d, i);
       const bad = (raw.skipped || []).map(x => ({ ...x, from: i }));
-      let slots = [];
+      const slots = [];
       raw.forEach((s, k) => {
         s.m = parseClock(s.time);
         const v = venueOf(s.text);
-        if (!v || s.m == null || /dinner/i.test(s.part) || (d.kind === 'arrival' && k < 2)) { slots.push(s); return; }
-        if (v.sun === 'rise') {               // first thing in the morning, at real sunrise
-          if (k > 0 && raw[0] && parseClock(raw[0].time) < 600) { bad.push({ text: s.text, v, why: 'sun', from: i }); return; }
-          s.m = SUNRISE[date.getMonth()] - 20; s.time = fmtClock(s.m); s.part = 'Sunrise'; slots.push(s); return;
+        const fixedSlot = /dinner/i.test(s.part) || (d.kind === 'arrival' && k < 2) || s.m == null;
+        if (!v || fixedSlot) {
+          // Plain outdoor line after dark: say so.
+          if (!fixedSlot && s.m >= sunset && /walk|trail|stroll|explore|wander/i.test(s.text) && !/dinner|night|lights|market|bazaar/i.test(s.text))
+            s.note = [s.note, `Dark by ${fmtClock(sunset)} — keep it short and carry a torch`].filter(Boolean).join(' · ');
+          slots.push(s); return;
         }
+        // Season-only warnings (passes, lakes) never move the line.
+        if (v.season) {
+          if (!v.season.includes(date.getMonth() + 1)) {
+            if (v.offText) { if (usedOff.has(v.offText)) return; usedOff.add(v.offText); s.text = v.offText; s.note = ''; s.off = true; }
+            else s.note = [s.note, `⚠ ${v.warn} — check with your host before you plan this`].filter(Boolean).join(' · ');
+          } else if (v.tip) s.note = [s.note, v.tip].filter(Boolean).join(' · ');
+          slots.push(s); return;
+        }
+        if (v.first && k > 0 && raw[0] && parseClock(raw[0].time) < 720) { bad.push({ text: s.text, v, why: 'it has to be the first thing in the day', from: i, note: s.note }); return; }
         const f = fitAt(v, s.m, date);
-        if (!f.ok) { bad.push({ text: s.text, v, why: f.why, from: i, note: s.note }); return; }
+        if (!f.ok) {
+          if (f.season && v.offText) { if (!usedOff.has(v.offText)) { usedOff.add(v.offText); slots.push({ ...s, text: v.offText, note: '', off: true }); } return; }
+          bad.push({ text: s.text, v, why: f.why, from: i, note: s.note, season: f.season }); return;
+        }
         const next = raw[k + 1] && parseClock(raw[k + 1].time);
-        if (f.m !== s.m && next != null && f.m + 30 > next) {   // shifting would clash with the next slot
-          if (v.sun) { slots.push(s); return; }
-          bad.push({ text: s.text, v, why: 'late', from: i, note: s.note }); return;
+        if (f.m !== s.m && next != null && f.m + 30 > next && !(v.fixed || v.after)) {
+          bad.push({ text: s.text, v, why: 'it shuts before you can get there', from: i, note: s.note }); return;
         }
         s.m = f.m; s.time = fmtClock(f.m);
+        if (v.fixed) s.part = v.fixed === 'sunset' ? 'Sunset' : v.fixed === 'dawn' ? 'Dawn' : 'Sunrise';
+        if (v.after) s.part = 'Night';
         const pw = /^(early )?(morning|afternoon|evening)\b/i.exec(clean(s.text));
         if (pw && !new RegExp(pw[2], 'i').test(partOf(s.m))) s.text = clean(s.text).replace(/^(early )?(morning|midday|afternoon|evening|late)\s+(visit|trip|walk)\s+(to|at)?\s*/i, 'Visit ');
-        if (!v.sun && !v.trek) s.note = [s.note, `Open ${hoursLabel(v)}${v.soft ? ' — usual hours, confirm with your host' : ''}`].filter(Boolean).join(' · ');
+        s.note = info(v, date, s.note);
         slots.push(s);
       });
 
@@ -370,29 +517,36 @@
       pending.forEach(it => {
         if (alreadyPlanned(it, i)) return;
         let placed = false;
-        if (canTake && slots.length < cap && !(it.from === i && it.why === 'closed')) {
-          const opts = [...new Set(candidates)].sort((a, b) => a - b);
-          for (const m0 of opts) {
-            const f = fitAt(it.v, m0, date);
-            if (!f.ok) continue;
-            if (slots.some(s => s.m != null && Math.abs(s.m - f.m) < (d.kind === 'departure' ? 45 : 60))) continue;
-            if (d.kind === 'departure' && f.m > 690) continue;      // must leave by midday
-            const was = it.why === 'closed' ? `closed on ${DOW[addDays(S.ctx.start, it.from).getDay()]}`
-              : it.why === 'sun' ? 'better timed for the light' : 'it shuts before you can get there';
-            slots.push(movedSlot(it, f.m, i, was));
-            placed = true; break;
+        const sameDayClosed = it.from === i && closedOn(it.v, date);
+        if (canTake && slots.length < cap && !sameDayClosed && !it.season) {
+          if (it.v.first && d.kind !== 'departure') {
+            // Trek starts / prayers: take the morning slot, push that line later.
+            const f = fitAt(it.v, Math.min(...candidates), date);
+            const firstSlot = slots.find(x => x.m != null && x.m < 720 && !venueOf(x.text));
+            if (f.ok) {
+              if (firstSlot) slots.splice(slots.indexOf(firstSlot), 1);
+              slots.push(movedSlot(it, it.v.fixed ? f.m : Math.max(f.m, tOf(it.v.open, date) + 30), i, date));
+              placed = true;
+            }
+          } else {
+            for (const m0 of [...new Set(candidates)].sort((a, b) => a - b)) {
+              const f = fitAt(it.v, m0, date);
+              if (!f.ok) continue;
+              const len = x => Math.max((venueOf(x.text) || {}).dur || 0, d.kind === 'departure' ? 45 : 60);
+              const mine = Math.max(it.v.dur || 0, d.kind === 'departure' ? 45 : 60);
+              if (slots.some(s => s.m != null && s.m < f.m + mine && f.m < s.m + len(s))) continue;
+              if (d.kind === 'departure' && f.m > 690) continue;      // must leave by midday
+              slots.push(movedSlot(it, f.m, i, date));
+              placed = true; break;
+            }
           }
         }
         // Last morning is full: swap out a plain item (never the drive home).
-        if (!placed && d.kind === 'departure' && !it.v.sun) {
+        if (!placed && d.kind === 'departure' && !it.v.first) {
           const s2 = slots.find((x, k) => k > 0 && x.m != null && x.m <= 690 && !venueOf(x.text) && !/home|leave|depart|check.?out|drive|travel/i.test(x.text) && fitAt(it.v, x.m, date).ok);
-          if (s2) {
-            const f = fitAt(it.v, s2.m, date);
-            Object.assign(s2, movedSlot(it, f.m, i, it.why === 'closed' ? `closed on ${DOW[addDays(S.ctx.start, it.from).getDay()]}` : 'it shuts before you can get there'));
-            placed = true;
-          }
+          if (s2) { Object.assign(s2, movedSlot(it, fitAt(it.v, s2.m, date).m, i, date)); placed = true; }
         }
-        if (!placed && !it.v.sun) carry.push(it);
+        if (!placed && !it.v.fixed) carry.push(it);
       });
       // Arrival evening never ends empty: keep dinner in.
       if (d.kind === 'arrival' && !slots.some(x => /dinner|meal/i.test(x.text + ' ' + x.part)))
@@ -400,11 +554,17 @@
       slots.sort((a, b) => (a.m == null ? 9999 : a.m) - (b.m == null ? 9999 : b.m));
       out.push(slots);
     });
+    // The destination itself is seasonal (high lakes, passes): warn on Day 1.
+    const pv = venueOf(S.ctx.place && S.ctx.place.name);
+    if (pv && pv.season && out[0] && out[0][0] && !pv.season.includes(S.ctx.start.getMonth() + 1) && pv.warn)
+      out[0][0].quiet = [out[0][0].quiet, `⚠ ${pv.warn} — confirm the road/trail is open before you go`].filter(Boolean).join(' · ');
     // Whatever never fitted: say so plainly rather than show a wrong time.
     if (carry.length && out.length) {
       const last = out[out.length - 1];
-      carry.filter(it => !out.some(day => day.some(x => sameVenue(it, x.text)))).forEach(it => last.push({ time: '—', part: 'Missed', text: `${placeName(it.v, it.text)} didn't fit this trip (${hoursLabel(it.v)})`,
-        note: 'Add a day, or ask your host if it can be squeezed in on the way.', quiet: '' }));
+      const endDate = addDays(S.ctx.start, out.length - 1);
+      carry.filter(it => !out.some(day => day.some(x => sameVenue(it, x.text)))).forEach(it => last.push({ time: '—', part: 'Missed',
+        text: `${placeName(it.v, it.text)} didn't fit this trip${it.v.open != null ? ` (${hoursLabel(it.v, endDate)})` : ''}`,
+        note: it.season ? `It isn't running on your dates — ${it.why}.` : 'Add a day, or ask your host if it can be squeezed in on the way.', quiet: '' }));
     }
     return out;
   }
@@ -453,15 +613,18 @@
     for (const x of rest) {
       if (used >= cap) break;
       const isFood = /dinner|meal|food|dish|eat/i.test(x);
-      if (!isFood && t > 1290) { const lv = venueOf(x); if (lv && !lv.sun) skipped.push({ text: x, v: lv, why: 'late' }); continue; }
+      if (!isFood && t > 1290) { const lv = venueOf(x); if (lv && lv.open != null && !lv.season) skipped.push({ text: x, v: lv, why: 'it shuts before you can get there' }); continue; }
       if (isFood && t > 1320) break;                   // past 10 pm — handled below
       if (isFood) t = Math.max(t, 1170);               // dinner not before 7:30 pm
       else if (/evening|sunset/i.test(x)) t = Math.max(t, sunset - 60);
       const v = !isFood && venueOf(x);
-      if (v) {
+      if (v && v.season) { /* seasonal warning lines are handled by the scheduler */ }
+      else if (v && (v.after || v.first)) { if (v.after) continue; skipped.push({ text: x, v, why: 'better done first thing tomorrow' }); continue; }
+      else if (v && (v.open != null || v.fixed)) {
         const f = fitAt(v, t, date);
-        if (!f.ok || (f.m !== t && f.m - t > 60)) { skipped.push({ text: x, v, why: f.ok ? 'late' : f.why }); continue; }
-        if (v.sun || f.m !== t) t = f.m;
+        if (!f.ok || (!v.fixed && f.m - t > 60)) { skipped.push({ text: x, v, why: f.ok ? 'it shuts before you can get there' : f.why, season: f.season }); continue; }
+        if (v.fixed === 'sunset' && f.m < t) continue;   // sunset already gone
+        t = f.m;
       }
       let text = x, note = '';
       if (!isFood && !v && t > sunset - 20 && /walk|trek|hike|viewpoint|explore|stroll|trail/i.test(x)) {
@@ -485,7 +648,7 @@
 
   function slotsFor(day, idx) {
     const t = TIMES[S.type] || TIMES.couple;
-    let items = day.items.filter(Boolean);
+    let items = seasonFilter(day.items.filter(Boolean), addDays(S.ctx.start, idx));
     if (day.kind === 'arrival') {
       const today = startsToday(S.ctx);
       if (today || day.trip) return arrivalSlots(day, items, today);
@@ -494,6 +657,12 @@
     if (day.kind === 'departure') return items.slice(0, 4).map((x, i) => ({ time: ['7:30 am', '10:00 am', '11:00 am', '12:00 pm'][i], part: ['Morning', 'Morning', 'Late morning', 'Afternoon'][i], text: x }));
     if (S.type === 'couple' && S.pace === 'packed' && !items.some(x => /sunset/i.test(x))) items = [...items, 'Sunset — ask your host where locals watch it'];
     const n = S.pace === 'packed' ? 4 : 3;
+    // Lines that say when they happen go to that part of the day.
+    const rank = x => /^(early )?morning\b|^sunrise|^dawn|^day trip|^early\b/i.test(clean(x)) ? 0
+      : /^(evening|night|sunset|dinner|stargaz|bonfire)\b|\bin the evening\b|\bafter dark\b/i.test(clean(x)) ? 3 : 1;
+    items = items.map((x, k) => [x, k]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(a => a[0]);
+    const fi = items.findIndex(x => { const v = venueOf(x); return v && v.first && !v.fixed; });
+    if (fi > 0) items = [items[fi], ...items.slice(0, fi), ...items.slice(fi + 1)];
     const pick = items.slice(0, n);
     const order = pick.length === 3 ? [0, 2, 3] : pick.length === 2 ? [0, 2] : [0, 1, 2, 3];
     return pick.map((x, i) => {
@@ -562,11 +731,11 @@
       const wf = dayFactor(date);
       const busy = d.kind !== 'arrival' && d.kind !== 'departure' && wf >= 1.08;
       const slots = sched[i];
-      if (busy && slots[0] && d.kind !== 'base') slots[0].quiet = isLongWeekend(date) ? 'Long weekend — roads and viewpoints fill up fast, leave before 8 am' : 'Weekend — start before 9 am, it gets busy by late morning';
+      if (busy && slots[0] && d.kind !== 'base' && !slots[0].quiet) slots[0].quiet = isLongWeekend(date) ? 'Long weekend — roads and viewpoints fill up fast, leave before 8 am' : 'Weekend — start before 9 am, it gets busy by late morning';
       if (!busy && (d.kind === 'nearby' || d.kind === 'local') && slots[0] && wf <= 0.97) {
         const di = window.PP_CROWD ? window.PP_CROWD.dayInfo(date) : null;
         const dow = date.getDay();
-        slots[0].quiet = di && di.holiday && di.holiday.diwali ? 'Diwali — most people are at home, so trails are quiet'
+        if (!slots[0].quiet) slots[0].quiet = di && di.holiday && di.holiday.diwali ? 'Diwali — most people are at home, so trails are quiet'
           : (dow === 0 || dow === 6) ? 'Quieter than a usual weekend' : 'Weekday — quieter than usual';
       }
       const task = d.kind === 'departure' ? 'Leave an honest review for your host' : TASKS[i % TASKS.length];
