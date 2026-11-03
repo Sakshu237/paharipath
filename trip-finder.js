@@ -407,7 +407,7 @@
     set('ppNights', Math.max(1, Math.min(14, parseInt(val('tfNights'), 10) || 2)));
     set('ppTravellers', who[2]);
     try { selectPlanPlace(p.id, p.name + ' — ' + p.district); } catch (e) { notify('Could not open the planner — please refresh'); }
-    setTimeout(function () { var r = document.getElementById('planRes'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+    // runFC() scrolls to the itinerary once it is ready.
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();

@@ -591,7 +591,7 @@
     out.push(leave);
 
     // 2. Reach + check in
-    const travelMins = trip ? Math.round(trip.hours * 60) : 60;   // unknown origin: assume you're close by
+    const travelMins = trip ? Math.round(trip.hours * 12) * 5 : 60;   // to the nearest 5 min; unknown origin: assume you're close by
     const reach = t + travelMins;
     if (trip) {
       // Minutes driven between sunset and roughly next sunrise (~6:40 am).
