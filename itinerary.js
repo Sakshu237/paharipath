@@ -172,7 +172,8 @@
     const snow = c.season === 'snow';
     const ownText = (written || []).map(d => [d.title, ...(d.items || [])].join(' ')).join(' ').toLowerCase();
     const covered = n => ownText.includes(n.p.name.toLowerCase());          // e.g. Jibhi's own plan already visits Chehni Kothi
-    const near = nearbyOf(p.id).filter(n => !(snow && (S.nearby[String(n.id)] || {}).t === 'seasonal') && (!covered(n) || S.added.includes(n.id)));
+    const snowBound = n => snow && (S.nearby[String(n.id)] || {}).t === 'seasonal';
+    const near = nearbyOf(p.id).filter(n => S.added.includes(n.id) || (!snowBound(n) && !covered(n)));
     const trips = [...S.added.map(id => near.find(n => n.id === id)).filter(Boolean), ...near.filter(n => !n.base && n.mins <= 150 && !S.added.includes(n.id))];
     const baseCand = near.find(n => !n.hike && n.mins >= 40 && !S.added.includes(n.id));
 
@@ -184,6 +185,7 @@
         ...tripHighlights(n.p).slice(0, 2),
         `Head back to ${p.name} before dark`,
       ],
+      ...(snowBound(n) ? { warn: `${n.p.name} can be snowed in at this time of year — check the road with your host before you set off` } : {}),
     });
 
     let base = null;
@@ -215,13 +217,29 @@
       while (blocks.length < middleCount) blocks.push({ kind: 'slow', pid: base ? base.id : p.id, title: 'A slow day — nowhere to be', items: SLOW_DAY.slice() });
     }
 
-    // 3. An added place that did not fit takes the last non-base day.
+    // 3. Every place the traveller added gets a day. It replaces, in order:
+    //    a slow day, a day trip we picked, then the place's own later days —
+    //    never another added place. No free day (short trip): a close place
+    //    becomes a stop on the way home; a far one asks for one more night.
+    const stopovers = [], unfit = [];
+    const replaceable = ['slow', 'nearby', 'basedLocal', 'local'];
     S.added.forEach(id => {
       if (blocks.some(b => b.pid === id)) return;
       const n = near.find(x => x.id === id); if (!n) return;
-      for (let i = blocks.length - 1; i >= 0; i--) {
-        if (blocks[i].kind === 'local' || blocks[i].kind === 'slow' || blocks[i].kind === 'nearby') { blocks[i] = dayTrip(n); return; }
+      let at = -1;
+      for (const kind of replaceable) {
+        for (let i = blocks.length - 1; i >= 0; i--) {
+          const b = blocks[i];
+          if (b.kind !== kind || S.added.includes(b.pid)) continue;
+          if (kind === 'local' && blocks.filter(x => x.kind === 'local').length <= 1 && blocks.length > 1) continue;   // keep one day at the place itself if we can
+          at = i; break;
+        }
+        if (at >= 0) break;
       }
+      if (at < 0 && blocks.some(b => b.kind === 'local' && !S.added.includes(b.pid))) at = blocks.findIndex(b => b.kind === 'local');
+      if (at >= 0) blocks[at] = dayTrip(n);
+      else if (n.mins <= 75 && !n.hike && !stopovers.length) stopovers.push(n);   // one short stop on the last morning, no more
+      else unfit.push(n);
     });
 
     // 4. Crowd planning: before any base move, put day trips on the quietest dates.
@@ -260,7 +278,11 @@
       items: last ? ['Early walk at golden hour', ...last.items.map(clean).slice(0, 2), homeLine]
         : ['Early walk at golden hour', 'Breakfast and check-out', `Local shopping — ${c.shop || 'pickles, shawls and honey'}`, homeLine] };
 
-    return { days: [arrival, ...blocks, departure], moved, base };
+    stopovers.forEach(n => { const h = clean(tripHighlights(n.p)[0] || '').split(/\s+—\s+/)[0];
+      departure.items.splice(1, 0, `Stop at ${n.p.name} on your way home (about ${fmtMins(n.mins)} from ${p.name})${h ? ` — ${h.replace(/^./, ch => ch.toLowerCase())}` : ''}`); });
+    departure.stops = stopovers.map(n => n.id);
+
+    return { days: [arrival, ...blocks, departure], moved, base, stopovers, unfit };
   }
 
   // ── rendering ──────────────────────────────────────────────────────────
@@ -657,7 +679,7 @@
       if (today || day.trip) return arrivalSlots(day, items, today);
       return items.slice(0, S.pace === 'packed' ? 4 : 3).map((x, i) => ({ time: ['1:00 pm', '3:30 pm', '5:00 pm', '7:30 pm'][i], part: ['Afternoon', 'Afternoon', 'Evening', 'Dinner'][i], text: x }));
     }
-    if (day.kind === 'departure') return items.slice(0, 4).map((x, i) => ({ time: ['7:30 am', '10:00 am', '11:00 am', '12:00 pm'][i], part: ['Morning', 'Morning', 'Late morning', 'Afternoon'][i], text: x }));
+    if (day.kind === 'departure') return (items.length > 4 ? [...items.slice(0, 3), items[items.length - 1]] : items).map((x, i) => ({ time: ['7:30 am', '10:00 am', '11:00 am', '12:00 pm'][i], part: ['Morning', 'Morning', 'Late morning', 'Afternoon'][i], text: x }));
     if (S.type === 'couple' && S.pace === 'packed' && !items.some(x => /sunset/i.test(x))) items = [...items, 'Sunset — ask your host where locals watch it'];
     const n = S.pace === 'packed' ? 4 : 3;
     // Lines that say when they happen go to that part of the day.
@@ -708,7 +730,9 @@
     if (plan.moved) notes.push(`We put ${esc(plan.moved.name)} on ${esc(dayName(plan.moved.day))}, a quieter day than the weekend.`);
     if (plan.days.some(d => d.kind === 'nearby')) notes.push(`${esc(p.name)} is covered in the first days, so we added nearby day trips for the rest.`);
     if (plan.base) notes.push(`Halfway through, we move you to ${esc(plan.base.p.name)} — less driving and a new valley to wake up in.`);
+    (plan.stopovers || []).forEach(n => notes.push(`No free day for ${esc(n.p.name)}, so it is a stop on your way home.`));
     if (notes.length) html += `<div class="itn-note">${notes.join(' ')}</div>`;
+    (plan.unfit || []).forEach(n => { html += `<div class="itn-note itn-unfit">${esc(n.p.name)} needs a full day and your trip has none free. <button type="button" class="itn-addnight" onclick="ppItn.addNight(${n.id})">Add 1 night for it</button> <button type="button" class="itn-addnight ghost" onclick="ppItn.toggleAdd(${n.id})">Remove</button></div>`; });
 
     // trip summary: quiet / busier days, day trips, task progress, open-all
     const dayKind = plan.days.map((d, i) => {
@@ -741,6 +765,7 @@
         if (!slots[0].quiet) slots[0].quiet = di && di.holiday && di.holiday.diwali ? 'Diwali — most people are at home, so trails are quiet'
           : (dow === 0 || dow === 6) ? 'Quieter than a usual weekend' : 'Weekday — quieter than usual';
       }
+      if (d.warn && slots[0]) slots[0].note = [slots[0].note, d.warn].filter(Boolean).join(' · ');
       const task = d.kind === 'departure' ? 'Leave an honest review for your host' : TASKS[i % TASKS.length];
       const isDone = done.includes(i);
       const q = place(d.pid);
@@ -823,13 +848,47 @@
   }
 
   // ── public API ─────────────────────────────────────────────────────────
+  const say = msg => { try { if (typeof toast === 'function') toast(msg); } catch (e) { /* toast is optional */ } };
+  // After adding a nearby place: open the day it landed on and bring it into view.
+  function showAdded(id) {
+    const plan = S.lastPlan; if (!plan) return;
+    const name = (place(id) || {}).name || 'This place';
+    let di = plan.days.findIndex(d => d.kind === 'nearby' && d.pid === id);
+    let msg = di >= 0 ? `${name} added — Day ${di + 1}, ${dayName(addDays(S.ctx.start, di))}` : '';
+    if (di < 0 && (plan.stopovers || []).some(n => n.id === id)) { di = plan.days.length - 1; msg = `${name} added as a stop on your way home`; }
+    if (di >= 0) {
+      if (!S.open.includes(di)) S.open.push(di);
+      render();
+      setTimeout(() => { const el = document.querySelectorAll('#fcDays .itn-day')[di]; if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 60);
+      say(msg);
+    } else {
+      setTimeout(() => { const el = document.querySelector('#fcDays .itn-unfit'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 60);
+      say(`${name} needs a full day — tap "Add 1 night for it"`);
+    }
+  }
+
   window.ppItn = {
     setType(k) { S.type = k; render(); },
     setPace(k) { S.pace = k; render(); },
     toggleTask(i) { const d = getDone(); const at = d.indexOf(i); at >= 0 ? d.splice(at, 1) : d.push(i); setDone(d); render(); },
     toggleDay(i) { const at = S.open.indexOf(i); at >= 0 ? S.open.splice(at, 1) : S.open.push(i); render(); },
     openAll() { const n = (S.lastPlan && S.lastPlan.days.length) || 0; S.open = S.open.length >= n ? [] : Array.from({ length: n }, (_, i) => i); render(); },
-    toggleAdd(id) { const at = S.added.indexOf(id); at >= 0 ? S.added.splice(at, 1) : S.added.push(id); closeSheet(); render(); peek(id); },
+    toggleAdd(id) {
+      const at = S.added.indexOf(id), adding = at < 0;
+      adding ? S.added.push(id) : S.added.splice(at, 1);
+      closeSheet(); render();
+      const name = (place(id) || {}).name || 'This place';
+      if (!adding) { say(`${name} removed from your trip`); return; }
+      showAdded(id);
+    },
+    addNight(id) {
+      const el = document.getElementById('ppNights');
+      if (!el || typeof runFC !== 'function') return;
+      el.value = Math.min(14, (parseInt(el.value, 10) || 2) + 1);
+      S.added = [id, ...S.added.filter(x => x !== id)];   // the place you added the night for gets the new day
+      S.focusAdded = id;
+      runFC();
+    },
     peek, close: closeSheet,
     share() {
       const plan = S.lastPlan; if (!plan) return;
@@ -856,6 +915,7 @@
     if (!S.type) { const t = String(ctx.travellers || '2'); S.type = t === '1' ? 'friends' : t === '2' ? 'couple' : 'family'; }
     injectStyles();
     render();
+    if (S.focusAdded) { const id = S.focusAdded; S.focusAdded = null; setTimeout(() => showAdded(id), 700); }
     // Nearby data and nearby places' own itineraries arrive asynchronously.
     loadNearby().then(() => {
       render();
@@ -933,6 +993,9 @@
       .itn-fact.warm{background:#f6f1e7}.itn-fact span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4f5f52}.itn-fact b{font-size:14px}
       .itn-offers{margin:0;padding-left:20px}.itn-offers li{margin-bottom:4px}
       .itn-splan{background:#fff;border:1px solid #dfe6e0;border-radius:14px;padding:4px 14px}.itn-splan div{padding:10px 0;border-bottom:1px dashed #e3e9e4;font-size:14px}.itn-splan div:last-child{border-bottom:none}
+      .itn-unfit{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+      .itn-addnight{min-height:40px;padding:0 14px;border-radius:999px;border:none;background:#fff;color:var(--pine);font:700 13px var(--fb);cursor:pointer}
+      .itn-addnight.ghost{background:transparent;color:inherit;border:1px solid rgba(255,255,255,.4)}
       .itn-warn{margin-top:12px;background:#fbefe7;color:#6e3a20;border-radius:12px;padding:10px 12px;font-size:13px}
       .itn-sact{padding:16px 20px 24px;display:flex;flex-direction:column;gap:10px}
       .itn-add{min-height:50px;border-radius:12px;border:1.5px solid var(--pine);background:var(--pine);color:#fff;font:700 15px var(--fb);cursor:pointer}
