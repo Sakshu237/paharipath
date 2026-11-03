@@ -269,6 +269,146 @@
   function getDone() { try { const v = localStorage.getItem(taskKey()); if (v) return JSON.parse(v); } catch (e) { /* storage blocked */ } return (memDone[taskKey()] || []).slice(); }
   function setDone(list) { memDone[taskKey()] = list.slice(); try { localStorage.setItem(taskKey(), JSON.stringify(list)); } catch (e) { /* storage blocked — memory copy kept */ } }
 
+  // ── opening hours: never send people to a closed place ────────────────
+  // First match wins, so specific places sit above the generic types.
+  // m = minutes after midnight. closed = weekdays (0 = Sun … 6 = Sat).
+  // dur = how long the visit takes (last sensible start = close - dur).
+  // To fix a timing, edit this table — every itinerary uses it.
+  const DOW = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+  const VENUES = [
+    { re: /s(h)?obha singh/i,                  name: 'Sobha Singh Art Gallery', open: 570, close: 1050, dur: 60 },
+    { re: /andretta pottery|pottery (studio|society)/i, name: 'Andretta Pottery', open: 600, close: 1020, dur: 45 },
+    { re: /roerich/i,                          name: 'Roerich Art Gallery', open: 540, close: 1020, closed: [1], dur: 60 },
+    { re: /bhuri singh/i,                      name: 'Bhuri Singh Museum', open: 600, close: 1020, closed: [1], dur: 60 },
+    { re: /norbulingka/i,                      name: 'Norbulingka Institute', open: 540, close: 1020, dur: 75 },
+    { re: /kangra fort/i,                      name: 'Kangra Fort', open: 540, close: 1020, closed: [5], dur: 90 },
+    // generic types — conservative hours
+    { re: /museum|galler(y|ies)|exhibition/i,  name: 'it', open: 600, close: 1020, closed: [1], dur: 60, soft: true },
+    { re: /institute|workshop|weav|handloom|craft (centre|center|society)|co-?operative/i, name: 'it', open: 600, close: 1020, dur: 45, soft: true },
+    { re: /tea (factory|estate|garden)/i,      name: 'the tea factory', open: 540, close: 1020, dur: 60, soft: true },
+    { re: /\bfort\b|palace|castle/i,           name: 'it', open: 570, close: 1050, dur: 75, soft: true },
+    { re: /ropeway|cable car/i,                name: 'the ropeway', open: 570, close: 1050, dur: 60, soft: true },
+    { re: /\bzoo\b|sanctuary|nature park|deer park/i, name: 'it', open: 600, close: 1020, dur: 75, soft: true },
+    { re: /monaster|gompa/i,                   name: 'the monastery', open: 360, close: 1080, dur: 45, soft: true },
+    { re: /market|bazaar|shopping/i,           name: 'the market', open: 600, close: 1230, dur: 45, soft: true },
+    { re: /temple|mandir|gurudwara|church/i,   name: 'it', open: 330, close: 1260, dur: 30, soft: true },
+    { re: /sunrise/i, sun: 'rise' },
+    { re: /sunset/i,  sun: 'set' },
+    { re: /\b(trek|hike|climb|summit)\b/i,     name: 'the trek', open: 330, close: 720, dur: 0, trek: true },
+  ];
+  const SUNRISE = [435, 425, 400, 365, 335, 320, 330, 350, 370, 390, 410, 430];
+  const venueOf = text => VENUES.find(v => v.re.test(text || '')) || null;
+  const parseClock = str => {
+    const m = /(\d{1,2}):(\d{2})\s*(am|pm)/i.exec(str || '');
+    if (!m) return null;
+    let h = +m[1] % 12; if (/pm/i.test(m[3])) h += 12;
+    return h * 60 + +m[2];
+  };
+  const hoursLabel = v => `${fmtClock(v.open)} – ${fmtClock(v.close)}${v.closed ? `, closed ${v.closed.map(d => DOW[d]).join(' & ')}` : ''}`;
+  // Can this activity happen at minute m on this date? Returns the time to use.
+  function fitAt(v, m, date) {
+    if (v.sun === 'rise') { const r = SUNRISE[date.getMonth()]; return m <= r + 120 ? { ok: true, m: r - 20 } : { ok: false, why: 'sun' }; }
+    if (v.sun === 'set') { const st = sunsetOf(date); return m >= st - 240 && m <= st + 15 ? { ok: true, m: st - 40 } : { ok: false, why: 'sun' }; }
+    if (v.closed && v.closed.includes(date.getDay())) return { ok: false, why: 'closed' };
+    if (m < v.open) return { ok: true, m: v.open, shifted: true };
+    if (m > v.close - v.dur) return { ok: false, why: 'late' };
+    if (!v.trek && m + v.dur > sunsetOf(date) + 60 && v.close <= 1050) return { ok: false, why: 'late' };
+    return { ok: true, m };
+  }
+  const placeName = (v, text) => v.name && v.name !== 'it' && !/^the /.test(v.name) ? v.name : clean(text).replace(/^(visit|explore|see|walk (to|through)|head to)\s+/i, '').split(/[,—–(]/)[0].trim();
+
+  // Runs every day of the plan through the opening-hours check. Anything
+  // that would be closed (or too late) moves to the next day it fits;
+  // a visit that can't fit anywhere is flagged instead of shown at a wrong time.
+  function scheduleAll(plan) {
+    const t = TIMES[S.type] || TIMES.couple;
+    const out = [];
+    // Same place already in the plan (placed, or written for a later day)?
+    const sameVenue = (it, text) => it.v.soft ? clean(text).toLowerCase() === clean(it.text).toLowerCase() : it.v.re.test(text);
+    const alreadyPlanned = (it, i) => out.some(day => day.some(x => sameVenue(it, x.text)))
+      || plan.days.slice(i + 1).some(d => d.items.some(x => sameVenue(it, x)))
+      || false;
+    const movedSlot = (it, m, i, was) => ({
+      time: fmtClock(m), m, part: partOf(m),
+      text: clean(it.text).replace(/^(early )?(morning|midday|afternoon|evening|late)\s+(visit|trip|walk)\s+(to|at)?\s*/i, 'Visit '),
+      note: [it.note, it.v.sun || it.v.trek ? '' : `Open ${hoursLabel(it.v)}${it.v.soft ? ' — usual hours, confirm with your host' : ''}`].filter(Boolean).join(' · '),
+      quiet: it.from === i ? `Planned earlier — ${was}` : `Moved from Day ${it.from + 1} — ${was}` });
+    let carry = [];
+    plan.days.forEach((d, i) => {
+      const date = addDays(S.ctx.start, i);
+      const raw = slotsFor(d, i);
+      const bad = (raw.skipped || []).map(x => ({ ...x, from: i }));
+      let slots = [];
+      raw.forEach((s, k) => {
+        s.m = parseClock(s.time);
+        const v = venueOf(s.text);
+        if (!v || s.m == null || /dinner/i.test(s.part) || (d.kind === 'arrival' && k < 2)) { slots.push(s); return; }
+        if (v.sun === 'rise') {               // first thing in the morning, at real sunrise
+          if (k > 0 && raw[0] && parseClock(raw[0].time) < 600) { bad.push({ text: s.text, v, why: 'sun', from: i }); return; }
+          s.m = SUNRISE[date.getMonth()] - 20; s.time = fmtClock(s.m); s.part = 'Sunrise'; slots.push(s); return;
+        }
+        const f = fitAt(v, s.m, date);
+        if (!f.ok) { bad.push({ text: s.text, v, why: f.why, from: i, note: s.note }); return; }
+        const next = raw[k + 1] && parseClock(raw[k + 1].time);
+        if (f.m !== s.m && next != null && f.m + 30 > next) {   // shifting would clash with the next slot
+          if (v.sun) { slots.push(s); return; }
+          bad.push({ text: s.text, v, why: 'late', from: i, note: s.note }); return;
+        }
+        s.m = f.m; s.time = fmtClock(f.m);
+        const pw = /^(early )?(morning|afternoon|evening)\b/i.exec(clean(s.text));
+        if (pw && !new RegExp(pw[2], 'i').test(partOf(s.m))) s.text = clean(s.text).replace(/^(early )?(morning|midday|afternoon|evening|late)\s+(visit|trip|walk)\s+(to|at)?\s*/i, 'Visit ');
+        if (!v.sun && !v.trek) s.note = [s.note, `Open ${hoursLabel(v)}${v.soft ? ' — usual hours, confirm with your host' : ''}`].filter(Boolean).join(' · ');
+        slots.push(s);
+      });
+
+      // Place carried-over and rejected visits into free times today.
+      const pending = [...carry, ...bad];
+      carry = [];
+      const canTake = d.kind !== 'arrival';
+      const cap = d.kind === 'departure' ? 5 : (S.pace === 'packed' ? 5 : 4);
+      const candidates = d.kind === 'departure' ? [570, 600, 630, 660] : [...t.map(parseClock), 600, 660, 840, 900, 960];
+      pending.forEach(it => {
+        if (alreadyPlanned(it, i)) return;
+        let placed = false;
+        if (canTake && slots.length < cap && !(it.from === i && it.why === 'closed')) {
+          const opts = [...new Set(candidates)].sort((a, b) => a - b);
+          for (const m0 of opts) {
+            const f = fitAt(it.v, m0, date);
+            if (!f.ok) continue;
+            if (slots.some(s => s.m != null && Math.abs(s.m - f.m) < (d.kind === 'departure' ? 45 : 60))) continue;
+            if (d.kind === 'departure' && f.m > 690) continue;      // must leave by midday
+            const was = it.why === 'closed' ? `closed on ${DOW[addDays(S.ctx.start, it.from).getDay()]}`
+              : it.why === 'sun' ? 'better timed for the light' : 'it shuts before you can get there';
+            slots.push(movedSlot(it, f.m, i, was));
+            placed = true; break;
+          }
+        }
+        // Last morning is full: swap out a plain item (never the drive home).
+        if (!placed && d.kind === 'departure' && !it.v.sun) {
+          const s2 = slots.find((x, k) => k > 0 && x.m != null && x.m <= 690 && !venueOf(x.text) && !/home|leave|depart|check.?out|drive|travel/i.test(x.text) && fitAt(it.v, x.m, date).ok);
+          if (s2) {
+            const f = fitAt(it.v, s2.m, date);
+            Object.assign(s2, movedSlot(it, f.m, i, it.why === 'closed' ? `closed on ${DOW[addDays(S.ctx.start, it.from).getDay()]}` : 'it shuts before you can get there'));
+            placed = true;
+          }
+        }
+        if (!placed && !it.v.sun) carry.push(it);
+      });
+      // Arrival evening never ends empty: keep dinner in.
+      if (d.kind === 'arrival' && !slots.some(x => /dinner|meal/i.test(x.text + ' ' + x.part)))
+        slots.push({ time: '7:30 pm', m: 1170, part: 'Dinner', text: 'Dinner at your stay — ask for a local dish', note: '', quiet: '' });
+      slots.sort((a, b) => (a.m == null ? 9999 : a.m) - (b.m == null ? 9999 : b.m));
+      out.push(slots);
+    });
+    // Whatever never fitted: say so plainly rather than show a wrong time.
+    if (carry.length && out.length) {
+      const last = out[out.length - 1];
+      carry.filter(it => !out.some(day => day.some(x => sameVenue(it, x.text)))).forEach(it => last.push({ time: '—', part: 'Missed', text: `${placeName(it.v, it.text)} didn't fit this trip (${hoursLabel(it.v)})`,
+        note: 'Add a day, or ask your host if it can be squeezed in on the way.', quiet: '' }));
+    }
+    return out;
+  }
+
   // Arrival day built on a real clock: from "now + getting ready" when the
   // trip starts today, or from a sensible leave time when the drive is known.
   function arrivalSlots(day, items, today) {
@@ -278,6 +418,8 @@
     const name = (place(day.pid) || {}).name || 'your stay';
     const [goText, checkIn, ...rest] = items;
     const out = [];
+    const skipped = [];
+    out.skipped = skipped;
     let t = today ? sameDayStart(trip) : plannedLeave(trip);
 
     // 1. Leave / travel
@@ -311,12 +453,18 @@
     for (const x of rest) {
       if (used >= cap) break;
       const isFood = /dinner|meal|food|dish|eat/i.test(x);
-      if (!isFood && t > 1290) continue;              // too late for anything but food
+      if (!isFood && t > 1290) { const lv = venueOf(x); if (lv && !lv.sun) skipped.push({ text: x, v: lv, why: 'late' }); continue; }
       if (isFood && t > 1320) break;                   // past 10 pm — handled below
       if (isFood) t = Math.max(t, 1170);               // dinner not before 7:30 pm
       else if (/evening|sunset/i.test(x)) t = Math.max(t, sunset - 60);
+      const v = !isFood && venueOf(x);
+      if (v) {
+        const f = fitAt(v, t, date);
+        if (!f.ok || (f.m !== t && f.m - t > 60)) { skipped.push({ text: x, v, why: f.ok ? 'late' : f.why }); continue; }
+        if (v.sun || f.m !== t) t = f.m;
+      }
       let text = x, note = '';
-      if (!isFood && t > sunset - 20 && /walk|trek|hike|viewpoint|explore|stroll|trail/i.test(x)) {
+      if (!isFood && !v && t > sunset - 20 && /walk|trek|hike|viewpoint|explore|stroll|trail/i.test(x)) {
         text = `Short stroll near ${name} — it's dark by ${fmtClock(sunset)}, so save the walk for tomorrow morning`;
         note = 'Carry a torch; village lanes have no street lights.';
       }
@@ -361,6 +509,7 @@
     if (!el || !S.ctx) return;
     const c = S.ctx, p = c.place;
     const plan = buildPlan();
+    const sched = scheduleAll(plan);
     const done = getDone();
     const near = nearbyOf(p.id).filter(n => n.mins <= 300).slice(0, 5);
     const zone = String(p.zone || '').toLowerCase();
@@ -412,7 +561,7 @@
       const date = addDays(c.start, i);
       const wf = dayFactor(date);
       const busy = d.kind !== 'arrival' && d.kind !== 'departure' && wf >= 1.08;
-      const slots = slotsFor(d, i);
+      const slots = sched[i];
       if (busy && slots[0] && d.kind !== 'base') slots[0].quiet = isLongWeekend(date) ? 'Long weekend — roads and viewpoints fill up fast, leave before 8 am' : 'Weekend — start before 9 am, it gets busy by late morning';
       if (!busy && (d.kind === 'nearby' || d.kind === 'local') && slots[0] && wf <= 0.97) {
         const di = window.PP_CROWD ? window.PP_CROWD.dayInfo(date) : null;
@@ -514,9 +663,10 @@
       const plan = S.lastPlan; if (!plan) return;
       const c = S.ctx;
       const lines = [`🏔️ My ${c.place.name} trip — PahariPath`, ''];
+      const sched = scheduleAll(plan);
       plan.days.forEach((d, i) => {
         lines.push(`Day ${i + 1} · ${dayName(addDays(c.start, i))} — ${d.title}`);
-        slotsFor(d, i).forEach(s => lines.push(`  ${s.time}: ${s.text}`));
+        sched[i].forEach(s => lines.push(`  ${s.time}: ${s.text}`));
         lines.push('');
       });
       lines.push('Plan yours at paharipath.in');
