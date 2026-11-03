@@ -49,6 +49,31 @@
   };
   const PARTS = ['Morning', 'Midday', 'Afternoon', 'Evening'];
 
+  // ── same-day / time-aware arrival ─────────────────────────────────────
+  const ymd = d => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  // The trip starts today (in the traveller's own time zone).
+  const startsToday = c => !!(c && c.start && ymd(new Date(c.start)) === ymd(new Date()));
+  // Rough sunset in Himachal by month (minutes after midnight, IST).
+  const SUNSET = [1065, 1095, 1120, 1140, 1160, 1175, 1170, 1145, 1110, 1075, 1050, 1045];
+  const sunsetOf = d => SUNSET[d.getMonth()];
+  const fmtClock = m => {
+    m = Math.round(m) % 1440; if (m < 0) m += 1440;
+    const h = Math.floor(m / 60), mm = m % 60, h12 = h % 12 || 12;
+    return `${h12}:${String(mm).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`;
+  };
+  const partOf = m => { m %= 1440; return m < 300 ? 'Night' : m < 690 ? 'Morning' : m < 840 ? 'Midday' : m < 1020 ? 'Afternoon' : m < 1230 ? 'Evening' : 'Night'; };
+  const roundUp = (m, step) => Math.ceil(m / step) * step;
+  // When a same-day trip can realistically begin: now + time to get ready.
+  // 30 min for a short hop, 1 hour when a long drive needs packing/fuel.
+  function sameDayStart(trip) {
+    const now = new Date();
+    const mins = now.getHours() * 60 + now.getMinutes();
+    const buffer = trip && trip.hours >= 3 ? 60 : 30;
+    return roundUp(mins + buffer, 15);
+  }
+  // Default leave time for a future date when the drive is known.
+  const plannedLeave = trip => trip.hours > 9 ? 330 : trip.hours > 5 ? 390 : trip.hours > 2 ? 480 : 540;
+
   const MOMENTS = [
     'Siddu is a steamed wheat bread stuffed with walnut or poppy-seed paste, eaten with ghee. Ask your host to show you how it is folded.',
     'Every village here has its own devta, and fairs are planned around them. Ask your host about theirs — and leave shoes and leather outside temple courtyards.',
@@ -221,9 +246,9 @@
     // Journey from the traveller's city (only when they used "Suggest a place for me").
     const trip = window.PPTrip && window.PPTrip.travel ? window.PPTrip.travel(p) : null;
     const goLine = trip
-      ? `Travel from ${trip.from} to ${p.name} — ${trip.label} ${trip.route}${trip.hours > 9 ? '. Start before sunrise, or break the journey overnight on the way' : trip.hours > 5 ? '. Leave early to reach by afternoon' : ''}`
+      ? `Travel from ${trip.from} to ${p.name} — ${trip.label} ${trip.route}${startsToday(c) ? '' : trip.hours > 9 ? '. Start before sunrise, or break the journey overnight on the way' : trip.hours > 5 ? '. Leave early to reach by afternoon' : ''}`
       : `Travel to ${p.name}`;
-    const arrival = { kind: 'arrival', pid: p.id, title: `Arrive in ${p.name}`,
+    const arrival = { kind: 'arrival', pid: p.id, trip, title: `Arrive in ${p.name}`,
       items: [`${goLine}${c.high ? ' — you are above 3,000 m, so take it slow today' : ''}`, 'Check in and settle into your stay',
         ...(first ? first.items.map(clean).slice(-2) : [`Evening walk around ${p.name}`, 'Dinner at your stay — ask for a local dish'])] };
     const endPlace = base ? base.p : p;
@@ -244,10 +269,80 @@
   function getDone() { try { const v = localStorage.getItem(taskKey()); if (v) return JSON.parse(v); } catch (e) { /* storage blocked */ } return (memDone[taskKey()] || []).slice(); }
   function setDone(list) { memDone[taskKey()] = list.slice(); try { localStorage.setItem(taskKey(), JSON.stringify(list)); } catch (e) { /* storage blocked — memory copy kept */ } }
 
+  // Arrival day built on a real clock: from "now + getting ready" when the
+  // trip starts today, or from a sensible leave time when the drive is known.
+  function arrivalSlots(day, items, today) {
+    const trip = day.trip;
+    const date = new Date(S.ctx.start);
+    const sunset = sunsetOf(date);
+    const name = (place(day.pid) || {}).name || 'your stay';
+    const [goText, checkIn, ...rest] = items;
+    const out = [];
+    let t = today ? sameDayStart(trip) : plannedLeave(trip);
+
+    // 1. Leave / travel
+    const leave = { time: fmtClock(t), part: today ? 'Start' : partOf(t), text: goText, note: '', quiet: '' };
+    if (today) leave.quiet = `Planned from now — leave by ${fmtClock(t)}`;
+    out.push(leave);
+
+    // 2. Reach + check in
+    const travelMins = trip ? Math.round(trip.hours * 60) : 60;   // unknown origin: assume you're close by
+    const reach = t + travelMins;
+    if (trip) {
+      // Minutes driven between sunset and roughly next sunrise (~6:40 am).
+      const dark = Math.max(0, Math.min(reach, 1440 + 400) - Math.max(t, sunset));
+      if (dark > 0) leave.note = dark > 120
+        ? `About ${fmtMins(dark)} of this drive is after dark on mountain roads. Safer: halt overnight on the way, or move this trip to tomorrow and leave by ${fmtClock(plannedLeave(trip))}.`
+        : t >= sunset ? 'This drive is after dark — go slow on the hill roads, avoid overtaking, and keep your host informed.'
+          : `The last stretch will be after sunset (~${fmtClock(sunset)}) — drive slow and keep your host informed.`;
+      if (reach >= 1440) {
+        out.push({ time: fmtClock(reach), part: 'Next day', text: `Reach ${name} — this is past midnight, so plan a night halt on the way and continue at first light`, note: '', quiet: '' });
+        return out;
+      }
+    }
+    t = reach;
+    out.push({ time: fmtClock(t), part: partOf(t), text: trip ? `Reach ${name}. ${checkIn}` : checkIn,
+      note: t >= 1260 ? 'Late arrival — call your host before you leave so someone is up to receive you.' : '', quiet: '' });
+
+    // 3. Fill the rest of the day only with what still fits before ~9:30 pm
+    const cap = S.pace === 'packed' ? 3 : 2;
+    let used = 0;
+    t = roundUp(t + 60, 15);
+    for (const x of rest) {
+      if (used >= cap) break;
+      const isFood = /dinner|meal|food|dish|eat/i.test(x);
+      if (!isFood && t > 1290) continue;              // too late for anything but food
+      if (isFood && t > 1320) break;                   // past 10 pm — handled below
+      if (isFood) t = Math.max(t, 1170);               // dinner not before 7:30 pm
+      else if (/evening|sunset/i.test(x)) t = Math.max(t, sunset - 60);
+      let text = x, note = '';
+      if (!isFood && t > sunset - 20 && /walk|trek|hike|viewpoint|explore|stroll|trail/i.test(x)) {
+        text = `Short stroll near ${name} — it's dark by ${fmtClock(sunset)}, so save the walk for tomorrow morning`;
+        note = 'Carry a torch; village lanes have no street lights.';
+      }
+      if (/sunset/i.test(x) && t > sunset) continue;   // sunset already gone
+      out.push({ time: fmtClock(t), part: isFood ? 'Dinner' : partOf(t), text, note, quiet: '' });
+      used++;
+      t = roundUp(t + (isFood ? 60 : 90), 15);
+    }
+    // Always end with food if nothing else fit, and keep it sensible late at night.
+    if (!out.some(s => s.part === 'Dinner')) {
+      const dt = Math.max(t, reach + 30);
+      out.push(dt > 1320
+        ? { time: fmtClock(Math.min(dt, 1410)), part: 'Dinner', text: 'Late dinner — ask your host to keep a simple meal ready (dal-chawal is perfect)', note: '', quiet: '' }
+        : { time: fmtClock(Math.max(dt, 1170)), part: 'Dinner', text: 'Dinner at your stay — ask for a local dish', note: '', quiet: '' });
+    }
+    return out;
+  }
+
   function slotsFor(day, idx) {
     const t = TIMES[S.type] || TIMES.couple;
     let items = day.items.filter(Boolean);
-    if (day.kind === 'arrival') return items.slice(0, S.pace === 'packed' ? 4 : 3).map((x, i) => ({ time: ['1:00 pm', '3:30 pm', '5:00 pm', '7:30 pm'][i], part: ['Afternoon', 'Afternoon', 'Evening', 'Dinner'][i], text: x }));
+    if (day.kind === 'arrival') {
+      const today = startsToday(S.ctx);
+      if (today || day.trip) return arrivalSlots(day, items, today);
+      return items.slice(0, S.pace === 'packed' ? 4 : 3).map((x, i) => ({ time: ['1:00 pm', '3:30 pm', '5:00 pm', '7:30 pm'][i], part: ['Afternoon', 'Afternoon', 'Evening', 'Dinner'][i], text: x }));
+    }
     if (day.kind === 'departure') return items.slice(0, 4).map((x, i) => ({ time: ['7:30 am', '10:00 am', '11:00 am', '12:00 pm'][i], part: ['Morning', 'Morning', 'Late morning', 'Afternoon'][i], text: x }));
     if (S.type === 'couple' && S.pace === 'packed' && !items.some(x => /sunset/i.test(x))) items = [...items, 'Sunset — ask your host where locals watch it'];
     const n = S.pace === 'packed' ? 4 : 3;
