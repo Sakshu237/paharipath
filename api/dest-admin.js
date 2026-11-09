@@ -855,6 +855,30 @@ module.exports = async (req, res) => {
       return;
     }
 
+    // ═══════════════════════════════════════════════
+    // action: 'prizes-list' — Pahari Passport physical prizes (to send + recently sent)
+    // action: 'prize-mark'  — fields: id, status ('sent' | 'to_send')
+    // ═══════════════════════════════════════════════
+    if (action === 'prizes-list') {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/passport_prizes?physical=eq.true&select=*&order=created_at.desc&limit=200`, { headers: svcHeaders });
+      if (!r.ok) { res.status(200).json({ success: true, prizes: [], notReady: true }); return; } // table not created yet
+      res.status(200).json({ success: true, prizes: await r.json() });
+      return;
+    }
+    if (action === 'prize-mark') {
+      const id = parseInt(req.body.id);
+      const status = req.body.status === 'to_send' ? 'to_send' : 'sent';
+      if (!id) { res.status(400).json({ error: 'Missing prize id' }); return; }
+      const up = await fetch(`${SUPABASE_URL}/rest/v1/passport_prizes?id=eq.${id}&physical=eq.true`, {
+        method: 'PATCH', headers: { ...svcHeaders, Prefer: 'return=representation' },
+        body: JSON.stringify({ status, sent_at: status === 'sent' ? new Date().toISOString() : null }),
+      });
+      const done = up.ok ? await up.json() : [];
+      if (!Array.isArray(done) || !done.length) { res.status(404).json({ error: 'Prize not found' }); return; }
+      res.status(200).json({ success: true, prize: done[0] });
+      return;
+    }
+
     // action: 'dashboard' — what needs attention today
     if (action === 'dashboard') {
       const today = new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10); // IST date

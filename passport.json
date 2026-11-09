@@ -1,0 +1,502 @@
+{
+ "_about": "Pahari Passport — one stamp per sub-valley. Used by app.js (profile card) and api/_lib/retention.js (emails, prizes). Edit here only.",
+ "pages": [
+  {
+   "key": "kullu",
+   "name": "Kullu",
+   "icon": "🏔️",
+   "stamps": [
+    {
+     "key": "manali",
+     "name": "Manali",
+     "icon": "🏘️",
+     "places": [
+      86,
+      134,
+      111,
+      137,
+      29
+     ]
+    },
+    {
+     "key": "solang",
+     "name": "Solang & Rohtang",
+     "icon": "⛷️",
+     "places": [
+      117,
+      118,
+      136,
+      138,
+      132,
+      133,
+      119
+     ]
+    },
+    {
+     "key": "naggar",
+     "name": "Naggar & Kullu",
+     "icon": "🏰",
+     "places": [
+      112,
+      113,
+      122,
+      123,
+      120,
+      143
+     ]
+    }
+   ]
+  },
+  {
+   "key": "tirthan",
+   "name": "Tirthan & Banjar",
+   "icon": "🎣",
+   "stamps": [
+    {
+     "key": "tirthan",
+     "name": "Tirthan & Sainj",
+     "icon": "🎣",
+     "places": [
+      36,
+      16,
+      34,
+      135,
+      15,
+      5
+     ]
+    },
+    {
+     "key": "jibhi",
+     "name": "Jibhi & Jalori",
+     "icon": "🌲",
+     "places": [
+      31,
+      32,
+      33,
+      22,
+      30,
+      121
+     ]
+    }
+   ]
+  },
+  {
+   "key": "parvati",
+   "name": "Parvati",
+   "icon": "🌿",
+   "stamps": [
+    {
+     "key": "kasol",
+     "name": "Kasol & Manikaran",
+     "icon": "♨️",
+     "places": [
+      85,
+      44,
+      3,
+      21,
+      63,
+      114,
+      64
+     ]
+    },
+    {
+     "key": "tosh",
+     "name": "Tosh & Kheerganga",
+     "icon": "🏕️",
+     "places": [
+      28,
+      23,
+      11,
+      57,
+      144
+     ]
+    }
+   ]
+  },
+  {
+   "key": "lahaul",
+   "name": "Lahaul",
+   "icon": "🧗",
+   "stamps": [
+    {
+     "key": "keylong",
+     "name": "Sissu & Keylong",
+     "icon": "🌉",
+     "places": [
+      42,
+      43,
+      109,
+      108
+     ]
+    },
+    {
+     "key": "jispa",
+     "name": "Jispa & Baralacha",
+     "icon": "⛺",
+     "places": [
+      110,
+      47,
+      124
+     ]
+    }
+   ]
+  },
+  {
+   "key": "spiti",
+   "name": "Spiti",
+   "icon": "🏜️",
+   "stamps": [
+    {
+     "key": "kaza",
+     "name": "Kaza & High Villages",
+     "icon": "🏔️",
+     "places": [
+      105,
+      14,
+      39,
+      40,
+      50,
+      106,
+      52
+     ]
+    },
+    {
+     "key": "tabo",
+     "name": "Tabo & Pin",
+     "icon": "🐆",
+     "places": [
+      107,
+      38,
+      51
+     ]
+    },
+    {
+     "key": "chandratal",
+     "name": "Chandratal & Kunzum",
+     "icon": "🌙",
+     "places": [
+      48,
+      125
+     ]
+    }
+   ]
+  },
+  {
+   "key": "kinnaur",
+   "name": "Kinnaur",
+   "icon": "🍎",
+   "stamps": [
+    {
+     "key": "sangla",
+     "name": "Sangla & Chitkul",
+     "icon": "🏞️",
+     "places": [
+      41,
+      19,
+      45
+     ]
+    },
+    {
+     "key": "kalpa",
+     "name": "Kalpa & Kinner Kailash",
+     "icon": "🗻",
+     "places": [
+      54,
+      10,
+      116,
+      12
+     ]
+    },
+    {
+     "key": "nako",
+     "name": "Nako & Upper Kinnaur",
+     "icon": "🪨",
+     "places": [
+      37,
+      2,
+      13
+     ]
+    }
+   ]
+  },
+  {
+   "key": "chamba",
+   "name": "Chamba",
+   "icon": "🛕",
+   "stamps": [
+    {
+     "key": "dalhousie",
+     "name": "Dalhousie & Khajjiar",
+     "icon": "🌲",
+     "places": [
+      72,
+      73,
+      75,
+      76
+     ]
+    },
+    {
+     "key": "bharmour",
+     "name": "Chamba & Bharmour",
+     "icon": "🛕",
+     "places": [
+      74,
+      55,
+      56
+     ]
+    },
+    {
+     "key": "pangi",
+     "name": "Pangi & Sach Pass",
+     "icon": "❄️",
+     "places": [
+      1,
+      8
+     ]
+    }
+   ]
+  },
+  {
+   "key": "kangra",
+   "name": "Kangra",
+   "icon": "🪂",
+   "stamps": [
+    {
+     "key": "mcleod",
+     "name": "McLeod & Dhauladhar",
+     "icon": "🙏",
+     "places": [
+      82,
+      59,
+      115,
+      58,
+      81,
+      126,
+      24,
+      83,
+      145
+     ]
+    },
+    {
+     "key": "bir",
+     "name": "Bir & Palampur",
+     "icon": "🪂",
+     "places": [
+      77,
+      78,
+      79,
+      25,
+      53
+     ]
+    },
+    {
+     "key": "kangrafort",
+     "name": "Kangra Fort & Pong",
+     "icon": "🏯",
+     "places": [
+      80,
+      60,
+      62,
+      84,
+      61
+     ]
+    }
+   ]
+  },
+  {
+   "key": "mandi",
+   "name": "Mandi",
+   "icon": "🌄",
+   "stamps": [
+    {
+     "key": "seraj",
+     "name": "Seraj & Janjheli",
+     "icon": "🌄",
+     "places": [
+      17,
+      18,
+      7
+     ]
+    },
+    {
+     "key": "karsog",
+     "name": "Karsog",
+     "icon": "🛕",
+     "places": [
+      4,
+      139,
+      20
+     ]
+    },
+    {
+     "key": "barot",
+     "name": "Barot & Prashar",
+     "icon": "💧",
+     "places": [
+      35,
+      46,
+      49,
+      140
+     ]
+    }
+   ]
+  },
+  {
+   "key": "shimla",
+   "name": "Shimla",
+   "icon": "🚂",
+   "stamps": [
+    {
+     "key": "shimla",
+     "name": "Shimla & Chail",
+     "icon": "🚂",
+     "places": [
+      87,
+      89,
+      127,
+      69,
+      88,
+      71,
+      128
+     ]
+    },
+    {
+     "key": "narkanda",
+     "name": "Narkanda & Sarahan",
+     "icon": "🍏",
+     "places": [
+      26,
+      27,
+      66,
+      68
+     ]
+    },
+    {
+     "key": "rohru",
+     "name": "Rohru & Chanshal",
+     "icon": "🎣",
+     "places": [
+      65,
+      70,
+      67
+     ]
+    }
+   ]
+  },
+  {
+   "key": "sirmaur",
+   "name": "Sirmaur",
+   "icon": "🌿",
+   "stamps": [
+    {
+     "key": "churdhar",
+     "name": "Churdhar & Haripurdhar",
+     "icon": "⛰️",
+     "places": [
+      9,
+      6,
+      97
+     ]
+    },
+    {
+     "key": "nahan",
+     "name": "Nahan & Renuka",
+     "icon": "🦌",
+     "places": [
+      129,
+      95,
+      96,
+      98
+     ]
+    }
+   ]
+  },
+  {
+   "key": "solan",
+   "name": "Solan",
+   "icon": "🍄",
+   "stamps": [
+    {
+     "key": "kasauli",
+     "name": "Kasauli & Solan Hills",
+     "icon": "🍄",
+     "places": [
+      90,
+      91,
+      92,
+      93,
+      94
+     ]
+    }
+   ]
+  },
+  {
+   "key": "lower",
+   "name": "Lower Hills",
+   "icon": "🌊",
+   "stamps": [
+    {
+     "key": "bilaspur",
+     "name": "Bilaspur & Gobind Sagar",
+     "icon": "🌊",
+     "places": [
+      99,
+      100,
+      101,
+      141,
+      146
+     ]
+    },
+    {
+     "key": "hamirpur",
+     "name": "Hamirpur & Una",
+     "icon": "🏡",
+     "places": [
+      102,
+      103,
+      131,
+      142,
+      104,
+      130
+     ]
+    }
+   ]
+  }
+ ],
+ "milestones": [
+  {
+   "key": "m3",
+   "stamps": 3,
+   "title": "Ghumakkad",
+   "icon": "🎒",
+   "prize": "Ghumakkad badge + 150 bonus PAHADI points",
+   "physical": false,
+   "points": 150,
+   "badge": "🎒 Ghumakkad"
+  },
+  {
+   "key": "m10",
+   "stamps": 10,
+   "title": "Pahari Parcel",
+   "icon": "🎁",
+   "prize": "A Pahari Parcel — a surprise from a local maker, posted to your home + 300 bonus points",
+   "physical": true,
+   "points": 300,
+   "badge": "🎁 Pahari Parcel"
+  },
+  {
+   "key": "mall",
+   "stamps": 32,
+   "title": "Himachal Complete",
+   "icon": "👑",
+   "prize": "A handmade Himachali topi with your name stitched inside, a handwritten letter from the founder, a tree planted in your name, your story featured on PahariPath, and an invite to a Sattva evening + 1000 bonus points",
+   "physical": true,
+   "points": 1000,
+   "badge": "👑 Himachal Complete"
+  }
+ ],
+ "regionPrize": {
+  "points": 100,
+  "prize": "Region badge + 100 bonus points for every region you complete"
+ }
+}

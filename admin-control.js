@@ -14,7 +14,7 @@
   'use strict';
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const S = { stays: [], bookings: [], dash: null, bFilter: 'requested', sFilter: 'all', editing: null, busy: false };
+  const S = { stays: [], bookings: [], prizes: [], dash: null, bFilter: 'requested', sFilter: 'all', editing: null, busy: false };
 
   async function api(action, payload) {
     const { data: { session } } = await _sb.auth.getSession();
@@ -119,6 +119,21 @@
       </div>`;
     }).join('') || '<div style="font-size:13px;color:var(--stone);padding:8px 0">No stays in this list.</div>';
 
+    // 3. Pahari Passport prizes to post
+    const toSend = S.prizes.filter(p => p.status === 'to_send');
+    const sentRecent = S.prizes.filter(p => p.status === 'sent').slice(0, 5);
+    const prizeRow = p => `
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0ee">
+        <div style="min-width:200px"><div style="font-weight:600">${esc(p.title || p.prize_key)} → ${esc(p.guest_name || 'Traveller')}</div>
+          <div style="font-size:12px;color:var(--stone)">📞 ${esc(p.phone)}${p.guest_email ? ' · ' + esc(p.guest_email) : ''} · ${esc(p.stamps_at_unlock || '?')} stamps · unlocked ${fmtDate(p.created_at)}${p.sent_at ? ' · sent ' + fmtDate(p.sent_at) : ''}</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <a href="${esc(waLink(p.phone, 'Namaste ' + (p.guest_name || '') + '! 🎁 You unlocked "' + (p.title || '') + '" in your PahariPath Pahari Passport. Please share your postal address (with PIN code) so we can send it to you.'))}" target="_blank" rel="noopener" style="text-decoration:none;background:#1e7a45;color:#fff;font-size:12.5px;font-weight:600;padding:9px 12px;border-radius:8px;min-height:36px;display:inline-flex;align-items:center">Ask address</a>
+          ${p.status === 'to_send' ? btn('Mark sent', `ppAdmin.markPrize(${parseInt(p.id)},'sent')`, 'main') : btn('Undo', `ppAdmin.markPrize(${parseInt(p.id)},'to_send')`)}
+        </div>
+      </div>`;
+    const prizeHtml = (toSend.length ? toSend.map(prizeRow).join('') : '<div style="font-size:13px;color:var(--stone);padding:6px 0">No prizes waiting to be posted.</div>')
+      + (sentRecent.length ? `<div style="font-size:12px;color:var(--stone);margin-top:10px">Recently sent</div>${sentRecent.map(prizeRow).join('')}` : '');
+
     el.innerHTML = `
       <h2 style="font-size:20px;font-weight:600;color:var(--pine);margin-bottom:6px;font-family:var(--fd)">Control Centre</h2>
       <p style="font-size:13px;color:var(--stone);margin-bottom:16px">Everything that needs you, in one place. Changes here go live immediately.</p>
@@ -129,8 +144,10 @@
         ${stat(d.pendingHostApplications || 0, 'Host applications to review', "ppAdmin.openTab('hostapps')")}
         ${stat(d.staysLive || 0, 'Stays live', "ppAdmin.filterStays('active')")}
         ${stat(d.staysHidden || 0, 'Stays hidden', "ppAdmin.filterStays('hidden')")}
+        ${stat(toSend.length, 'Prizes to post', "document.getElementById('ppAdmP')&&document.getElementById('ppAdmP').scrollIntoView({behavior:'smooth'})")}
       </div>
       ${card('⏳ Booking requests', reqHtml, 'Confirm after checking with the host')}
+      <div id="ppAdmP"></div>${card('🎁 Pahari Passport prizes to send', prizeHtml, 'WhatsApp for the address, post it, then mark sent')}
       ${card('🧳 Coming up', upHtml)}
       ${card('📋 All bookings', `<div id="ppAdmB" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${fChip('requested', 'Requests')}${fChip('confirmed', 'Confirmed')}${fChip('completed', 'Completed')}${fChip('cancelled', 'Cancelled')}${fChip('all', 'All')}</div>${bRows}`, 'Cancelling here does not refund online payments — refund in Razorpay first')}
       ${card('🏡 All stays', `<div id="ppAdmS" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${sChip('all', 'All')}${sChip('active', 'Live')}${sChip('paused', 'Paused')}${sChip('full', 'Full')}${sChip('hidden', 'Hidden')}</div>${sRows}`, 'Hidden = not shown and cannot be booked')}
@@ -141,8 +158,8 @@
     el.dataset.ppAdmin = '1';
     el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--stone)">Loading Control Centre…</div>';
     try {
-      const [dash, stays, bookings] = await Promise.all([api('dashboard'), api('stays-list'), api('bookings-list', { limit: 500 })]);
-      S.dash = dash; S.stays = stays.stays || []; S.bookings = bookings.bookings || [];
+      const [dash, stays, bookings, prizes] = await Promise.all([api('dashboard'), api('stays-list'), api('bookings-list', { limit: 500 }), api('prizes-list').catch(() => ({ prizes: [] }))]);
+      S.dash = dash; S.stays = stays.stays || []; S.bookings = bookings.bookings || []; S.prizes = prizes.prizes || [];
       if (!(S.dash.requested || []).length && S.bFilter === 'requested') S.bFilter = 'all';
       render();
     } catch (e) {
@@ -161,6 +178,17 @@
     filterBookings(k) { S.bFilter = k; render(); const t = document.getElementById('ppAdmB'); t && t.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
     filterStays(k) { S.sFilter = k; render(); const t = document.getElementById('ppAdmS'); t && t.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
     edit(id) { S.editing = id; render(); },
+    async markPrize(id, status) {
+      if (S.busy) return;
+      S.busy = true;
+      try {
+        const r = await api('prize-mark', { id, status });
+        const i = S.prizes.findIndex(p => p.id === id);
+        if (i >= 0) S.prizes[i] = Object.assign({}, S.prizes[i], r.prize);
+        note(status === 'sent' ? '✓ Marked as sent' : '✓ Moved back to "to send"');
+      } catch (e) { note('Error: ' + e.message); }
+      S.busy = false; render();
+    },
     openTab(key) { const n = [...document.querySelectorAll('.adm-ni')].find(x => (x.getAttribute('onclick') || '').includes(`'${key}'`)); n && n.click(); },
     async setBooking(id, status) {
       if (!status || S.busy) return;

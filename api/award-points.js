@@ -18,6 +18,7 @@
 const { checkinHasPassed, awardPointsForBooking, award, addBadge, tsKey } = require('./_lib/points');
 
 const { isAdminEmail, notifyEmail } = require('./_lib/admin');
+const { checkPassportPrizes } = require('./_lib/retention');
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
 const PHONE_RE = /^[6-9]\d{9}$/;
@@ -146,6 +147,8 @@ module.exports = async (req, res) => {
 
     // 4. Award.
     const result = await awardPointsForBooking(booking, headers, SUPABASE_URL);
+    try { result.prizes = (await checkPassportPrizes(booking, headers, SUPABASE_URL)).map(p => ({ title: p.title, icon: p.icon })); }
+    catch (e) { console.error('passport prizes failed', e.message); }
     res.status(200).json(result);
   } catch (err) {
     console.error('award-points error:', err);

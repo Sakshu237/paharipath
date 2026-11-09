@@ -14,7 +14,7 @@
 
 const { checkinHasPassed, awardPointsForBooking } = require('./_lib/points');
 const { sweepExpired } = require('./_lib/chat');
-const { runLifecycle } = require('./_lib/retention');
+const { runLifecycle, checkPassportPrizes } = require('./_lib/retention');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 
@@ -62,7 +62,10 @@ module.exports = async (req, res) => {
       if (!checkinHasPassed(booking)) continue; // safety net, should already be filtered by the query
       try {
         const r = await awardPointsForBooking(booking, headers, SUPABASE_URL);
-        results.push({ ref: booking.id, ...r });
+        // Pahari Passport prizes (3 / 10 / all stamps, region complete). Never blocks points.
+        let prizes = [];
+        try { prizes = (await checkPassportPrizes(booking, headers, SUPABASE_URL)).map(p => p.key); } catch (e) { console.error('passport prizes failed', e.message); }
+        results.push({ ref: booking.id, ...r, prizes });
       } catch (e) {
         results.push({ ref: booking.id, error: e.message });
       }

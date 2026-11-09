@@ -27,3 +27,24 @@ alter table public.email_optouts enable row level security;
 -- Make sure nobody outside the server can touch them.
 revoke all on public.lifecycle_emails from anon, authenticated;
 revoke all on public.email_optouts   from anon, authenticated;
+
+-- ── Pahari Passport prizes (added later — safe to run on its own) ──
+-- One row per prize a traveller unlocks. The unique key means a prize
+-- can never unlock twice. Physical prizes start as 'to_send' and show
+-- in Admin → Control Centre → Prizes to send until marked 'sent'.
+create table if not exists public.passport_prizes (
+  id               bigint generated always as identity primary key,
+  phone            text not null,
+  prize_key        text not null,            -- m3 | m10 | mall | region-<page>
+  title            text,
+  physical         boolean not null default false,
+  status           text not null default 'given',   -- given | to_send | sent
+  guest_name       text,
+  guest_email      text,
+  stamps_at_unlock int,
+  created_at       timestamptz not null default now(),
+  sent_at          timestamptz,
+  unique (phone, prize_key)
+);
+alter table public.passport_prizes enable row level security;
+revoke all on public.passport_prizes from anon, authenticated;
