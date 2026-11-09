@@ -14,6 +14,7 @@
 
 const { checkinHasPassed, awardPointsForBooking } = require('./_lib/points');
 const { sweepExpired } = require('./_lib/chat');
+const { runLifecycle } = require('./_lib/retention');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 
@@ -56,13 +57,8 @@ module.exports = async (req, res) => {
     );
     const bookings = await bookingsRes.json();
 
-    if (!Array.isArray(bookings) || !bookings.length) {
-      res.status(200).json({ processed: 0, results: [], expiredRequests });
-      return;
-    }
-
     const results = [];
-    for (const booking of bookings) {
+    for (const booking of (Array.isArray(bookings) ? bookings : [])) {
       if (!checkinHasPassed(booking)) continue; // safety net, should already be filtered by the query
       try {
         const r = await awardPointsForBooking(booking, headers, SUPABASE_URL);
@@ -72,7 +68,15 @@ module.exports = async (req, res) => {
       }
     }
 
-    res.status(200).json({ processed: results.length, results, expiredRequests });
+    // Repeat-customer emails (pre-trip, thank-you + stamp, next stamp, anniversary).
+    // Runs after points so the thank-you email shows the freshly credited total.
+    // A failure here never affects points. Add ?dry=1 to preview without sending.
+    let lifecycle = null;
+    try { lifecycle = await runLifecycle(headers, SUPABASE_URL, { dryRun: req.query && req.query.dry === '1' }); }
+    catch (e) { console.error('lifecycle emails failed', e.message); lifecycle = { error: e.message }; }
+
+    res.status(200).json({ processed: results.length, results, expiredRequests, lifecycle });
+
   } catch (err) {
     console.error('complete-stays error:', err);
     res.status(500).json({ error: 'Server error' });

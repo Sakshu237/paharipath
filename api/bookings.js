@@ -37,6 +37,7 @@ const { cfg, publicCfg, razorpay, verifyCheckoutSignature, confirmPaidBooking, r
 const notify = require('./_lib/notify');
 const chat = require('./_lib/chat');
 const host = require('./_lib/host');
+const { verifyUnsubToken } = require('./_lib/retention');
 
 const SUPABASE_URL = 'https://fcrkfemeirmfhhxhomgw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4';
@@ -179,20 +180,30 @@ async function logAttempt(key, headers) {
 }
 
 // Cancellation policy: free 48h+ before check-in, sliding scale down
-// to a 100% fee inside 3 hours. Assumes a noon check-in time since
-// bookings only store a date, not a check-in time.
-//   ≥48h left  → 0% fee (full refund)
-//   3h–48h left → fee scales linearly from 0% to 100%
+// to a 100% fee inside 3 hours. Assumes a noon (India time) check-in
+// since bookings only store a date, not a check-in time.
+//   ≥freeHours left  → 0% fee (full refund)
+//   3h–freeHours left → fee scales linearly from 0% to 100%
 //   ≤3h left, or already checked in → 100% fee (no refund)
-function calcCancellationFee(checkinDateStr) {
+// freeHours is 48 for everyone, 24 for Aatmiya tier and above (PAHADI perk).
+const AATMIYA_POINTS = 2000;
+function calcCancellationFee(checkinDateStr, freeHours = 48) {
   if (!checkinDateStr) return { feePercent: 0, hoursLeft: null };
-  const checkin = new Date(checkinDateStr + 'T12:00:00');
+  // +05:30 — Vercel runs in UTC; without it "noon" was really 5:30 pm IST.
+  const checkin = new Date(checkinDateStr + 'T12:00:00+05:30');
   const hoursLeft = (checkin.getTime() - Date.now()) / (1000 * 60 * 60);
   let feePercent;
-  if (hoursLeft >= 48) feePercent = 0;
+  if (hoursLeft >= freeHours) feePercent = 0;
   else if (hoursLeft <= 3) feePercent = 100;
-  else feePercent = Math.round(100 * (48 - hoursLeft) / (48 - 3));
+  else feePercent = Math.round(100 * (freeHours - hoursLeft) / (freeHours - 3));
   return { feePercent, hoursLeft };
+}
+async function freeCancelHoursFor(phone, headers) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/traveller_scores?user_key=eq.${tsKey(String(phone || ''))}&select=points`, { headers });
+    const rows = r.ok ? await r.json() : [];
+    return ((rows[0] && rows[0].points) || 0) >= AATMIYA_POINTS ? 24 : 48;
+  } catch (e) { return 48; }
 }
 
 module.exports = async (req, res) => {
@@ -229,6 +240,23 @@ module.exports = async (req, res) => {
   const { action } = req.body || {};
 
   try {
+    // ═══════════════════════════════════════════════════════
+    // action: 'unsubscribe' — one-click stop for "come back" reminder
+    // emails. The token is signed (see _lib/retention.js), so nobody can
+    // unsubscribe someone else. Booking emails are unaffected.
+    // ═══════════════════════════════════════════════════════
+    if (action === 'unsubscribe') {
+      if (await ipThrottled(req, 'bk-unsub', 20, headers)) { res.status(429).json({ error: 'Too many attempts — please wait a few minutes and try again.' }); return; }
+      const email = verifyUnsubToken(String(req.body.token || ''));
+      if (!email) { res.status(400).json({ error: 'This unsubscribe link is not valid' }); return; }
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/email_optouts?on_conflict=email`, {
+        method: 'POST', headers: { ...headers, Prefer: 'resolution=ignore-duplicates,return=minimal' }, body: JSON.stringify({ email }),
+      });
+      if (!r.ok) { console.error('unsubscribe failed', await r.text()); res.status(500).json({ error: 'Could not update — please email hello@paharipath.in' }); return; }
+      res.status(200).json({ success: true });
+      return;
+    }
+
     // ═══════════════════════════════════════════════════════
     // action: 'create' — new booking, rate-limited by phone AND IP
     // fields: booking: {...the full bookingRow object}
@@ -486,7 +514,8 @@ module.exports = async (req, res) => {
         return;
       }
 
-      const { feePercent } = calcCancellationFee(booking.checkin_date);
+      const freeHours = await freeCancelHoursFor(booking.guest_phone, headers);
+      const { feePercent } = calcCancellationFee(booking.checkin_date, freeHours);
       // Only money actually paid online can be refunded; pay-at-stay bookings owe nothing.
       const paid = booking.payment_status === 'paid';
       const amountNum = paid ? (parseInt(booking.paid_amount) || rupees(booking.amount)) : 0;
@@ -546,7 +575,7 @@ module.exports = async (req, res) => {
       await notify.bookingCancelled(booking, paid ? refundAmount : null, headers, SUPABASE_URL);
       await chat.addMessage(bookingRef, 'system', 'This booking was cancelled by the guest.', headers, SUPABASE_URL).catch(() => {});
 
-      res.status(200).json({ success: true, pointsReversed, feePercent, refundAmount, feeAmount, amountNum, paymentStatus: booking.payment_status || 'pay_at_stay', refundStatus });
+      res.status(200).json({ success: true, pointsReversed, feePercent, freeHours, refundAmount, feeAmount, amountNum, paymentStatus: booking.payment_status || 'pay_at_stay', refundStatus });
       return;
     }
 
