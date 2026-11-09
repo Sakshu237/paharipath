@@ -131,7 +131,9 @@
           ${p.status === 'to_send' ? btn('Mark sent', `ppAdmin.markPrize(${parseInt(p.id)},'sent')`, 'main') : btn('Undo', `ppAdmin.markPrize(${parseInt(p.id)},'to_send')`)}
         </div>
       </div>`;
+    const waiting = S.prizes.filter(p => p.status === 'with_topi');
     const prizeHtml = (toSend.length ? toSend.map(prizeRow).join('') : '<div style="font-size:13px;color:var(--stone);padding:6px 0">No prizes waiting to be posted.</div>')
+      + (waiting.length ? `<div style="font-size:12px;color:var(--stone);margin-top:10px">Held until the guest earns their topi (10 stamps) — then they move up to "to send" by themselves</div>${waiting.map(p => `<div style="font-size:12.5px;padding:6px 0;border-bottom:1px solid #f4f4f2">${esc(p.title || p.prize_key)} → ${esc(p.guest_name || 'Traveller')} · ${esc(p.stamps_at_unlock || '?')} stamps</div>`).join('')}` : '')
       + (sentRecent.length ? `<div style="font-size:12px;color:var(--stone);margin-top:10px">Recently sent</div>${sentRecent.map(prizeRow).join('')}` : '');
 
     el.innerHTML = `

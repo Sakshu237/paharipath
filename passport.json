@@ -477,19 +477,20 @@
   {
    "key": "m10",
    "stamps": 10,
-   "title": "Pahari Parcel",
-   "icon": "🎁",
-   "prize": "A Pahari Parcel — a surprise from a local maker, posted to your home + 300 bonus points",
+   "title": "Your Pahari Topi",
+   "icon": "🧢",
+   "prize": "Your own Pahari topi with a woven Pahari patti, posted to your home + 300 bonus points. Every achievement after this adds a piece to it.",
    "physical": true,
    "points": 300,
-   "badge": "🎁 Pahari Parcel"
+   "badge": "🧢 Topi Wearer",
+   "topi": "base"
   },
   {
    "key": "mall",
    "stamps": 32,
    "title": "Himachal Complete",
    "icon": "👑",
-   "prize": "A handmade Himachali topi with your name stitched inside, a handwritten letter from the founder, a tree planted in your name, your story featured on PahariPath, and an invite to a Sattva evening + 1000 bonus points",
+   "prize": "A handwritten letter from the founder, a tree planted in your name, your story featured on PahariPath, and an invite to a Sattva evening + 1000 bonus points",
    "physical": true,
    "points": 1000,
    "badge": "👑 Himachal Complete"
@@ -497,6 +498,65 @@
  ],
  "regionPrize": {
   "points": 100,
-  "prize": "Region badge + 100 bonus points for every region you complete"
+  "physical": true,
+  "prize": "A metal region pin for your topi + 100 bonus points for every region you complete"
+ },
+ "topi": {
+  "_about": "Pieces of the Pahari topi. Each is earned once and posted; pieces earned before the topi itself are posted together with it.",
+  "tiers": [
+   {
+    "key": "tier-himveer",
+    "tier": "Himveer",
+    "min": 1100,
+    "title": "Himveer chain",
+    "icon": "⛓️",
+    "how": "Reach the Himveer PAHADI tier (1,100 points)",
+    "points": 0
+   },
+   {
+    "key": "tier-dharohar",
+    "tier": "Dharohar Rakshak",
+    "min": 3200,
+    "title": "Dharohar Rakshak brooch",
+    "icon": "📿",
+    "how": "Reach the Dharohar Rakshak tier (3,200 points)",
+    "points": 0
+   },
+   {
+    "key": "tier-icon",
+    "tier": "Icon of the Hills",
+    "min": 5000,
+    "title": "Icon of the Hills silver chain",
+    "icon": "💠",
+    "how": "Reach Icon of the Hills (5,000 points)",
+    "points": 0
+   }
+  ],
+  "winter": {
+   "key": "trim-winter",
+   "title": "Winter woollen trim",
+   "icon": "❄️",
+   "how": "Complete a stay with check-in in December, January or February",
+   "months": [
+    12,
+    1,
+    2
+   ],
+   "points": 100
+  },
+  "seva": {
+   "key": "pin-seva",
+   "title": "Seva pin",
+   "icon": "🌱",
+   "how": "Take part in a PahariPath Seva (cleanup) activity — coming soon",
+   "comingSoon": true
+  },
+  "kalgi": {
+   "key": "kalgi",
+   "title": "Kalgi",
+   "icon": "🪶",
+   "how": "Complete Himachal (all 32 stamps) AND take part in every Seva activity. Only a few will ever wear it.",
+   "comingSoon": true
+  }
  }
 }

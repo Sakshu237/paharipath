@@ -55,17 +55,29 @@ function tierFor(points) {
   return { cur, next };
 }
 
-// Prizes a traveller holding these stamp keys has earned.
-function earnedPrizes(stampKeys) {
+// Prizes (and Pahari topi pieces) a traveller has earned.
+//   stampKeys — their passport stamps; extra.points — PAHADI points; extra.winter — a completed Dec–Feb stay.
+const TOPI = PASSPORT.topi || { tiers: [] };
+function earnedPrizes(stampKeys, extra = {}) {
+  const points = extra.points || 0;
   const out = MILESTONES.filter(m => stampKeys.size >= m.stamps).map(m => ({
     key: m.key, title: m.title, icon: m.icon, prize: m.prize, physical: !!m.physical, points: m.points || 0, badge: m.badge || null,
   }));
+  // A region pin for every region (page) whose stamps are all collected.
   for (const pg of PASSPORT.pages) {
-    if (pg.stamps.length < 2 || !pg.stamps.every(s => stampKeys.has(s.key))) continue;
-    out.push({ key: 'region-' + pg.key, title: `${pg.name} Complete`, icon: pg.icon, prize: PASSPORT.regionPrize.prize, physical: false, points: PASSPORT.regionPrize.points || 0, badge: `${pg.icon} ${pg.name} Complete` });
+    if (!pg.stamps.length || !pg.stamps.every(s => stampKeys.has(s.key))) continue;
+    out.push({ key: 'region-' + pg.key, title: `${pg.name} pin`, icon: pg.icon, prize: PASSPORT.regionPrize.prize, physical: !!PASSPORT.regionPrize.physical, points: PASSPORT.regionPrize.points || 0, badge: `${pg.icon} ${pg.name} Complete` });
   }
+  // Tier chains / brooch, by PAHADI points.
+  for (const t of TOPI.tiers || []) {
+    if (points >= t.min) out.push({ key: t.key, title: t.title, icon: t.icon, prize: `${t.title} for your topi`, physical: true, points: t.points || 0, badge: null });
+  }
+  // Winter woollen trim.
+  if (TOPI.winter && extra.winter) out.push({ key: TOPI.winter.key, title: TOPI.winter.title, icon: TOPI.winter.icon, prize: `${TOPI.winter.title} for your topi`, physical: true, points: TOPI.winter.points || 0, badge: `${TOPI.winter.icon} Winter Pahari` });
+  // Seva pin and kalgi unlock once Seva activities exist (TOPI.seva / TOPI.kalgi .comingSoon).
   return out;
 }
+const ALL_PRIZES = () => earnedPrizes(new Set(STAMPS.map(s => s.key)), { points: Infinity, winter: true });
 const nextMilestone = n => MILESTONES.find(m => n < m.stamps) || null;
 
 // ── season check: does month m (0-11) fall in a bestTime string like "Mar–Jun, Sep–Nov"? ──
@@ -111,25 +123,34 @@ async function get(url, headers) {
   try { const r = await fetch(url, { headers }); return r.ok ? await r.json() : []; } catch (e) { return []; }
 }
 
-// Stamp keys a traveller holds (from completed stays).
+// Stamp keys a traveller holds (from completed stays), and whether any was a winter stay.
+const WINTER_MONTHS = new Set(((PASSPORT.topi && PASSPORT.topi.winter && PASSPORT.topi.winter.months) || [12, 1, 2]).map(Number));
 async function stampsFor(phone, headers, U) {
-  const done = await get(`${U}/rest/v1/bookings?guest_phone=eq.${encodeURIComponent(phone)}&status=eq.completed&select=stay_id`, headers);
+  const done = await get(`${U}/rest/v1/bookings?guest_phone=eq.${encodeURIComponent(phone)}&status=eq.completed&select=stay_id,checkin_date`, headers);
   const ids = [...new Set(done.map(b => parseInt(b.stay_id)).filter(Boolean))];
   const stays = ids.length ? await get(`${U}/rest/v1/stays?id=in.(${ids.join(',')})&select=id,placeid`, headers) : [];
   const keys = new Set();
   for (const s of stays) { const st = stampByPlace.get(parseInt(s.placeid)); if (st) keys.add(st.key); }
-  return keys;
+  const winter = done.some(b => b.checkin_date && WINTER_MONTHS.has(parseInt(String(b.checkin_date).slice(5, 7))));
+  return { keys, winter };
 }
 
 // ── PRIZES: unlock anything newly earned. Safe to call any number of times. ──
 async function checkPassportPrizes(booking, headers, U) {
   const phone = booking.guest_phone;
   if (!phone) return [];
-  const keys = await stampsFor(phone, headers, U);
-  const earned = earnedPrizes(keys);
+  const [{ keys, winter }, score] = await Promise.all([
+    stampsFor(phone, headers, U),
+    get(`${U}/rest/v1/traveller_scores?user_key=eq.${tsKey(phone)}&select=points`, headers),
+  ]);
+  const points = (score[0] && score[0].points) || 0;
+  const earned = earnedPrizes(keys, { points, winter });
   if (!earned.length) return [];
+  // Topi pieces earned before the topi itself (10 stamps) wait and are posted together with it.
+  const hasTopi = earned.some(p => p.key === 'm10');
   const rows = earned.map(p => ({
-    phone, prize_key: p.key, title: p.title, physical: p.physical, status: p.physical ? 'to_send' : 'given',
+    phone, prize_key: p.key, title: p.title, physical: p.physical,
+    status: !p.physical ? 'given' : (hasTopi || p.key === 'mall') ? 'to_send' : 'with_topi',
     guest_name: booking.guest || null, guest_email: booking.guest_email || null, stamps_at_unlock: keys.size,
   }));
   const r = await fetch(`${U}/rest/v1/passport_prizes?on_conflict=phone,prize_key`, {
@@ -137,6 +158,12 @@ async function checkPassportPrizes(booking, headers, U) {
   });
   if (!r.ok) throw new Error('passport_prizes not ready: ' + (await r.text()).slice(0, 200));
   const fresh = await r.json();
+  // The topi just unlocked: everything that was waiting for it is now ready to post.
+  if (Array.isArray(fresh) && fresh.some(x => x.prize_key === 'm10')) {
+    await fetch(`${U}/rest/v1/passport_prizes?phone=eq.${encodeURIComponent(phone)}&status=eq.with_topi`, {
+      method: 'PATCH', headers, body: JSON.stringify({ status: 'to_send' }),
+    }).catch(e => console.error('release with_topi failed', e.message));
+  }
   const unlocked = [];
   for (const row of (Array.isArray(fresh) ? fresh : [])) {
     const p = earned.find(x => x.key === row.prize_key);
@@ -146,12 +173,12 @@ async function checkPassportPrizes(booking, headers, U) {
       if (p.points) await award({ phone, actionKey: `passport:${p.key}:${phone}`, pts: p.points, reason: `Pahari Passport — ${p.title}`, ref: null, guestName: booking.guest }, headers, U);
       if (p.badge) await addBadge(phone, p.badge, headers, U);
     } catch (e) { console.error('prize points/badge failed', p.key, e.message); }
-    if (p.physical && notifyEmail()) {
+    if (p.physical && (hasTopi || p.key === 'mall') && notifyEmail()) {
       await sendEmail({
         to: notifyEmail(), subject: `🎁 Prize to send: ${p.title} — ${booking.guest || phone}`,
         html: `<div style="font-family:sans-serif"><h3>${esc(p.icon)} ${esc(booking.guest || 'A traveller')} unlocked "${esc(p.title)}"</h3>
           <p>${esc(p.prize)}</p><p>Phone: <b>${esc(phone)}</b>${booking.guest_email ? ` · Email: ${esc(booking.guest_email)}` : ''}<br>Stamps: ${keys.size} of ${STAMP_COUNT}</p>
-          <p>WhatsApp them for a postal address, send it, then mark it sent in Admin → Control Centre → Prizes to send.</p></div>`,
+          <p>${hasTopi ? '' : 'This guest has no topi yet — hold this piece and post it with their topi. '}WhatsApp them for a postal address, send it, then mark it sent in Admin → Control Centre → Prizes to send.</p></div>`,
       });
     }
   }
@@ -191,7 +218,7 @@ function stampStrip(keys) {
 function prizeBlock(keys, justUnlocked) {
   const n = keys.size, nm = nextMilestone(n);
   const won = (justUnlocked || []).map(p => `<div style="background:#fff8e6;border:1px solid #f0d68a;border-radius:11px;padding:12px 14px;margin:10px 0">
-      <b>${esc(p.icon)} You unlocked: ${esc(p.title)}!</b><br><span style="font-size:13px">${esc(p.prize)}${p.physical ? ' — we\'ll WhatsApp you for your address.' : ''}</span></div>`).join('');
+      <b>${esc(p.icon)} You unlocked: ${esc(p.title)}!</b><br><span style="font-size:13px">${esc(p.prize)}${p.physical ? ' — we\'ll WhatsApp you for your address (pieces earned before your topi travel together with it).' : ''}</span></div>`).join('');
   const next = nm ? `<p style="font-size:14px;margin:8px 0">${nm.icon} <b>${nm.stamps - n} more stamp${nm.stamps - n === 1 ? '' : 's'}</b> to unlock <b>${esc(nm.title)}</b>: ${esc(nm.prize)}.</p>` : '';
   return won + next;
 }
@@ -206,7 +233,7 @@ function suggestionCards(list) {
 
 // ── traveller context: stamps, points, referral code ──
 async function travellerContext(phone, headers, U) {
-  const [keys, score] = await Promise.all([
+  const [{ keys }, score] = await Promise.all([
     stampsFor(phone, headers, U),
     get(`${U}/rest/v1/traveller_scores?user_key=eq.${tsKey(phone)}&select=points`, headers),
   ]);
@@ -349,7 +376,7 @@ async function runLifecycle(headers, U, { dryRun = false } = {}) {
   async function recentPrizes(phone) {
     const since = new Date(Date.now() - 10 * 864e5).toISOString();
     const rows = await get(`${U}/rest/v1/passport_prizes?phone=eq.${encodeURIComponent(phone)}&created_at=gte.${encodeURIComponent(since)}&select=prize_key`, headers);
-    const all = earnedPrizes(new Set(STAMPS.map(s => s.key)));
+    const all = ALL_PRIZES();
     return rows.map(r => all.find(p => p.key === r.prize_key)).filter(Boolean).sort((a, b) => (b.physical - a.physical) || (b.points - a.points));
   }
 
