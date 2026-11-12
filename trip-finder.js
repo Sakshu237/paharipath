@@ -59,6 +59,36 @@
   var MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
   var HIGH_ZONES = { spiti: 1, lahaul: 1 };
 
+  /* ---------- "worth the trip" levels (from the Trip-Worthy Levels sheet) ----------
+   * A = trip-worthy: can be the main suggestion for anyone, from anywhere.
+   * B = add-on: shown only as "add on the way" under its main place (ADDON_OF).
+   * Anything else = local stop: suggested only to travellers already in Himachal.
+   * BEST_FOR limits some A places to travellers who picked that interest. */
+  var TRIP_WORTHY = [15, 36, 31, 135, 32, 35, 4, 17, 46, 77, 78, 82, 11, 85, 86, 29, 26, 87, 88, 90, 65, 6, 72, 55, 45, 41, 54,
+    105, 48, 42, 1, 8, 81, 24, 126, 57, 21, 133, 132, 119, 64, 120, 144, 34, 9, 20, 12, 116, 104, 84, 100, 103, 56, 96, 61];
+  var BEST_FOR = {
+    trekkers: [81, 24, 126, 57, 21, 133, 132, 119, 64, 120, 144, 34, 9, 20, 12, 116],
+    pilgrims: [104, 84, 100, 103, 56, 96],
+    roadtrip: [1, 8],
+    birders: [61]
+  };
+  // add-on place id -> main place id
+  var ADDON_OF = {
+    22: 31, 33: 31, 30: 31, 16: 36, 5: 135, 23: 11, 28: 11, 44: 85, 3: 85, 63: 85, 114: 85, 123: 85,
+    112: 86, 134: 86, 111: 86, 137: 86, 122: 86, 113: 86, 117: 86, 136: 86, 138: 86, 118: 86, 43: 86,
+    25: 77, 79: 77, 53: 77, 83: 82, 115: 82, 59: 82, 58: 82, 80: 82, 60: 82, 139: 4, 128: 4, 18: 17, 7: 17,
+    49: 46, 27: 26, 66: 26, 89: 87, 127: 87, 69: 87, 93: 90, 91: 90, 92: 90, 67: 65, 70: 65, 95: 6, 97: 6,
+    73: 72, 75: 72, 76: 72, 74: 72, 62: 72, 19: 45, 68: 54, 121: 54, 10: 54, 2: 54, 13: 54, 37: 54,
+    107: 105, 38: 105, 106: 105, 50: 105, 52: 105, 39: 105, 40: 105, 14: 105, 51: 105, 125: 48,
+    109: 42, 108: 42, 110: 42, 124: 42, 47: 42
+  };
+  function tierOf(id) { return TRIP_WORTHY.indexOf(id) >= 0 ? 'A' : ADDON_OF[id] ? 'B' : 'C'; }
+  function bestFor(id) { for (var k in BEST_FOR) if (BEST_FOR[k].indexOf(id) >= 0) return k; return 'everyone'; }
+  function addonsFor(id) {
+    var byId = {}; places().forEach(function (p) { byId[p.id] = p; });
+    return Object.keys(ADDON_OF).filter(function (k) { return ADDON_OF[k] === id && byId[+k]; }).map(function (k) { return byId[+k].name; });
+  }
+
   var st = { mode: 'know', origin: null, who: 'couple', interests: [], maxH: 'auto', quiet: true, pace: 'relaxed', results: [], showAll: false };
 
   /* ---------- app.js globals (shared top-level bindings between classic scripts) ---------- */
@@ -130,7 +160,8 @@
 
   function maxHoursFor(nights) {
     if (st.maxH !== 'auto') return +st.maxH;
-    return nights <= 1 ? 6 : nights === 2 ? 8 : nights === 3 ? 10 : nights <= 5 ? 12 : 16;
+    // 3 nights allows an overnight bus/drive from Delhi to Jibhi/Tirthan/Kasol (estimates run ~1h high)
+    return nights <= 1 ? 6 : nights === 2 ? 8 : nights <= 5 ? 12 : 16;
   }
 
   /* ---------- scoring ---------- */
@@ -145,11 +176,22 @@
 
     var wantSnow = st.interests.indexOf('snow') >= 0;
     var winter = [10, 11, 0, 1, 2].indexOf(m) >= 0;
+
+    // Worth the journey? Add-ons and local stops are never the main pick for someone
+    // travelling in from outside Himachal; locals can still get them, ranked lower.
+    var tier = tierOf(p.id), local = o.kind === 'hill';
+    if (tier !== 'A' && !local) return null;
+    var want = function (i) { return st.interests.indexOf(i) >= 0; };
+    var bf = bestFor(p.id);
+    if (bf === 'trekkers' && !want('trek') && !want('adventure')) return null;
+    if (bf === 'pilgrims' && !want('spiritual')) return null;
+    if (bf === 'roadtrip' && (!want('adventure') || nights < 4 || st.who === 'family')) return null;
+    if (bf === 'birders' && (!want('nature') || [10, 11, 0, 1, 2].indexOf(m) < 0)) return null;
     var zs = (seasons()[z] || seasons().kullu || [])[m] || 'good';
     var closedHigh = HIGH_ZONES[z] && zs === 'snow';
     if (closedHigh && (st.who === 'family' || !wantSnow)) return null;
 
-    var s = 0, why = [];
+    var s = tier === 'A' ? 0 : tier === 'B' ? -20 : -40, why = [];
     var bm = bestMonths(p.bestTime);
     var inBest = bm ? !!bm[m] : false;
     if (inBest) { s += 30; why.push('Best season'); } else s -= 10;
@@ -203,7 +245,7 @@
       return t ? { from: st.origin.name, hours: t.hours, label: fmtH(t.hours), route: t.route, far: !!t.far } : null;
     },
     setMode: setMode, run: run, plan: plan, pick: pick, toggle: toggle, more: function () { st.showAll = true; renderResults(); },
-    _score: score, _travelFrom: travelFrom, _state: st, _origins: ORIGINS
+    _score: score, _travelFrom: travelFrom, _state: st, _origins: ORIGINS, _suggest: function () { return suggest(); }
   };
 
   /* ---------- UI ---------- */
@@ -389,6 +431,7 @@
       '<div class="tf-dist">' + esc(p.district) + ' · ' + esc(p.altitude || '') + '</div></div></div>' +
       '<div class="tf-desc">' + esc(p.famousFor || p.desc || '') + '</div>' +
       '<div class="tf-chips">' + chips + '</div>' +
+      (function () { var a = addonsFor(p.id).slice(0, 3); return a.length ? '<div class="tf-desc"><b>Add on the way:</b> ' + esc(a.join(' · ')) + '</div>' : ''; })() +
       '<div class="tf-route">' + (tr.far ? '✈️ Fly into ' + esc(tr.hub) + ', then 🚗 ' + fmtH(tr.hours) + ' by road' : '🚗 ' + fmtH(tr.hours) + ' from ' + esc(st.origin.name) + ' ' + esc(tr.route)) +
         (long ? '. Long drive: start before sunrise or break it overnight.' : '') + '</div>' +
       '<button type="button" class="tf-plan" onclick="PPTrip.plan(' + Number(p.id) + ')">Plan this trip →</button>' +
