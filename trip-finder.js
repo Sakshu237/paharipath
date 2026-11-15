@@ -245,7 +245,22 @@
       return t ? { from: st.origin.name, hours: t.hours, label: fmtH(t.hours), route: t.route, far: !!t.far } : null;
     },
     setMode: setMode, run: run, plan: plan, pick: pick, toggle: toggle, more: function () { st.showAll = true; renderResults(); },
-    _score: score, _travelFrom: travelFrom, _state: st, _origins: ORIGINS, _suggest: function () { return suggest(); }
+    _score: score, _travelFrom: travelFrom, _state: st, _origins: ORIGINS, _suggest: function () { return suggest(); },
+    // Used by simple.js (the simplified app shell).
+    travelFrom: travelFrom, tierOf: tierOf, origins: ORIGINS, fmtH: fmtH,
+    // opts: {origin:{name,lat,lng,kind}, date:Date, nights, interests:[], who, limit}
+    suggestFor: function (opts) {
+      var keep = { interests: st.interests, who: st.who, maxH: st.maxH, quiet: st.quiet };
+      st.interests = opts.interests || []; st.who = opts.who || 'couple'; st.maxH = 'auto'; st.quiet = true;
+      try {
+        var list = places().map(function (p) { return score(p, opts.origin, opts.date, opts.nights || 2); })
+          .filter(Boolean).sort(function (a, b) { return b.s - a.s; });
+        var top = [], zones = {}, bar = list.length ? list[0].s - 25 : 0;
+        list.forEach(function (r) { var z = r.p.zone || ''; if (top.length < 3 && !zones[z] && r.s >= bar) { zones[z] = 1; top.push(r); } });
+        list.forEach(function (r) { if (top.indexOf(r) < 0) top.push(r); });
+        return top.slice(0, opts.limit || 3);
+      } finally { st.interests = keep.interests; st.who = keep.who; st.maxH = keep.maxH; st.quiet = keep.quiet; }
+    }
   };
 
   /* ---------- UI ---------- */
