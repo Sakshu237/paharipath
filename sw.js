@@ -1,6 +1,6 @@
 // PahariPath Service Worker — Offline HP Map Tiles
 
-const CACHE_NAME = 'paharipath-v3';
+const CACHE_NAME = 'paharipath-v4';
 const TILE_CACHE = 'hp-tiles-v1';
 
 // HP bounding box
