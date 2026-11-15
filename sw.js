@@ -1,6 +1,6 @@
 // PahariPath Service Worker — Offline HP Map Tiles
 
-const CACHE_NAME = 'paharipath-v2';
+const CACHE_NAME = 'paharipath-v3';
 const TILE_CACHE = 'hp-tiles-v1';
 
 // HP bounding box
@@ -127,6 +127,24 @@ self.addEventListener('fetch', event => {
   // ============================
   // EVERYTHING ELSE
   // ============================
+  // Same-origin scripts, styles and data (not /api): network first, keep a copy
+  // so the app still opens in the hills with no signal (saved places and plans).
+  if (event.request.method === 'GET' && url.origin === self.location.origin &&
+      !url.pathname.startsWith('/api/') && /\.(js|css|json|png|jpg|svg|webp)$/.test(url.pathname)) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
   );

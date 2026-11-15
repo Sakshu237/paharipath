@@ -514,6 +514,14 @@
   }
 
   /* ---------- public API ---------- */
-  window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet };
+  // Snow likely on a given date ('YYYY-MM-DD') at places you can drive to (no trek-only spots).
+  // Uses the live forecast once loaded, else estimates.
+  function snowFor(date) {
+    var places = state.places || buildPlaces();
+    var out = new Set();
+    places.forEach(function (p, i) { try { if (!p.trek && assess(p, i, date).lvl >= 2) out.add(p.id); } catch (e) { /* skip */ } });
+    return out;
+  }
+  window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet, snowFor: snowFor, ready: ensureData };
   injectCSS();
 })();

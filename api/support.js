@@ -124,6 +124,21 @@ module.exports = async (req, res) => {
         method: 'POST', headers: { ...svcHeaders, Prefer: 'return=minimal' }, body: JSON.stringify(payload),
       });
       if (!insRes.ok) { res.status(400).json({ error: 'Submit failed: ' + await insRes.text() }); return; }
+      // "Find me a stay" requests from the simplified app: email the admin so the
+      // 24-hour WhatsApp reply promise can be kept. Best-effort, never fails the request.
+      if (payload.category === 'stay-request') {
+        await sendEmail({
+          to: notifyEmail(),
+          subject: `New stay request from ${name}`,
+          html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px">
+            <h3 style="color:#2d5a3d">New "Find me a stay" request</h3>
+            <p><b>${esc(name)}</b> · WhatsApp ${esc(contact)}</p>
+            <p style="white-space:pre-line">${esc(message)}</p>
+            <p>Reply on WhatsApp within 24 hours with 2–3 homestay options. It is also in the admin panel → Support.</p></div>`,
+        });
+        res.status(200).json({ success: true, message: "Request sent — we'll WhatsApp you within 24 hours." });
+        return;
+      }
       res.status(200).json({ success: true, message: "We've got your message — we'll get back to you soon." });
       return;
     }
