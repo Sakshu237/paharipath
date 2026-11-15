@@ -301,17 +301,13 @@
     html += '<div class="sp-sec"><div class="sp-row"><h2 class="sp-h2">' + esc(topped ? tt.leastBusy + ' ' + dateLabelShort() : S.dateKey === 'now' ? tt.quietToday : tt.quietOn + ' ' + dateLabelShort()) + '</h2><button class="sp-link" data-act="tab" data-tab="crowd">' + esc(tt.seeAll) + '</button></div>' +
       '<div class="sp-hlist">' + quiet.map(tile).join('') + '</div></div>';
 
-    // snow
+    // two quiet one-line shortcuts instead of big cards (keeps the home screen short)
     var snow = snowNames();
-    html += '<div class="sp-sec"><div class="sp-snow"><b>❄️ ' + esc(S.dateKey === 'now' ? tt.snowToday : tt.snowOn + ' ' + dateLabelShort()) + '</b><p>' + esc(snow.length ? snow.slice(0, 6).join(', ') : tt.snowNone) + '</p>' +
-      '<button class="sp-link" data-act="snow" style="color:#24406b">' + esc(tt.snowMore) + ' ›</button></div></div>';
-
-    // stay concierge
-    html += '<div class="sp-sec"><div class="sp-dark"><h3>' + esc(tt.stayTitle) + '</h3><p>' + esc(tt.staySub) + '</p><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">' +
-      '<button class="sp-btn light" data-act="stay">' + esc(tt.stayBtn) + '</button><button class="sp-link" data-act="tab" data-tab="stays" style="color:#f3c9b4">' + esc(tt.stayBrowse) + ' ›</button></div></div></div>';
-
-    // trust
-    html += '<div class="sp-sec"><div class="sp-trust">' + esc(tt.trust) + '<div class="sp-tags"><span>' + esc(tt.trust1) + '</span><span>' + esc(tt.trust2) + '</span><span>' + esc(tt.trust3) + '</span></div></div></div></div>';
+    html += '<div class="sp-sec sp-minis">' +
+      '<button class="sp-mini snow" data-act="snow"><span aria-hidden="true">❄️</span><span class="sp-mini-tx"><b>' + esc(S.dateKey === 'now' ? tt.snowToday : tt.snowOn + ' ' + dateLabelShort()) + '</b>' +
+      '<span>' + esc(snow.length ? snow.slice(0, 3).join(', ') + (snow.length > 3 ? ' +' + (snow.length - 3) : '') : tt.snowNone) + '</span></span><span aria-hidden="true">›</span></button>' +
+      '<button class="sp-mini" data-act="stay"><span aria-hidden="true">🏡</span><span class="sp-mini-tx"><b>' + esc(tt.stayTitle) + '</b><span>' + esc(tt.stayBtn) + '</span></span><span aria-hidden="true">›</span></button>' +
+      '</div></div>';
     el.innerHTML = html;
   }
 

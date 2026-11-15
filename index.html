@@ -89,6 +89,7 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .nl a{font-size:13px;color:var(--stone);text-decoration:none;padding:7px 13px;border-radius:8px;cursor:pointer;transition:all .15s}
 .nl a:hover,.nl a.act{color:var(--pine);background:rgba(74,124,95,.08)}
 .nr{display:flex;align-items:center;gap:10px}
+.nr-host{font-size:13px;color:var(--stone);text-decoration:none;padding:10px 4px;white-space:nowrap}.nr-host:hover{color:var(--pine);text-decoration:underline}
 /* HAMBURGER */
 .ham{display:flex;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;transition:background .15s}
 .ham:hover{background:rgba(74,124,95,.08)}
@@ -577,7 +578,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 /* RESPONSIVE */
 @media(max-width:768px){
-  nav{padding:12px 16px}.nl{display:none}.nr .nb{display:none}.ham{display:flex}
+  nav{padding:12px 16px}.nl{display:none}.nr .nb{display:none}.ham{display:flex}.nr-host{display:none}
   .hero,.sec,.plan-sec,.alt-band,.about-sec{padding:48px 20px}
   .stays-in{padding:0 20px}.map-wrap{padding:0 20px 40px}
   .cg{grid-template-columns:1fr}
@@ -614,6 +615,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   </ul>
   <div class="nr">
     <button class="nb" onclick="openTravellerProfile()" style="background:rgba(74,124,95,.1);border:1.5px solid rgba(74,124,95,.2);color:var(--pine);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fb)">🏔️ My Profile</button>
+<a class="nr-host" href="#" onclick="showPartnerForm();return false;">List your property</a>
 <button class="nb ol" onclick="goTo('stays-bg')">Book a Stay</button>
     <button class="nb" onclick="goTo('stays-bg')">Find Stays →</button>
     <button class="ham" id="hamBtn" onclick="openMobMenu()" aria-label="Open menu" aria-expanded="false">
@@ -648,6 +650,9 @@ input[type=range]{flex:1;accent-color:var(--pine)}
       <a href="/faq.html" class="mob-link" style="text-decoration:none"><span class="ml-icon">❓</span>FAQ</a>
       <div class="mob-link" onclick="closeMobMenu();openSupportMo()"><span class="ml-icon">🎧</span>Help &amp; Support</div>
       <div class="mob-link" onclick="closeMobMenu();openSOSMo()" style="color:#c0392b"><span class="ml-icon">🆘</span>Emergency SOS</div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--stone);margin:14px 0 2px;padding:0 14px">For homestay owners</div>
+      <div class="mob-link" onclick="closeMobMenu();showPartnerForm()"><span class="ml-icon">🏡</span>List your property</div>
+      <a href="#host" class="mob-link" onclick="closeMobMenu();setView('host-login')" style="text-decoration:none"><span class="ml-icon">🔑</span>Host login</a>
     </div>
     <div class="mob-footer">
       <button class="nb" onclick="closeMobMenu();goTo('stays-bg')" style="text-align:center">Find Stays →</button>
@@ -1518,7 +1523,15 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   <div class="mo-box" style="max-width:560px;max-height:90vh;overflow-y:auto">
     <button class="mo-x" aria-label="Close" onclick="ppClose()">✕</button>
     <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:6px">List your property</h2>
-    <p style="font-size:13px;color:var(--stone);margin-bottom:16px">Free to list. Takes about 5 minutes. Our team verifies every listing before it goes live.</p>
+    <p style="font-size:13px;color:var(--stone);margin-bottom:10px">Free to list. Takes about 10 minutes. Our team checks every listing before it goes live.</p>
+    <div style="background:#f6f9f7;border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink);line-height:1.7;margin-bottom:16px">
+      <b style="color:var(--pine)">Keep these ready on your phone:</b><br/>
+      ✓ HP Tourism homestay registration number and certificate<br/>
+      ✓ An ID or ownership proof (Aadhaar, property papers)<br/>
+      ✓ 2 to 5 photos of rooms, view and outside<br/>
+      ✓ Your UPI ID or bank account
+      <div style="margin-top:6px">Stuck anywhere? <a href="https://wa.me/919317110366?text=Hi%20PahariPath%2C%20I%20need%20help%20listing%20my%20homestay" target="_blank" rel="noopener" style="color:var(--pine);font-weight:600">WhatsApp us</a> and we'll help.</div>
+    </div>
 
     <div id="ppSteps" style="display:flex;gap:6px;margin-bottom:20px">
       <div class="pp-pill" id="ppPill1">1 · Details</div>
