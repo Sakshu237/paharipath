@@ -136,7 +136,16 @@
   }
 
   /* ---------------- dates ---------------- */
+  // Memoised: building the long-weekend list walks 75 days of calendar, so it must not run
+  // inside per-place crowd lookups or sort comparators (that froze the page for seconds).
+  var _dopts = null, _doptsKey = '';
   function dateOptions() {
+    var key = S.lang + '|' + ymd(new Date()) + '|' + (S.customDate ? ymd(S.customDate) : '');
+    if (_dopts && _doptsKey === key) return _dopts;
+    _doptsKey = key;
+    return (_dopts = buildDateOptions());
+  }
+  function buildDateOptions() {
     var now = new Date(), opts = [{ key: 'now', label: t().today, d: null }];
     var dow = now.getDay();
     // Next Saturday (on Sunday the weekend is over, so look at the coming one).
@@ -164,8 +173,9 @@
   /* ---------------- crowd ---------------- */
   var _cc = {};
   function crowd(p) {
-    var o = curDate(), k = p.id + '|' + o.key + '|' + (o.d ? ymd(o.d) : '');
+    var k = p.id + '|' + S.dateKey;
     if (_cc[k]) return _cc[k];
+    var o = curDate();
     var r = { value: p.crowd || 30, closed: false, inSeason: true };
     try {
       if (window.PP_CROWD) r = o.key === 'now' ? PP_CROWD.now(p) : PP_CROWD.predict(p, o.d);
@@ -182,6 +192,10 @@
     return { w: tt.p, fg: '#8a2412', bg: '#f3d5ca', v: v };
   }
   function sortVal(p) { var r = crowd(p); return r.value + (r.closed ? 200 : r.inSeason === false ? 60 : 0); }
+  // Sort by a key computed once per item (not inside the comparator).
+  function sortBy(list, fn) {
+    return list.map(function (p) { return [fn(p), p]; }).sort(function (a, b) { return a[0] - b[0]; }).map(function (x) { return x[1]; });
+  }
 
   /* ---------------- travel ---------------- */
   function originObj(name) {
@@ -279,8 +293,7 @@
     // quiet on your dates
     // Trip-worthy, open, in season — quietest first. On peak dates (Christmas, New Year) few
     // places stay under 40%, so top up with the least busy of the rest rather than show 2 cards.
-    var pool = places().filter(function (p) { var r = crowd(p); return tier(p) === 'A' && !r.closed && r.inSeason !== false; })
-      .sort(function (a, b) { return sortVal(a) - sortVal(b); });
+    var pool = sortBy(places().filter(function (p) { var r = crowd(p); return tier(p) === 'A' && !r.closed && r.inSeason !== false; }), sortVal);
     var quiet = pool.filter(function (p) { return crowd(p).value < 40; });
     var topped = quiet.length < 6;
     if (topped) quiet = pool.slice(0, 6);
@@ -324,14 +337,14 @@
     var q = S.q.trim().toLowerCase(), tt = t();
     var snowSet = null;
     if (S.chip === 'snow') { try { snowSet = PPSnow.snowFor(ymd(planDate())); } catch (e) { snowSet = new Set(); } }
-    return places().filter(function (p) {
+    return sortBy(places().filter(function (p) {
       if (q && (p.name + ' ' + (p.district || '') + ' ' + (p.famousFor || '')).toLowerCase().indexOf(q) < 0) return false;
       if (S.chip === 'quiet') return crowd(p).value < 30 && !crowd(p).closed;
       if (S.chip === 'near') { var r = travel(p); return r && r.hours <= (r.far ? 5 : 8); }
       if (S.chip === 'snow') return snowSet.has(p.id);
       if (S.chip === 'temples') return (p.vibes || []).indexOf('spiritual') >= 0;
       return true;
-    }).sort(function (a, b) { return sortVal(a) - sortVal(b); });
+    }), sortVal);
   }
 
   function renderExplore() {
@@ -354,9 +367,9 @@
 
   function renderCrowd() {
     var tt = t(), el = $('spCrowd'); if (!el) return;
-    var list = places().slice().sort(function (a, b) { return sortVal(a) - sortVal(b); });
+    var list = sortBy(places(), sortVal);
     var open = list.filter(function (p) { return !crowd(p).closed; });
-    var busiest = open.slice().sort(function (a, b) { return crowd(b).value - crowd(a).value; }).slice(0, 5);
+    var busiest = sortBy(open, function (p) { return -crowd(p).value; }).slice(0, 5);
     var o = curDate(), note = o.names || '';
     if (!note) {
       try {
@@ -393,7 +406,10 @@
     opts = opts || {};
     if (['home', 'explore', 'crowd', 'plan', 'saved', 'map', 'stays'].indexOf(tab) < 0) tab = 'home';
     S.tab = tab;
-    try { if ($('pd') && $('pd').style.display !== 'none' && typeof closePD === 'function' && !opts.keepPD) closePD(); } catch (e) { /* ignore */ }
+    try {
+      var pd = $('pd');
+      if (pd && getComputedStyle(pd).display !== 'none' && typeof closePD === 'function' && !opts.keepPD) closePD();
+    } catch (e) { /* ignore */ }
     var home = $('view-home');
     if (home && !home.classList.contains('active')) {
       document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
@@ -613,7 +629,7 @@
   function onChange(e) {
     var tg = e.target;
     if (tg.id === 'spFrom') { S.origin = tg.value; store('pp_origin', S.origin); _tc = {}; render(); }
-    else if (tg.id === 'spDateIn' && tg.value) { var p = tg.value.split('-'); S.customDate = new Date(+p[0], +p[1] - 1, +p[2]); S.dateKey = 'custom'; _planTouched = false; render(); }
+    else if (tg.id === 'spDateIn' && tg.value) { var p = tg.value.split('-'); S.customDate = new Date(+p[0], +p[1] - 1, +p[2]); S.dateKey = 'custom'; _dopts = null; _planTouched = false; render(); }
     else if (tg.id === 'spKids') { S.help.kids = tg.checked; renderHome(); }
     else if (tg.id === 'ppDate' || tg.id === 'ppNights') { _planTouched = true; }
     else if (tg.id === 'ppPlace') renderPlanBar();
