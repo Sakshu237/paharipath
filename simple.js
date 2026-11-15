@@ -25,6 +25,8 @@
     en: {
       going: 'Going:', from: 'From', today: 'Today', weekend: 'This weekend', nextWeekend: 'Next weekend', pick: 'Pick date',
       h1a: 'Same Himachal.', h1b: 'Without the crowd.',
+      heroT: 'Find a quiet place in the hills', heroS: 'Offbeat Himachal, away from the crowds — 146 places with crowd forecasts.',
+      where: 'Where', when: 'When', fromLbl: 'Travelling from', searchBtn: 'Search', notSure: 'Not sure where to go? We’ll suggest a place',
       sub: 'Crowd forecasts for 146 offbeat places — pick a quiet one for your dates.',
       searchPh: 'Search a place, e.g. Tirthan', go: 'Go',
       helpTitle: 'Not sure where to go?', helpSub: 'Find your place in 3 taps',
@@ -61,6 +63,8 @@
       waList: function (d) { return 'Where should we go? (' + d + ')'; }, waVote: 'Reply with the number you like 👆'
     },
     hi: {
+      heroT: 'पहाड़ों में शांत जगह ढूँढिए', heroS: 'भीड़ से दूर, असली हिमाचल — 146 जगहों की भीड़ का अनुमान।',
+      where: 'कहाँ', when: 'कब', fromLbl: 'कहाँ से आ रहे हैं', searchBtn: 'खोजें', notSure: 'पता नहीं कहाँ जाएँ? हम जगह सुझाएँगे',
       going: 'कब:', from: 'कहाँ से', today: 'आज', weekend: 'इस वीकेंड', nextWeekend: 'अगला वीकेंड', pick: 'तारीख चुनें',
       h1a: 'वही हिमाचल,', h1b: 'बिना भीड़ के।',
       sub: '146 अनछुई जगहों पर भीड़ का अनुमान — अपनी तारीखों के लिए शांत जगह चुनें।',
@@ -246,6 +250,8 @@
   /* ---------------- screens ---------------- */
   function renderBar() {
     var el = $('spBar'); if (!el) return;
+    if (S.tab === 'home') { el.innerHTML = ''; el.style.display = 'none'; return; }
+    el.style.display = '';
     var opts = dateOptions(), tt = t();
     var origins = (window.PPTrip && PPTrip.origins) || [['Delhi'], ['Chandigarh'], ['Mumbai'], ['Bengaluru']];
     el.innerHTML = '<div class="sp-bar-in"><span class="sp-bar-lbl">' + esc(tt.going) + '</span><div class="sp-scroll">' +
@@ -258,13 +264,29 @@
 
   function renderHome() {
     var tt = t(), h = S.help, el = $('spHome'); if (!el) return;
-    var html = '<div class="sp-wrap"><h1 class="sp-h1">' + esc(tt.h1a) + ' <em>' + esc(tt.h1b) + '</em></h1><p class="sp-sub">' + esc(tt.sub) + '</p>' +
-      '<form class="sp-search" data-form="search" role="search"><span aria-hidden="true">🔍</span><label for="spQ" class="sp-datein">' + esc(tt.searchPh) + '</label>' +
-      '<input id="spQ" type="search" placeholder="' + esc(tt.searchPh) + '" value="' + esc(S.q) + '" autocomplete="off"><button class="sp-btn" type="submit">' + esc(tt.go) + '</button></form>';
+    // Concept A (Nov 2026): green header + one search card (where / when / from), like Booking.com.
+    var opts0 = dateOptions();
+    var origins = (window.PPTrip && PPTrip.origins) || [['Delhi'], ['Chandigarh'], ['Mumbai'], ['Bengaluru']];
+    var ico = function (d) { return '<span class="sp-ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg></span>'; };
+    var html = '<div class="sp-hero"><div class="sp-hero-in"><h1>' + esc(tt.heroT) + '</h1><p>' + esc(tt.heroS) + '</p></div></div>' +
+      '<div class="sp-wrap sp-home-wrap">' +
+      '<form class="sp-sbox" data-form="search" role="search">' +
+      '<label class="sp-srow" for="spQ">' + ico('<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>') +
+      '<span class="sp-sf"><span class="sp-sl">' + esc(tt.where) + '</span><input id="spQ" type="search" placeholder="' + esc(tt.searchPh) + '" value="' + esc(S.q) + '" autocomplete="off"></span></label>' +
+      '<div class="sp-srow">' + ico('<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>') +
+      '<span class="sp-sf"><span class="sp-sl">' + esc(tt.when) + '</span><span class="sp-scroll sp-when">' +
+      opts0.map(function (o) { return '<button type="button" class="sp-chip' + (o.key === S.dateKey ? ' on' : '') + '" data-act="date" data-key="' + o.key + '">' + esc(o.label) + '</button>'; }).join('') +
+      '<button type="button" class="sp-chip" data-act="pickdate">' + esc(tt.pick) + '</button><input type="date" id="spDateIn" class="sp-datein" min="' + ymd(new Date()) + '" aria-label="' + esc(tt.pick) + '">' +
+      '</span></span></div>' +
+      '<label class="sp-srow" for="spFrom">' + ico('<path d="M5 17h14M6 17l1.5-6h9L18 17"/><circle cx="8" cy="18.5" r="1.5"/><circle cx="16" cy="18.5" r="1.5"/>') +
+      '<span class="sp-sf"><span class="sp-sl">' + esc(tt.fromLbl) + '</span><select id="spFrom" class="sp-from2">' +
+      origins.map(function (o) { return '<option' + (o[0] === S.origin ? ' selected' : '') + '>' + esc(o[0]) + '</option>'; }).join('') +
+      '</select></span></label>' +
+      '<button class="sp-btn sp-sbtn" type="submit">' + esc(tt.searchBtn) + '</button></form>';
 
     // help me choose
     if (h.step === 0) {
-      html += '<button class="sp-help-cta" data-act="help-open"><span style="font-size:26px" aria-hidden="true">🧭</span><span style="flex:1"><b>' + esc(tt.helpTitle) + '</b><span>' + esc(tt.helpSub) + '</span></span><span aria-hidden="true">›</span></button>';
+      html += '<button class="sp-notsure" data-act="help-open">' + esc(tt.notSure) + ' <span aria-hidden="true">→</span></button>';
     } else if (h.step <= 3) {
       var opts = h.step === 1
         ? CITY_QUICK.map(function (c) { return [c[0], c[1]]; }).concat([['__hp', tt.inHP], ['__other', tt.otherCity]])
