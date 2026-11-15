@@ -178,28 +178,26 @@ module.exports = async (req, res) => {
       const accNo = (clip(b.accountNumber, 20) || '').replace(/\s/g, '');
       const ifsc = (clip(b.ifsc, 11) || '').toUpperCase();
 
+      // Short form (Nov 2026): only the basics are required here. Registration, ID proof,
+      // address and payout details are collected in the host's Setup checklist after the
+      // PahariPath call and approval (see _lib/host.js). Older clients may still send them.
       if (!propertyName || !location || !ownerName || !phone || !email) { res.status(400).json({ error: 'Please fill all required fields' }); return; }
       if (!/^[6-9]\d{9}$/.test(phone)) { res.status(400).json({ error: 'Enter a valid 10-digit WhatsApp number' }); return; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { res.status(400).json({ error: 'Enter a valid email address' }); return; }
-      if (!(price >= 100 && price <= 100000)) { res.status(400).json({ error: 'Enter a valid price per night (₹100 to ₹1,00,000)' }); return; }
+      if (b.price != null && b.price !== '' && !(price >= 100 && price <= 100000)) { res.status(400).json({ error: 'Enter a valid price per night (₹100 to ₹1,00,000), or leave it empty' }); return; }
       if (!(rooms >= 1 && rooms <= 6)) { res.status(400).json({ error: 'Enter the number of rooms (1 to 6 for a homestay)' }); return; }
       if (!(maxGuests >= 1 && maxGuests <= 24)) { res.status(400).json({ error: 'Enter the maximum number of guests (1 to 24)' }); return; }
-      if (!address || address.length < 10) { res.status(400).json({ error: 'Enter the full address of the property' }); return; }
       if (mapUrl && !/^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|www\.google\.[a-z.]+\/maps|maps\.google\.[a-z.]+)\//i.test(mapUrl)) { res.status(400).json({ error: 'Map link must be a Google Maps link' }); return; }
-      if (!registrationNo) { res.status(400).json({ error: 'Enter your HP Tourism homestay registration number' }); return; }
       if (gstin && !/^[0-9]{2}[A-Z0-9]{13}$/.test(gstin)) { res.status(400).json({ error: 'GSTIN should be 15 characters' }); return; }
       const hasBank = accNo || ifsc || accHolder;
-      if (!upi && !hasBank) { res.status(400).json({ error: 'Add a UPI ID or bank account so we can pay you' }); return; }
       if (upi && !/^[a-z0-9._-]{2,}@[a-z]{2,}$/.test(upi)) { res.status(400).json({ error: 'Enter a valid UPI ID, e.g. name@okaxis' }); return; }
       if (hasBank && !(/^\d{9,18}$/.test(accNo) && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc) && accHolder)) { res.status(400).json({ error: 'Check the bank account number, IFSC code and account holder name' }); return; }
 
+      // Photos are optional now (the host can add them in Setup); documents come later too.
       const photoRefs = (Array.isArray(b.photos) ? b.photos : []).slice(0, 5)
         .map(p => parseStorageRef(p, ['stay-photos', 'host-verification'])).filter(Boolean);
-      if (photoRefs.length < 2) { res.status(400).json({ error: 'Please add at least 2 photos of your property' }); return; }
       const idRef = parseStorageRef(b.idDoc, ['host-verification']);
-      if (!idRef) { res.status(400).json({ error: 'Please add an ID or ownership proof' }); return; }
       const regRef = parseStorageRef(b.registrationDoc, ['host-verification']);
-      if (!regRef) { res.status(400).json({ error: 'Please add your homestay registration certificate' }); return; }
 
       const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
       const ipKey = `partner-ip:${ip}`;
@@ -220,11 +218,13 @@ module.exports = async (req, res) => {
 
       const row = {
         property_name: propertyName, location, owner_name: ownerName, phone, email,
-        price_per_night: price, property_type: propertyType, description, eco_friendly: eco, status: 'pending',
+        // Fields the short form doesn't ask for are saved as '' / 0 (not null) so the
+        // insert works whether or not those columns were created as NOT NULL.
+        price_per_night: price >= 100 ? price : 0, property_type: propertyType, description, eco_friendly: eco, status: 'pending',
         property_photos: photoRefs.map(r => `${SUPABASE_URL}/storage/v1/object/public/${r.bucket}/${r.path}`),
-        id_document_url: `${idRef.bucket}/${idRef.path}`,
-        rooms, max_guests: maxGuests, address, map_url: mapUrl || null, checkin_time: checkinTime || null, checkout_time: checkoutTime || null,
-        house_rules: houseRules, registration_no: registrationNo, registration_doc: `${regRef.bucket}/${regRef.path}`, gstin: gstin || null,
+        id_document_url: idRef ? `${idRef.bucket}/${idRef.path}` : '',
+        rooms, max_guests: maxGuests, address: address || '', map_url: mapUrl || null, checkin_time: checkinTime || null, checkout_time: checkoutTime || null,
+        house_rules: houseRules, registration_no: registrationNo || '', registration_doc: regRef ? `${regRef.bucket}/${regRef.path}` : '', gstin: gstin || null,
       };
       const insRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications`, {
         method: 'POST', headers: { ...svcHeaders, Prefer: 'return=representation' }, body: JSON.stringify(row),
@@ -247,7 +247,7 @@ module.exports = async (req, res) => {
           subject: `New host application: ${propertyName}`,
           html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px">
             <h3 style="color:#2d5a3d">New host application</h3>
-            <p><b>${esc(propertyName)}</b> — ${esc(location)}<br/>${esc(propertyType)} · ₹${price}/night · ${rooms} rooms · up to ${maxGuests} guests<br/>HP registration: ${esc(registrationNo)}<br/>
+            <p><b>${esc(propertyName)}</b> — ${esc(location)}<br/>${esc(propertyType)} · ${price >= 100 ? '₹' + price + '/night' : 'price to agree on the call'} · ${rooms} rooms · up to ${maxGuests} guests<br/>${registrationNo ? 'HP registration: ' + esc(registrationNo) : 'Short application — registration, ID and bank details come in host setup'} · ${photoRefs.length} photo${photoRefs.length === 1 ? '' : 's'}<br/>
             ${esc(ownerName)} · ${esc(phone)} · ${esc(email)}</p>
             <p>Review it in the admin panel → Host Applications, then approve or reject.</p></div>`,
         });
@@ -258,7 +258,7 @@ module.exports = async (req, res) => {
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
           <h2 style="color:#2d5a3d">Thanks, ${esc(ownerName)}!</h2>
           <p>We received your request to list <b>${esc(propertyName)}</b> on PahariPath. Our team will verify your details and contact you on WhatsApp within 48 hours.</p>
-          <p>Once approved, your host login is emailed to you. You then finish a short setup (about 10 minutes) and your listing goes live.</p>
+          <p>Once approved, your host login is emailed to you. In the short setup you add your HP homestay registration, an ID proof, your UPI or bank details and a few photos — then your listing goes live.</p>
           <p style="font-size:13px;color:#666">You can check your application any time: <a href="https://paharipath.in/host-login">paharipath.in/host-login</a> → "Check application status", using this email and your WhatsApp number.</p></div>`,
       });
 

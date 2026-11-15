@@ -133,3 +133,13 @@ body.sp nav .nl a.on{color:#b25f3a}
 
 /* keep the floating WhatsApp button off the place page's action bar */
 body:has(#pd[style*="block"]) .pp-wa,body:has(#pd.open) .pp-wa,body:has(#spSheet.on) .pp-wa{display:none!important}
+
+/* home: one-line shortcuts (snow, find a stay) */
+.sp-minis{display:flex;flex-direction:column;gap:10px;max-width:560px}
+.sp-mini{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 14px;border-radius:14px;border:1px solid #e1e8e3;background:#fff;color:var(--ink);font-family:var(--fb);text-align:left;cursor:pointer}
+.sp-mini.snow{background:#eef3f8;border-color:#dbe5ef}
+.sp-mini > span:first-child{font-size:22px}
+.sp-mini-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sp-mini-tx b{font-size:15px;color:var(--pine)}
+.sp-mini.snow .sp-mini-tx b{color:#24406b}
+.sp-mini-tx span{font-size:13px;color:#3c4a40;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

@@ -462,7 +462,7 @@ module.exports = async (req, res) => {
     //   stay-info — public: description + amenities for the stay page
     // ═══════════════════════════════════════════════════════
     if (host.ACTIONS[action]) {
-      const isWrite = ['host-listing', 'host-photos', 'host-setup', 'host-rate-guest'].includes(action);
+      const isWrite = ['host-listing', 'host-photos', 'host-setup', 'host-docs', 'host-payout', 'host-rate-guest'].includes(action);
       // Rate limit without making the host wait for it: the count and the log run alongside
       // the real work. Reads run at the same time as the count; writes wait for the count first.
       const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';

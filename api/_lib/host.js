@@ -13,6 +13,9 @@
 //     Hosts may remove a live photo (keeping at least 2) or choose the cover.
 //   • An approved listing starts hidden (setup_pending = true) and goes live
 //     only when the host finishes the checklist below.
+//   • Short applications (Nov 2026, setup_steps.v2) skip papers at sign-up, so their
+//     checklist also asks for the address, HP registration + certificate, an ID proof
+//     and payout details — and PahariPath must check the documents before go-live.
 
 const { sendEmail } = require('./email');
 const { notifyEmail } = require('./admin');
@@ -32,6 +35,10 @@ const MIN_DESC = 80;
 const MAX_PHOTOS = 15;
 const MAX_PENDING = 10;
 const PHOTO_NAME_RE = /^[A-Za-z0-9._-]{1,160}$/;
+const MAP_RE = /^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|www\.google\.[a-z.]+\/maps|maps\.google\.[a-z.]+)\//i;
+const DOC_EXT = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+const DOC_KINDS = ['reg', 'id'];
+const randHex = n => require('crypto').randomBytes(n).toString('hex');
 
 // Fields a host may read back about their own stay (never other hosts').
 const HOST_FIELDS = [
@@ -96,8 +103,16 @@ const stepsOf = s => (s && s.setup_steps && typeof s.setup_steps === 'object' ? 
 function setupChecklist(s) {
   const steps = stepsOf(s);
   const amen = arr(s.amenities);
+  const papers = steps.v2 ? [
+    { key: 'address', who: 'host', label: 'Add the full address of your homestay', done: String(s.address || '').trim().length >= 10 },
+    { key: 'registration', who: 'host', label: 'Add your HP homestay registration number and certificate', done: !!(String(s.registration_no || '').trim() && steps.registration_doc) },
+    { key: 'idproof', who: 'host', label: 'Add an ID or ownership proof (Aadhaar, property papers)', done: !!steps.id_doc },
+    { key: 'payout', who: 'host', label: 'Add your UPI ID or bank account (for payments)', done: !!steps.payout_added_at },
+    { key: 'docs', who: 'pahari', label: 'PahariPath checks your registration and ID', done: !!steps.docs_verified_at },
+  ] : [];
   return [
     { key: 'destination', who: 'pahari', label: 'PahariPath links your stay to its village on the map', done: parseInt(s.placeid) > 0 },
+    ...papers,
     { key: 'description', who: 'host', label: `Describe your stay (at least ${MIN_DESC} characters)`, done: String(s.description || '').trim().length >= MIN_DESC },
     { key: 'times', who: 'host', label: 'Set check-in and check-out times', done: !!(s.checkin_time && s.checkout_time) },
     { key: 'rules', who: 'host', label: 'Write your house rules', done: String(s.house_rules || '').trim().length >= 10 },
@@ -192,6 +207,16 @@ async function actionListing(body, ctx) {
     const v = parseInt(c.max_guests);
     if (!(v >= 1 && v <= 24)) return [400, { error: 'Maximum guests must be between 1 and 24' }];
     patch.max_guests = v;
+  }
+  if (c.address !== undefined) {
+    const v = clip(String(c.address), 300).replace(/[<>]/g, '');
+    if (v.length < 10) return [400, { error: 'Please write the full address — house or landmark, village, tehsil, district, PIN' }];
+    patch.address = v;
+  }
+  if (c.map_url !== undefined) {
+    const v = clip(String(c.map_url), 300);
+    if (v && !MAP_RE.test(v)) return [400, { error: 'The map link must be a Google Maps link' }];
+    patch.map_url = v || null;
   }
   if (c.host_phone !== undefined) {
     const v = String(c.host_phone).replace(/\D/g, '').slice(-10);
@@ -344,12 +369,109 @@ async function actionStayInfo(body, ctx) {
   return [200, { description: s.description || '', amenities: arr(s.amenities) }];
 }
 
+// 'host-docs' — HP registration + certificate and ID proof, for short applications.
+//   op 'upload-url': { kind: 'reg'|'id', ext } → a one-time signed upload link into the
+//     private host-verification bucket (works whatever the bucket's browser rules are).
+//   op 'save': { registrationNo?, registrationDoc?, idDoc? } — refs must be this stay's own uploads.
+// Any change clears docs_verified_at, so PahariPath checks the new papers before go-live.
+async function actionDocs(body, ctx) {
+  const a = await authOwnStay(body, ctx);
+  if (a.error) return a.error;
+  const { stay } = a;
+  if (body.op === 'upload-url') {
+    const kind = DOC_KINDS.includes(body.kind) ? body.kind : null;
+    const ext = String(body.ext || '').toLowerCase().replace('jpeg', 'jpg');
+    if (!kind || !DOC_EXT.includes(ext)) return [400, { error: 'Please choose a photo or PDF' }];
+    const path = `hostdoc-${stay.id}-${kind}-${randHex(8)}.${ext}`;
+    const r = await fetch(`${ctx.SUPABASE_URL}/storage/v1/object/upload/sign/host-verification/${path}`, { method: 'POST', headers: ctx.headers, body: '{}' });
+    const j = r.ok ? await r.json().catch(() => ({})) : {};
+    const token = (String(j.url || j.signedURL || '').match(/[?&]token=([^&]+)/) || [])[1] || j.token;
+    if (!token) { console.error('host-docs sign failed', r.status, JSON.stringify(j).slice(0, 200)); return [500, { error: 'Could not start the upload — please try again' }]; }
+    return [200, { success: true, path, token: decodeURIComponent(token) }];
+  }
+  if (body.op !== 'save') return [400, { error: 'Unknown documents action' }];
+  const steps = { ...stepsOf(stay) };
+  const patch = {};
+  const ownRef = (v, kind) => {
+    const m = String(v || '').match(/^host-verification\/(hostdoc-(\d+)-(reg|id)-[a-f0-9]{16}\.(jpg|png|webp|pdf))$/);
+    return m && parseInt(m[2]) === stay.id && m[3] === kind ? `host-verification/${m[1]}` : null;
+  };
+  let changed = false;
+  if (body.registrationNo !== undefined) {
+    const v = clip(String(body.registrationNo), 60).replace(/[<>]/g, '');
+    if (v.length < 3) return [400, { error: 'Please enter your HP homestay registration number' }];
+    if (v !== String(stay.registration_no || '')) { patch.registration_no = v; changed = true; }
+  }
+  if (body.registrationDoc !== undefined) {
+    const ref = ownRef(body.registrationDoc, 'reg');
+    if (!ref) return [400, { error: 'The certificate upload did not arrive — please try again' }];
+    steps.registration_doc = ref; changed = true;
+  }
+  if (body.idDoc !== undefined) {
+    const ref = ownRef(body.idDoc, 'id');
+    if (!ref) return [400, { error: 'The ID upload did not arrive — please try again' }];
+    steps.id_doc = ref; changed = true;
+  }
+  if (!changed) return [400, { error: 'Nothing to save' }];
+  steps.docs_verified_at = null;
+  steps.docs_sent_at = new Date().toISOString();
+  patch.setup_steps = steps;
+  const out = await patchStay(stay.id, patch, ctx);
+  if (out.error) return [400, { error: out.error }];
+  if (steps.registration_doc && steps.id_doc && (out.stay.registration_no || '').trim()) {
+    await sendEmail({
+      to: notifyEmail(),
+      subject: `Documents to check: ${stay.name}`,
+      html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px"><p><b>${esc(stay.name)}</b> (${esc(stay.loc)}) sent their HP registration and ID proof.</p><p>Check them in the admin panel → Host Onboarding and tap <b>Documents OK</b>.</p></div>`,
+    });
+  }
+  return [200, { success: true, stay: hostView(out.stay) }];
+}
+
+// 'host-payout' — UPI ID or bank account for payouts. Stored only in the server-only
+// host_payout_details table; the stay keeps just a masked hint for the dashboard.
+async function actionPayout(body, ctx) {
+  const a = await authOwnStay(body, ctx);
+  if (a.error) return a.error;
+  const { email, stay } = a;
+  const upi = (clip(body.upi, 60) || '').toLowerCase();
+  const holder = clip(body.accountHolder, 100);
+  const accNo = (clip(body.accountNumber, 20) || '').replace(/\s/g, '');
+  const ifsc = (clip(body.ifsc, 11) || '').toUpperCase();
+  const hasBank = accNo || ifsc || holder;
+  if (!upi && !hasBank) return [400, { error: 'Add a UPI ID or a bank account' }];
+  if (upi && !/^[a-z0-9._-]{2,}@[a-z]{2,}$/.test(upi)) return [400, { error: 'Enter a valid UPI ID, e.g. name@okaxis' }];
+  if (hasBank && !(/^\d{9,18}$/.test(accNo) && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc) && holder)) return [400, { error: 'Check the account number, IFSC code and account holder name' }];
+  const details = { stay_id: stay.id, host_email: email, upi_id: upi || null, account_holder: holder || null, account_number: accNo || null, ifsc: ifsc || null };
+  const base = `${ctx.SUPABASE_URL}/rest/v1/host_payout_details`;
+  const get = q => fetch(`${base}?${q}&select=id&limit=1`, { headers: ctx.headers }).then(r => (r.ok ? r.json() : [])).catch(() => []);
+  // The row made when they applied (linked to the stay at approval), else find it through the application.
+  let row = (await get(`stay_id=eq.${stay.id}`))[0];
+  let appId = null;
+  if (!row) {
+    const ap = await fetch(`${ctx.SUPABASE_URL}/rest/v1/partner_applications?email=eq.${encodeURIComponent(email)}&status=eq.approved&select=id&order=reviewed_at.desc&limit=1`, { headers: ctx.headers })
+      .then(r => (r.ok ? r.json() : [])).catch(() => []);
+    appId = ap[0] ? ap[0].id : null;
+    if (appId) row = (await get(`application_id=eq.${appId}`))[0];
+  }
+  const w = row
+    ? await fetch(`${base}?id=eq.${row.id}`, { method: 'PATCH', headers: ctx.headers, body: JSON.stringify(details) })
+    : await fetch(base, { method: 'POST', headers: ctx.headers, body: JSON.stringify({ ...details, application_id: appId }) });
+  if (!w.ok) { console.error('host-payout save failed', await w.text()); return [500, { error: 'Could not save — please try again, or WhatsApp PahariPath on +91 93171 10366' }]; }
+  const hint = upi ? 'UPI ' + upi.replace(/^(.{2}).*(@.*)$/, '$1•••$2') : 'Bank account ••••' + accNo.slice(-4);
+  const out = await patchStay(stay.id, { setup_steps: { ...stepsOf(stay), payout_added_at: new Date().toISOString(), payout_hint: hint } }, ctx);
+  if (out.error) return [400, { error: out.error }];
+  return [200, { success: true, stay: hostView(out.stay) }];
+}
+
 const ACTIONS = {
   'host-stays': actionStays,
   'host-dashboard': actionDashboard,
   'host-listing': actionListing,
   'host-photos': actionPhotos,
   'host-setup': actionSetup,
+  'host-docs': actionDocs,
+  'host-payout': actionPayout,
   'host-rate-guest': actionRateGuest,
   'stay-info': actionStayInfo,
 };

@@ -342,11 +342,15 @@
       whatsapp: `hTab('listing');setTimeout(()=>document.getElementById('hjPhone')?.focus(),300)`,
       calendar: `hTab('calendar')`,
       agreement: `hjShowAgreement()`,
+      address: `hTab('listing');setTimeout(()=>document.getElementById('hjAddr')?.focus(),300)`,
+      registration: `hjDocs()`,
+      idproof: `hjDocs()`,
+      payout: `hjPayout()`,
     };
     const row = x => `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f3f1">
       <div style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;${x.done ? 'background:#1e6b3c;color:#fff' : 'background:#f1f3f1;color:var(--stone)'}">${x.done ? '✓' : ''}</div>
       <div style="flex:1;font-size:13.5px;color:${x.done ? 'var(--stone)' : 'var(--ink)'};${x.done ? 'text-decoration:line-through' : ''}">${E(x.label)}${x.who === 'pahari' && !x.done ? '<div style="font-size:11.5px;color:#a8710a;text-decoration:none">PahariPath does this — usually within a day</div>' : ''}</div>
-      ${!x.done && go[x.key] ? btn(x.key === 'agreement' ? 'Read & accept' : 'Do it', go[x.key], 'plain', 'padding:7px 12px;min-height:34px;font-size:12.5px') : ''}</div>`;
+      ${!x.done && go[x.key] ? btn(x.key === 'agreement' ? 'Read & accept' : ['registration', 'idproof', 'payout', 'address'].includes(x.key) ? 'Add' : 'Do it', go[x.key], 'plain', 'padding:7px 12px;min-height:34px;font-size:12.5px') : ''}</div>`;
     content().innerHTML = title('🚀 Set up ' + E(s.name), 'You\'re approved! Finish these steps and tap <b>Go live</b> — travellers can then find your stay and send requests. Your listing stays hidden until then.') +
       card(`<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div style="font-weight:700;color:var(--pine)">${done} of ${list.length} done</div><div style="font-size:12px;color:var(--stone)">${pct}%</div></div>
         <div style="height:8px;background:#eef1ee;border-radius:6px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--pine);border-radius:6px"></div></div>
@@ -391,6 +395,66 @@
     const d = await api('host-setup', { stayId: stay().id, step: 'agree', accept: true });
     if (d.error) return toast(d.error);
     replaceStay(d.stay); closeModal(); toast('Agreement accepted ✓'); hTab('overview');
+  };
+
+  // ── 3a+. PAPERS & PAYOUT (short applications collect these in Setup) ──
+  const docExt = b => ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'application/pdf': 'pdf' }[b.type] || '');
+  // Uploads one paper into the private bucket through a one-time link from the server.
+  async function uploadDoc(kind, file) {
+    if (!file) return null;
+    if (file.size > 10 * 1024 * 1024) { toast(file.name + ' is too large (max 10 MB)'); return false; }
+    const blob = /^image\//.test(file.type) && typeof ppCompress === 'function' ? await ppCompress(file) : file;
+    const ext = docExt(blob);
+    if (!ext) { toast('Please choose a photo (JPG, PNG) or a PDF'); return false; }
+    const u = await api('host-docs', { stayId: stay().id, op: 'upload-url', kind, ext });
+    if (u.error) { toast(u.error); return false; }
+    const { error } = await _sb.storage.from('host-verification').uploadToSignedUrl(u.path, u.token, blob, { contentType: blob.type });
+    if (error) { toast('Upload failed. Check your connection and try again.'); return false; }
+    return 'host-verification/' + u.path;
+  }
+  window.hjDocs = function () {
+    const s = stay(), st = s.setup_steps || {};
+    const sent = ok => ok ? '<span style="color:#1e6b3c;font-weight:600">✓ Sent</span>' : '<span style="color:#a8710a">Not sent yet</span>';
+    modal(`<div style="font-family:var(--fd);font-size:21px;color:var(--pine);margin-bottom:4px">Registration and ID</div>
+      <p style="font-size:12.5px;color:var(--stone);line-height:1.6;margin:0 0 14px">Only the PahariPath team sees these, to check your homestay. Guests never see them. A clear phone photo is fine.</p>
+      ${fld('HP homestay registration number *', `<input class="fi" id="hjRegNo" maxlength="60" value="${E(s.registration_no || '')}" placeholder="From homestay.hp.gov.in"/>`)}
+      ${fld(`Registration certificate * · ${sent(st.registration_doc)}`, '<input class="fi" type="file" id="hjRegDoc" accept="image/*,.pdf"/>', st.registration_doc ? 'Choose a file only if you want to replace it.' : '')}
+      ${fld(`ID or ownership proof * · ${sent(st.id_doc)}`, '<input class="fi" type="file" id="hjIdDoc" accept="image/*,.pdf"/>', 'Aadhaar, property papers or similar.' + (st.id_doc ? ' Choose a file only if you want to replace it.' : ''))}
+      <div id="hjDocMsg" style="font-size:12px;color:var(--stone);margin:-4px 0 10px"></div>
+      ${btn('Save', 'hjSaveDocs()', 'main', 'width:100%')}`, { width: 460 });
+  };
+  window.hjSaveDocs = async function () {
+    const s = stay(), msg = document.getElementById('hjDocMsg');
+    const regNo = (document.getElementById('hjRegNo')?.value || '').trim();
+    const regFile = document.getElementById('hjRegDoc')?.files?.[0], idFile = document.getElementById('hjIdDoc')?.files?.[0];
+    const payload = { stayId: s.id, op: 'save' };
+    if (regNo && regNo !== (s.registration_no || '')) payload.registrationNo = regNo;
+    if (regFile) { if (msg) msg.textContent = 'Uploading certificate…'; const r = await uploadDoc('reg', regFile); if (r === false) return; payload.registrationDoc = r; }
+    if (idFile) { if (msg) msg.textContent = 'Uploading ID proof…'; const r = await uploadDoc('id', idFile); if (r === false) return; payload.idDoc = r; }
+    if (Object.keys(payload).length === 2) return toast(regNo ? 'Nothing new to save' : 'Please enter your registration number');
+    if (msg) msg.textContent = 'Saving…';
+    const d = await api('host-docs', payload);
+    if (d.error) { if (msg) msg.textContent = ''; return toast(d.error); }
+    replaceStay(d.stay); closeModal();
+    const st = d.stay.setup_steps || {};
+    toast(st.registration_doc && st.id_doc && d.stay.registration_no ? 'Sent ✓ — PahariPath will check them, usually within a day' : 'Saved ✓');
+    hTab('overview');
+  };
+  window.hjPayout = function () {
+    const st = stay().setup_steps || {};
+    modal(`<div style="font-family:var(--fd);font-size:21px;color:var(--pine);margin-bottom:4px">How should we pay you?</div>
+      <p style="font-size:12.5px;color:var(--stone);line-height:1.6;margin:0 0 14px">${st.payout_hint ? 'Saved: <b>' + E(st.payout_hint) + '</b>. Fill this in again only to change it.' : 'When guests pay online, PahariPath pays you here after their check-in. Kept private — only the PahariPath team can see it.'}</p>
+      ${fld('UPI ID', '<input class="fi" id="hjUpi" placeholder="e.g. yourname@okaxis" autocapitalize="off"/>')}
+      <div style="font-size:12px;color:var(--stone);margin:-4px 0 10px;text-align:center">— or bank account —</div>
+      ${fld('Account holder name', '<input class="fi" id="hjAccH" placeholder="As per bank records"/>')}
+      <div style="display:flex;gap:10px">${fld('Account number', '<input class="fi" id="hjAccN" inputmode="numeric" maxlength="18"/>')}${fld('IFSC', '<input class="fi" id="hjIfsc" maxlength="11" style="text-transform:uppercase" placeholder="SBIN0001234"/>')}</div>
+      ${btn('Save', 'hjSavePayout()', 'main', 'width:100%')}`, { width: 460 });
+  };
+  window.hjSavePayout = async function () {
+    const v = id => (document.getElementById(id)?.value || '').trim();
+    const d = await api('host-payout', { stayId: stay().id, upi: v('hjUpi'), accountHolder: v('hjAccH'), accountNumber: v('hjAccN').replace(/\s/g, ''), ifsc: v('hjIfsc').toUpperCase() });
+    if (d.error) return toast(d.error);
+    replaceStay(d.stay); closeModal(); toast('Payment details saved ✓'); hTab('overview');
   };
 
   // ── 3b. OVERVIEW (live stays) ────────────────────────────────────────
@@ -492,6 +556,8 @@
         fld('Describe your stay *', `<textarea class="fi" id="hjDesc" rows="6" maxlength="1500" oninput="document.getElementById('hjDescN').textContent=this.value.length" placeholder="The view from the rooms, the village, what food you cook, what guests can do nearby, how to reach…">${E(s.description || '')}</textarea>`, `<span id="hjDescN">${descLen}</span> / 1500 · at least 80 characters. Write it the way you'd tell a friend.`) +
         `<div class="pp-row" style="display:flex;gap:10px">${fld('Rooms', `<input class="fi" type="number" id="hjRooms" min="1" max="6" value="${E(s.rooms || '')}"/>`)}${fld('Max guests', `<input class="fi" type="number" id="hjGuests" min="1" max="24" value="${E(s.max_guests || '')}"/>`)}</div>
         <div style="display:flex;gap:10px">${fld('Check-in from *', `<input class="fi" type="time" id="hjIn" value="${E(s.checkin_time || '12:00')}"/>`)}${fld('Check-out by *', `<input class="fi" type="time" id="hjOut" value="${E(s.checkout_time || '10:00')}"/>`)}</div>` +
+        fld('Full address *', `<textarea class="fi" id="hjAddr" rows="2" maxlength="300" placeholder="House or landmark, village, tehsil, district, PIN">${E(s.address || '')}</textarea>`, 'Sent to guests only after you accept their booking.') +
+        fld('Google Maps link', `<input class="fi" id="hjMap" maxlength="300" value="${E(s.map_url || '')}" placeholder="https://maps.app.goo.gl/…"/>`, 'In Google Maps, drop a pin on your homestay → Share → Copy link.') +
         fld('House rules *', `<textarea class="fi" id="hjRules" rows="3" maxlength="1000" placeholder="e.g. No loud music after 10pm · No smoking inside · Pets on request">${E(s.house_rules || '')}</textarea>`) +
         `<div id="hjAmen" class="fg"><label>What your stay offers *</label><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px">${options.map(a => `<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--ink);margin:0;cursor:pointer;background:#f6f9f7;border-radius:8px;padding:8px 10px"><input type="checkbox" class="hjAmenity" value="${E(a)}" ${amen.has(a) ? 'checked' : ''}/> ${E(a)}</label>`).join('')}</div></div>` +
         fld('Your WhatsApp number (private) *', `<input class="fi" id="hjPhone" maxlength="10" inputmode="numeric" value="${E(s.host_phone || '')}" placeholder="10-digit mobile"/>`, 'PahariPath uses this to reach you about bookings. Guests never see it.') +
@@ -518,6 +584,9 @@
     if (amen.slice().sort().join('|') !== (s.amenities || []).slice().sort().join('|')) changes.amenities = amen;
     const ph = v('hjPhone').replace(/\D/g, '');
     if (ph && ph !== (s.host_phone || '')) changes.host_phone = ph;
+    const addr = v('hjAddr'), map = v('hjMap');
+    if (addr && addr !== (s.address || '').trim()) changes.address = addr;
+    if (map !== (s.map_url || '').trim() && document.getElementById('hjMap')) changes.map_url = map;
     if (!Object.keys(changes).length) return toast(desc ? 'No changes to save' : 'Please describe your stay first');
     const d = await api('host-listing', { stayId: s.id, changes });
     if (d.error) return toast(d.error);
@@ -714,6 +783,7 @@
     ppHostAppExtra = function (a) {
       APPS[a.id] = a;
       let html = origExtra.apply(this, arguments);
+      if (!a.registration_doc) html = html.replace(/<div style="color:#b3261e">⚠️ No HP registration on this application[^<]*<\/div>/, '<div style="color:#3c4a40">📝 Short application — registration, ID and bank details come in Setup after approval.' + (parseInt(a.price_per_night) >= 100 ? '' : ' Price to agree on the call.') + '</div>');
       if (a.info_request) html += `<div style="font-size:12px;background:#fff8e6;border-radius:8px;padding:8px 10px;margin:6px 0;color:#6b5311">❓ Asked ${a.info_requested_at ? new Date(a.info_requested_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''}: ${E(a.info_request)}</div>`;
       if (a.status === 'pending') html += `<button type="button" class="ab" style="font-size:11px;padding:5px 12px;margin:4px 0;background:#fff8e6;color:#6b5311;border:1px solid #f0dca0" onclick="hjAskInfo(${parseInt(a.id)})">❓ Ask for more info</button>`;
       return html;
@@ -738,14 +808,18 @@
       <p style="font-size:12.5px;color:var(--stone);line-height:1.6;margin-bottom:12px">This creates the host login and emails it. The listing stays <b>hidden</b> until the host finishes setup and taps Go live.</p>
       ${a.location ? `<div style="font-size:12.5px;margin-bottom:10px">📍 Applied as: <b>${E(a.location)}</b></div>` : ''}
       ${fld('Destination on the map *', `<select class="fi" id="hjApPlace">${placeOptions(guessPlace(a))}</select>`, 'Links the host\'s Crowd Update and Itinerary tools.')}
+      ${fld('Price per night agreed with the host (₹) *', `<input class="fi" type="number" id="hjApPrice" min="100" max="100000" inputmode="numeric" value="${parseInt(a.price_per_night) >= 100 ? parseInt(a.price_per_night) : ''}" placeholder="e.g. 2000"/>`, parseInt(a.price_per_night) >= 100 ? 'The host suggested this. Change it if you agreed something else on the call.' : 'The host left the price for the call.')}
+      ${!a.registration_doc ? '<div style="font-size:12px;background:#f6f9f7;border-radius:8px;padding:8px 10px;margin-bottom:12px;color:#3c4a40">Short application — the host adds registration, ID and bank details in Setup. You check the papers in Host Onboarding before they can go live.</div>' : ''}
       ${btn('✓ Approve & create login', `hjDoApprove(${parseInt(id)})`, 'main', 'width:100%')}`, { width: 460 });
   };
   window.adminApproveHostApp = adminApproveHostApp;
   window.hjDoApprove = async function (id) {
     const placeId = parseInt(document.getElementById('hjApPlace')?.value) || 0;
     if (!placeId) return toast('Pick the destination first');
+    const price = parseInt(document.getElementById('hjApPrice')?.value) || 0;
+    if (!(price >= 100 && price <= 100000)) return toast('Enter the price per night you agreed (₹100 or more)');
     closeModal();
-    const t = await _destAdminCall({ action: 'host-app-approve', applicationId: id, placeId });
+    const t = await _destAdminCall({ action: 'host-app-approve', applicationId: id, placeId, price });
     if (!t) return;
     t.warning ? alert('⚠️ ' + t.warning) : toast('✓ Approved — login emailed. Listing goes live after the host finishes setup.');
     reloadApps();
@@ -817,6 +891,13 @@
         <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><div style="font-size:15px;font-weight:700">${E(s.name)} <span style="font-weight:400;color:var(--stone);font-size:12px">— ${E(s.loc)}</span></div><div style="font-size:12px;color:var(--stone)">${E(s.host_email || '')} · status: ${E(s.status)}${s.setup_pending ? ` · setup ${done}/${s.checklist.length}` : ''}</div></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">${wa ? `<a class="ab" href="${wa}" target="_blank" rel="noopener" style="font-size:11px;padding:5px 10px;text-decoration:none;background:#1e7a45;color:#fff">WhatsApp host</a>` : ''}${s.setup_pending ? `<button class="ab ab-p" style="font-size:11px;padding:5px 10px" onclick="hjForceLive(${s.id})">Make live now</button>` : ''}</div></div>
         ${s.setup_pending ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0">${s.checklist.map(x => `<span style="font-size:11px;padding:3px 8px;border-radius:10px;${x.done ? 'background:#e6f4ec;color:#1e6b3c' : 'background:#fdf1de;color:#8a5a06'}">${x.done ? '✓' : '○'} ${E(x.key)}</span>`).join('')}</div>` : ''}
+        ${s.v2 && s.setup_pending ? `<div style="font-size:12.5px;line-height:1.8;background:#f6f9f7;border-radius:10px;padding:10px 12px;margin:10px 0">
+          <div><b style="color:var(--stone)">Address:</b> ${E(s.address || '—')}</div>
+          <div><b style="color:var(--stone)">HP reg. no.:</b> ${E(s.registration_no || '—')} ${s.registration_url ? `· <a href="${E(s.registration_url)}" target="_blank" rel="noopener">📄 Certificate</a>` : '· certificate not sent'}</div>
+          <div><b style="color:var(--stone)">ID proof:</b> ${s.id_url ? `<a href="${E(s.id_url)}" target="_blank" rel="noopener">🪪 View</a>` : 'not sent'} <span style="color:var(--stone)">(links work for 1 hour)</span></div>
+          <div><b style="color:var(--stone)">Payout:</b> ${E(s.payout_hint || 'not added')}</div>
+          ${s.docs_verified_at ? '<div style="color:#1e6b3c;font-weight:600">✓ Documents checked</div>' : s.docs_uploaded && s.registration_no ? `<button class="ab ab-p" style="font-size:11px;padding:6px 12px;margin-top:6px" onclick="hjDocsOk(${parseInt(s.id)})">✓ Documents OK</button> <span style="font-size:11.5px;color:var(--stone)">Not right? WhatsApp the host to send them again.</span>` : '<div style="color:#8a5a06">Waiting for the host to send both papers.</div>'}
+        </div>` : ''}
         ${!(parseInt(s.placeid) > 0) ? `<div style="display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap"><select class="ai" id="hjPl_${s.id}" style="max-width:320px">${placeOptions('')}</select><button class="ab ab-p" style="font-size:11px;padding:6px 12px" onclick="hjLinkPlace(${s.id})">Link destination</button></div>` : ''}
         ${s.pending_photos.length ? `<div style="font-size:12px;font-weight:700;color:var(--stone);margin:10px 0 6px">Photos to review (${s.pending_photos.length})</div><div style="display:flex;gap:10px;flex-wrap:wrap">${s.pending_photos.map((u, i) => `<div style="width:150px"><a href="${E(u)}" target="_blank" rel="noopener"><img src="${E(u)}" alt="Pending photo" style="width:150px;height:110px;object-fit:cover;border-radius:8px;display:block"/></a><div style="display:flex;gap:4px;margin-top:4px"><button class="ab ab-p" style="flex:1;font-size:11px;padding:4px" onclick="hjReviewPhoto(${parseInt(s.id)},${i},'approve')">✓ Approve</button><button class="ab ab-d" style="flex:1;font-size:11px;padding:4px" onclick="hjReviewPhoto(${parseInt(s.id)},${i},'reject')">✕</button></div></div>`).join('')}</div>` : ''}
       </div>`;
@@ -828,6 +909,11 @@
     if (!photo) return loadOnboarding();
     const t = await _destAdminCall({ action: 'photo-review', stayId, photo, decision });
     if (t) { toast(decision === 'approve' ? 'Photo is live ✓' : 'Photo rejected'); loadOnboarding(); }
+  };
+  window.hjDocsOk = async function (stayId) {
+    if (!confirm('Have you checked the HP registration certificate and the ID proof?')) return;
+    const t = await _destAdminCall({ action: 'onboarding-docs-ok', stayId });
+    if (t) { toast('Documents marked OK ✓'); loadOnboarding(); }
   };
   window.hjLinkPlace = async function (stayId) {
     const placeid = parseInt(document.getElementById('hjPl_' + stayId)?.value) || 0;
