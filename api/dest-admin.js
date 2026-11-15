@@ -500,6 +500,11 @@ module.exports = async (req, res) => {
       // The stay must be linked to its village so the host's crowd + itinerary tools work.
       const placeId = parseInt(req.body.placeId) || 0;
       if (!placeId) { res.status(400).json({ error: 'Pick the destination (village) this stay belongs to, then approve.' }); return; }
+      // Price is agreed with the host on the call and set here (hosts can't set it themselves).
+      const price = parseInt(req.body.price) || parseInt(app.price_per_night) || 0;
+      if (!(price >= 100 && price <= 100000)) { res.status(400).json({ error: 'Enter the price per night you agreed with the host (₹100 to ₹1,00,000).' }); return; }
+      // Short application (Nov 2026): no papers yet, so Setup asks for them and we check them before go-live.
+      const shortApp = !app.registration_doc || !app.id_document_url;
 
       // Claim it first, so a double-click or a second admin tab can never create two listings.
       const claimRes = await fetch(`${SUPABASE_URL}/rest/v1/partner_applications?id=eq.${appId}&status=eq.pending`, {
@@ -534,12 +539,12 @@ module.exports = async (req, res) => {
         .map(r => `${SUPABASE_URL}/storage/v1/object/public/${r.bucket}/${r.path}`);
       const stayPayload = {
         name: app.property_name, loc: app.location, type: app.property_type || 'Homestay',
-        eco: !!app.eco_friendly, pn: app.price_per_night || 0, price: '₹' + (app.price_per_night || 0).toLocaleString() + '/night',
+        eco: !!app.eco_friendly, pn: price, price: '₹' + price.toLocaleString('en-IN') + '/night',
         // No made-up rating: the site shows "New" until real guest reviews arrive.
         rating: null, emoji: '🏡', color: colors[appId % colors.length], contact: app.phone,
         // Approved stays start HIDDEN in setup mode; the host makes them live from their
         // dashboard once the setup checklist is complete (see _lib/host.js).
-        nights: 2, placeid: placeId, status: 'hidden', setup_pending: true, setup_steps: {},
+        nights: 2, placeid: placeId, status: 'hidden', setup_pending: true, setup_steps: shortApp ? { v2: true } : {},
         host_email: String(app.email).toLowerCase(), verified: false, photos: livePhotos,
         description: app.description || null, host_phone: /^[6-9]\d{9}$/.test(String(app.phone || '')) ? app.phone : null,
         rooms: app.rooms || null, max_guests: app.max_guests || null, address: app.address || null, map_url: app.map_url || null,
@@ -576,7 +581,9 @@ module.exports = async (req, res) => {
           <h2 style="color:#2d5a3d">You're approved, ${esc(app.owner_name)}! 🎉</h2>
           <p><b>${esc(app.property_name)}</b> has been verified by PahariPath.</p>
           ${credentialsHtml}
-          <p><b>One last step:</b> after you log in, the <b>Setup</b> tab shows a short checklist — describe your stay, set check-in times and house rules, block the dates you're away and accept the host agreement. It takes about 10 minutes. As soon as it's done, tap <b>Go live</b> and travellers can find you.</p>
+          ${shortApp
+            ? `<p><b>Next:</b> after you log in, the <b>Setup</b> tab shows a short checklist — add your address, HP homestay registration, an ID proof and your UPI or bank details, then describe your stay, add photos, set check-in times and house rules, and accept the host agreement. We check your papers (usually within a day). Then tap <b>Go live</b> and travellers can find you.</p>`
+            : `<p><b>One last step:</b> after you log in, the <b>Setup</b> tab shows a short checklist — describe your stay, set check-in times and house rules, block the dates you're away and accept the host agreement. It takes about 10 minutes. As soon as it's done, tap <b>Go live</b> and travellers can find you.</p>`}
         </div>`,
       });
 
@@ -710,7 +717,18 @@ module.exports = async (req, res) => {
           id: s.id, name: s.name, loc: s.loc, status: s.status, host_email: s.host_email, host_phone: s.host_phone || s.contact || null,
           placeid: s.placeid, setup_pending: !!s.setup_pending, photos: Array.isArray(s.photos) ? s.photos : [],
           pending_photos: Array.isArray(s.pending_photos) ? s.pending_photos : [], checklist: setupChecklist(s),
+          v2: !!(s.setup_steps && s.setup_steps.v2), registration_no: s.registration_no || null,
+          _reg: s.setup_steps && s.setup_steps.registration_doc, _id: s.setup_steps && s.setup_steps.id_doc,
+          docs_verified_at: (s.setup_steps && s.setup_steps.docs_verified_at) || null,
+          payout_hint: (s.setup_steps && s.setup_steps.payout_hint) || null, address: s.address || null,
         }));
+      // Short-lived links to the private papers, so they can be checked here.
+      await Promise.all(rows.map(async r => {
+        if (r._reg) r.registration_url = await signStorageRef(r._reg, svcHeaders);
+        if (r._id) r.id_url = await signStorageRef(r._id, svcHeaders);
+        r.docs_uploaded = !!(r._reg && r._id);
+        delete r._reg; delete r._id;
+      }));
       res.status(200).json({ success: true, stays: rows });
       return;
     }
@@ -726,6 +744,24 @@ module.exports = async (req, res) => {
       const patch = { pending_photos: pending.filter(x => x !== photo) };
       if (req.body.decision === 'approve') patch.photos = (Array.isArray(s.photos) ? s.photos : []).concat(photo).slice(0, 15);
       const up = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${id}`, { method: 'PATCH', headers: svcHeaders, body: JSON.stringify(patch) });
+      if (!up.ok) { res.status(400).json({ error: 'Could not save: ' + await up.text() }); return; }
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    // action: 'onboarding-docs-ok' — admin has checked a short application's HP registration
+    // and ID proof. fields: stayId
+    if (action === 'onboarding-docs-ok') {
+      const id = parseInt(req.body.stayId);
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${id}&select=id,name,host_email,registration_no,setup_steps`, { headers: svcHeaders });
+      const s = (r.ok ? await r.json() : [])[0];
+      if (!s) { res.status(404).json({ error: 'Stay not found' }); return; }
+      const steps = s.setup_steps && typeof s.setup_steps === 'object' ? s.setup_steps : {};
+      if (!steps.registration_doc || !steps.id_doc || !String(s.registration_no || '').trim()) { res.status(400).json({ error: 'The host has not sent both documents and the registration number yet.' }); return; }
+      const up = await fetch(`${SUPABASE_URL}/rest/v1/stays?id=eq.${id}`, {
+        method: 'PATCH', headers: svcHeaders,
+        body: JSON.stringify({ setup_steps: { ...steps, docs_verified_at: new Date().toISOString(), docs_verified_by: user.email } }),
+      });
       if (!up.ok) { res.status(400).json({ error: 'Could not save: ' + await up.text() }); return; }
       res.status(200).json({ success: true });
       return;

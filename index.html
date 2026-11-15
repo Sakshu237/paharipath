@@ -1518,135 +1518,124 @@ input[type=range]{flex:1;accent-color:var(--pine)}
   </div>
 </div>
 
-<!-- PARTNER LISTING FORM MODAL -->
+<!-- PARTNER LISTING FORM MODAL — short form (Nov 2026): basics only, papers and bank details come in host Setup.
+     Text is switched between English and Hindi by ppSetLang(); every translated element has data-pp="key". -->
 <div id="partnerMo" class="mo" onclick="if(event.target===this)ppClose()" style="display:none">
-  <div class="mo-box" style="max-width:560px;max-height:90vh;overflow-y:auto">
-    <button class="mo-x" aria-label="Close" onclick="ppClose()">✕</button>
-    <h2 style="font-family:var(--fd);font-size:24px;color:var(--pine);margin-bottom:6px">List your property</h2>
-    <p style="font-size:13px;color:var(--stone);margin-bottom:10px">Free to list. Takes about 10 minutes. Our team checks every listing before it goes live.</p>
-    <div style="background:#f6f9f7;border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink);line-height:1.7;margin-bottom:16px">
-      <b style="color:var(--pine)">Keep these ready on your phone:</b><br/>
-      ✓ HP Tourism homestay registration number and certificate<br/>
-      ✓ An ID or ownership proof (Aadhaar, property papers)<br/>
-      ✓ 2 to 5 photos of rooms, view and outside<br/>
-      ✓ Your UPI ID or bank account
-      <div style="margin-top:6px">Stuck anywhere? <a href="https://wa.me/919317110366?text=Hi%20PahariPath%2C%20I%20need%20help%20listing%20my%20homestay" target="_blank" rel="noopener" style="color:var(--pine);font-weight:600">WhatsApp us</a> and we'll help.</div>
-    </div>
-
-    <div id="ppSteps" style="display:flex;gap:6px;margin-bottom:20px">
-      <div class="pp-pill" id="ppPill1">1 · Details</div>
-      <div class="pp-pill" id="ppPill2">2 · Photos</div>
-      <div class="pp-pill" id="ppPill3">3 · Review</div>
-    </div>
+  <div class="mo-box" style="max-width:520px;max-height:92vh;overflow-y:auto">
     <style>
-      .pp-pill{flex:1;text-align:center;font-size:11px;font-weight:600;padding:7px 4px;border-radius:8px;background:#eef3ef;color:var(--stone)}
-      .pp-pill.on{background:var(--pine);color:#fff}
-      .pp-pill.done{background:#cfe3d6;color:var(--pine)}
-      .pp-btn{width:100%;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)}
+      #partnerMo .mo-box{padding:20px 18px 24px;box-sizing:border-box}
+      .pp-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+      .pp-lang{display:flex;padding:3px;background:#e8ede9;border-radius:10px}
+      .pp-lang button{min-height:36px;min-width:52px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:#3c4a40;font:600 13px var(--fb);cursor:pointer}
+      .pp-lang button.on{background:#fff;color:var(--pine)}
+      .pp-x{width:40px;height:40px;border:0;border-radius:20px;background:#f1f4f2;font-size:16px;cursor:pointer;color:var(--ink)}
+      .pp-bar{height:6px;border-radius:3px;background:#e4e8e6;overflow:hidden;margin:6px 0 18px}
+      .pp-bar i{display:block;height:6px;border-radius:3px;background:var(--pine);transition:width .2s}
+      .pp-stepno{font-size:13px;font-weight:600;color:#3c4a40}
+      .pp-q{font-family:var(--fd);font-size:24px;line-height:1.2;color:var(--pine);margin:0 0 16px}
+      #partnerMo .fg label{font-size:13px}
+      #partnerMo .fi{font-size:16px;min-height:50px}
+      .pp-hint{font-size:12.5px;color:var(--stone);margin-top:5px;line-height:1.5}
+      .pp-btn{width:100%;min-height:52px;padding:13px;background:var(--pine);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;font-family:var(--fb)}
       .pp-btn:disabled{opacity:.6;cursor:not-allowed}
       .pp-btn-ol{background:#fff;color:var(--pine);border:1.5px solid rgba(74,124,95,.35)}
       .pp-row{display:flex;gap:10px;margin-top:6px}
+      .pp-cnt{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1.5px solid #e4e8e6;border-radius:12px;margin-bottom:10px}
+      .pp-cnt b{font-size:16px;color:var(--ink)}
+      .pp-cnt div{display:flex;align-items:center;gap:14px}
+      .pp-cnt button{width:44px;height:44px;border-radius:22px;border:1.5px solid #c9d3ce;background:#fff;font-size:22px;cursor:pointer;color:var(--ink);font-family:var(--fb)}
+      .pp-cnt button.plus{background:var(--pine);border-color:var(--pine);color:#fff}
+      .pp-cnt output{min-width:28px;text-align:center;font-size:20px;font-weight:600}
       .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 14px}
       .pp-ph{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#eee}
       .pp-ph img{width:100%;height:100%;object-fit:cover;display:block}
-      .pp-ph button{position:absolute;top:4px;right:4px;width:24px;height:24px;border:none;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:13px;cursor:pointer;line-height:1}
-      .pp-rev{background:#f6f9f7;border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.9;color:var(--ink)}
-      .pp-rev b{color:var(--stone);font-weight:600;display:inline-block;min-width:96px}
+      .pp-ph button{position:absolute;top:4px;right:4px;width:28px;height:28px;border:none;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:13px;cursor:pointer;line-height:1}
+      .pp-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:120px;border:2px dashed #8fb3a0;border-radius:14px;background:#f4f7f5;color:var(--pine);font-weight:600;font-size:16px;cursor:pointer;text-align:center}
+      .pp-rev{background:#f6f9f7;border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.9;color:var(--ink)}
+      .pp-rev b{color:var(--stone);font-weight:600;display:inline-block;min-width:110px}
+      .pp-skip{display:block;margin:10px auto 0;min-height:44px;background:none;border:0;color:var(--pine);font:600 14px var(--fb);text-decoration:underline;cursor:pointer}
     </style>
 
-    <!-- STEP 1: details -->
-    <div id="ppStep1">
-      <div class="fg"><label>Property Name *</label><input class="fi" id="pName" placeholder="e.g. Riverside Cottage, Tirthan"/></div>
-      <div class="fg"><label>Location (Village, District) *</label><input class="fi" id="pLoc" placeholder="e.g. Gushaini, Kullu"/></div>
-      <div class="fg"><label>Property Type</label>
-        <select class="fi" id="pType">
-          <option>Homestay</option><option>Eco Cottage</option><option>Eco Camp</option><option>Heritage Stay</option><option>Village Stay</option><option>Lodge</option>
-        </select>
+    <div class="pp-top">
+      <div class="pp-lang" role="group" aria-label="Language">
+        <button type="button" id="ppLangEn" onclick="ppSetLang('en')">English</button>
+        <button type="button" id="ppLangHi" lang="hi" onclick="ppSetLang('hi')">हिंदी</button>
       </div>
-      <div class="fg"><label>Price per night (₹) *</label><input class="fi" type="number" id="pPrice" placeholder="e.g. 2000" inputmode="numeric"/></div>
-      <div class="pp-row">
-        <div class="fg" style="flex:1"><label>Rooms *</label><input class="fi" type="number" id="pRooms" min="1" max="6" placeholder="1–6" inputmode="numeric"/></div>
-        <div class="fg" style="flex:1"><label>Max guests *</label><input class="fi" type="number" id="pMaxGuests" min="1" max="24" placeholder="e.g. 6" inputmode="numeric"/></div>
-      </div>
-      <div class="fg"><label>Tell us about your property</label><textarea class="fi" id="pDesc" rows="3" placeholder="What makes your property special? Views, activities, food..."></textarea></div>
-      <div class="fg"><label>Full address *</label><textarea class="fi" id="pAddress" rows="2" placeholder="House / landmark, village, tehsil, district, PIN"></textarea></div>
-      <div class="fg"><label>Google Maps link</label><input class="fi" id="pMapUrl" placeholder="https://maps.app.goo.gl/…"/><div style="font-size:11px;color:var(--stone);margin-top:4px">In Google Maps, drop a pin on your property → Share → Copy link.</div></div>
-      <div class="pp-row">
-        <div class="fg" style="flex:1"><label>Check-in time</label><input class="fi" type="time" id="pCheckin" value="12:00"/></div>
-        <div class="fg" style="flex:1"><label>Check-out time</label><input class="fi" type="time" id="pCheckout" value="10:00"/></div>
-      </div>
-      <div class="fg"><label>House rules</label><textarea class="fi" id="pRules" rows="2" placeholder="e.g. No loud music after 10pm, no smoking indoors, pets on request"></textarea></div>
-      <div style="font-size:12px;font-weight:700;color:var(--pine);margin:6px 0 10px">Registration</div>
-      <div class="fg"><label>HP Tourism homestay registration no. *</label><input class="fi" id="pRegNo" placeholder="From homestay.hp.gov.in"/><div style="font-size:11px;color:var(--stone);margin-top:4px">Homestays in Himachal must be registered with the Tourism Department. You'll upload the certificate in the next step.</div></div>
-      <div class="fg"><label>GSTIN (if you have one)</label><input class="fi" id="pGstin" maxlength="15" placeholder="15-character GSTIN" style="text-transform:uppercase"/></div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
-        <input type="checkbox" id="pEco" style="width:16px;height:16px"/>
-        <label for="pEco" style="font-size:13px;color:var(--ink)">This is an eco-friendly property (solar, waste management, local food etc.)</label>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:var(--pine);margin:6px 0 10px">About you</div>
-      <div class="fg"><label>Your Name *</label><input class="fi" id="pOwner" placeholder="Host name"/></div>
-      <div class="fg"><label>WhatsApp Number *</label><input class="fi" id="pPhone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="onlyNums(this)"/></div>
-      <div class="fg"><label>Email * (used for your host login)</label><input class="fi" type="email" id="pEmail" placeholder="you@email.com"/></div>
-      <button class="pp-btn" onclick="ppNext(1)">Next: Add photos →</button>
+      <button type="button" class="pp-x" aria-label="Close" onclick="ppClose()">✕</button>
     </div>
 
-    <!-- STEP 2: photos + ID -->
+    <!-- START -->
+    <div id="ppStep0">
+      <h2 class="pp-q" style="font-size:27px" data-pp="title">List your homestay on PahariPath</h2>
+      <p style="font-size:14.5px;color:var(--stone);line-height:1.55;margin:0 0 14px" data-pp="intro">Free to list. Takes about 3 minutes. Papers and bank details come later, after our call.</p>
+      <div style="background:#f6f9f7;border-radius:12px;padding:14px 16px;font-size:14px;color:var(--ink);line-height:1.9;margin-bottom:16px">
+        <div>1 · <span data-pp="s1">Your name and phone</span></div>
+        <div>2 · <span data-pp="s2">Your homestay and rooms</span></div>
+        <div>3 · <span data-pp="s3">A few photos (you can add later)</span></div>
+        <div>4 · <span data-pp="s4">Check and send</span></div>
+      </div>
+      <p style="font-size:13px;color:var(--stone);line-height:1.6;margin:0 0 16px" data-pp="later">After our call and approval, you add your HP homestay registration, an ID proof and your UPI or bank details in Setup. Then your homestay goes live.</p>
+      <button type="button" class="pp-btn" onclick="ppGo(1)" data-pp="start">Start</button>
+      <p style="font-size:13px;color:var(--stone);text-align:center;margin:12px 0 0"><span data-pp="stuck">Stuck anywhere?</span> <a href="https://wa.me/919317110366?text=Hi%20PahariPath%2C%20I%20need%20help%20listing%20my%20homestay" target="_blank" rel="noopener" style="color:var(--pine);font-weight:600" data-pp="wa">WhatsApp us</a></p>
+    </div>
+
+    <div id="ppProg" style="display:none">
+      <div class="pp-stepno" id="ppStepNo"></div>
+      <div class="pp-bar"><i id="ppBarFill" style="width:25%"></i></div>
+    </div>
+
+    <!-- STEP 1: you -->
+    <div id="ppStep1" style="display:none">
+      <h2 class="pp-q" data-pp="q1">About you</h2>
+      <div class="fg"><label for="pOwner" data-pp="fOwner">Your name *</label><input class="fi" id="pOwner" autocomplete="name" data-pp-ph="phOwner" placeholder="e.g. Ramesh Thakur"/></div>
+      <div class="fg"><label for="pPhone" data-pp="fPhone">WhatsApp number *</label><input class="fi" id="pPhone" type="tel" placeholder="10-digit mobile" data-pp-ph="phPhone" maxlength="10" inputmode="numeric" autocomplete="tel-national" oninput="onlyNums(this)"/></div>
+      <div class="fg"><label for="pEmail" data-pp="fEmail">Email *</label><input class="fi" type="email" id="pEmail" autocomplete="email" placeholder="you@email.com"/><div class="pp-hint" data-pp="hEmail">Your host login is sent to this email after approval.</div></div>
+      <div class="pp-row"><button type="button" class="pp-btn pp-btn-ol" style="flex:1" onclick="ppGo(0)" data-pp="back">Back</button><button type="button" class="pp-btn" style="flex:2" onclick="ppNext(1)" data-pp="next">Next</button></div>
+    </div>
+
+    <!-- STEP 2: homestay -->
     <div id="ppStep2" style="display:none">
-      <div class="fg">
-        <label>Property photos * (2 to 5)</label>
-        <input class="fi" type="file" id="pPropertyPhotos" accept="image/*" multiple onchange="ppAddPhotos(this)"/>
-        <div style="font-size:11px;color:var(--stone);margin-top:4px">Bright, real photos of the rooms, view and exterior work best. Large photos are shrunk automatically.</div>
-        <div class="pp-grid" id="ppPhotoGrid"></div>
-      </div>
-      <div class="fg">
-        <label>ID / Ownership proof * (Aadhaar, property papers, etc.)</label>
-        <input class="fi" type="file" id="pIdDoc" accept="image/*,.pdf"/>
-        <div style="font-size:11px;color:var(--stone);margin-top:4px">Only used by the PahariPath team to verify you. It is not shown to guests.</div>
-      </div>
-      <div class="fg">
-        <label>Homestay registration certificate *</label>
-        <input class="fi" type="file" id="pRegDoc" accept="image/*,.pdf"/>
-        <div style="font-size:11px;color:var(--stone);margin-top:4px">Photo or PDF of your HP Tourism registration. Checked by our team, never shown to guests.</div>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:var(--pine);margin:6px 0 4px">How should we pay you? *</div>
-      <div style="font-size:11px;color:var(--stone);margin-bottom:10px">Guests who pay online are paid out to this account after their check-in. Kept private — only the PahariPath team can see it.</div>
-      <div class="fg"><label>UPI ID</label><input class="fi" id="pUpi" placeholder="e.g. yourname@okaxis"/></div>
-      <div style="font-size:11px;color:var(--stone);margin:-4px 0 10px;text-align:center">— or bank account —</div>
-      <div class="fg"><label>Account holder name</label><input class="fi" id="pAccHolder" placeholder="As per bank records"/></div>
-      <div class="pp-row">
-        <div class="fg" style="flex:3"><label>Account number</label><input class="fi" id="pAccNo" inputmode="numeric" maxlength="18" oninput="onlyNums(this)"/></div>
-        <div class="fg" style="flex:2"><label>IFSC</label><input class="fi" id="pIfsc" maxlength="11" style="text-transform:uppercase" placeholder="e.g. SBIN0001234"/></div>
-      </div>
-      <div class="pp-row">
-        <button class="pp-btn pp-btn-ol" style="flex:1" onclick="ppGo(1)">← Back</button>
-        <button class="pp-btn" style="flex:2" onclick="ppNext(2)">Next: Review →</button>
-      </div>
+      <h2 class="pp-q" data-pp="q2">Your homestay</h2>
+      <div class="fg"><label for="pName" data-pp="fName">Homestay name *</label><input class="fi" id="pName" data-pp-ph="phName" placeholder="e.g. Deodar View Homestay"/></div>
+      <div class="fg"><label for="pLoc" data-pp="fLoc">Village and district *</label><input class="fi" id="pLoc" data-pp-ph="phLoc" placeholder="e.g. Jibhi, Kullu"/></div>
+      <div class="pp-cnt"><b data-pp="fRooms">Rooms for guests</b><div><button type="button" aria-label="Fewer rooms" onclick="ppCount('pRooms',-1)">−</button><output id="pRooms">2</output><button type="button" class="plus" aria-label="More rooms" onclick="ppCount('pRooms',1)">+</button></div></div>
+      <div class="pp-cnt"><b data-pp="fGuests">Most guests at once</b><div><button type="button" aria-label="Fewer guests" onclick="ppCount('pMaxGuests',-1)">−</button><output id="pMaxGuests">4</output><button type="button" class="plus" aria-label="More guests" onclick="ppCount('pMaxGuests',1)">+</button></div></div>
+      <div class="fg"><label for="pPrice" data-pp="fPrice">Your usual price per night (₹) — optional</label><input class="fi" type="number" id="pPrice" placeholder="e.g. 2000" inputmode="numeric" min="100" max="100000"/><div class="pp-hint" data-pp="hPrice">Not sure? Leave it empty. We agree the final price with you on the call.</div></div>
+      <div class="pp-row"><button type="button" class="pp-btn pp-btn-ol" style="flex:1" onclick="ppGo(1)" data-pp="back">Back</button><button type="button" class="pp-btn" style="flex:2" onclick="ppNext(2)" data-pp="next">Next</button></div>
     </div>
 
-    <!-- STEP 3: review + submit -->
+    <!-- STEP 3: photos (optional) -->
     <div id="ppStep3" style="display:none">
+      <h2 class="pp-q" data-pp="q3">Add photos of your place</h2>
+      <label class="pp-add"><span style="font-size:30px" aria-hidden="true">📷</span><span data-pp="addPh">Take or choose photos</span><input type="file" id="pPropertyPhotos" accept="image/*" multiple onchange="ppAddPhotos(this)" style="display:none"/></label>
+      <div class="pp-grid" id="ppPhotoGrid"></div>
+      <div style="font-size:14px;color:var(--ink);line-height:1.8"><b data-pp="phTip">Up to 5 photos:</b> <span data-pp="phList">outside of the house, a guest room, bathroom, the view, kitchen or dining.</span></div>
+      <div class="pp-row" style="margin-top:14px"><button type="button" class="pp-btn pp-btn-ol" style="flex:1" onclick="ppGo(2)" data-pp="back">Back</button><button type="button" class="pp-btn" style="flex:2" onclick="ppGo(4)" data-pp="next">Next</button></div>
+      <button type="button" class="pp-skip" onclick="ppGo(4)" data-pp="skip">Skip, I'll add photos later</button>
+    </div>
+
+    <!-- STEP 4: check & send -->
+    <div id="ppStep4" style="display:none">
+      <h2 class="pp-q" data-pp="q4">Check and send</h2>
       <div class="pp-rev" id="ppReview"></div>
       <div id="ppReviewPhotos" class="pp-grid"></div>
-      <div style="background:#fff8e6;border:1px solid #f0dca0;border-radius:10px;padding:10px 14px;font-size:12px;color:#6b5311;margin-bottom:14px;line-height:1.6">
-        <b>What happens next:</b> your application goes to the PahariPath team for verification. We contact you on WhatsApp within 48 hours. Once approved, your host login is emailed to you — finish a short setup (about 10 minutes) and your listing goes live.
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:16px">
-        <input type="checkbox" id="pAgree" style="width:16px;height:16px;margin-top:2px"/>
-        <label for="pAgree" style="font-size:12px;color:var(--ink);line-height:1.5">I confirm these details are correct and I agree to the <a href="/terms-of-service.html" target="_blank" rel="noopener" style="color:var(--pine)">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" rel="noopener" style="color:var(--pine)">Privacy Policy</a>.</label>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin:14px 0 16px">
+        <input type="checkbox" id="pAgree" style="width:20px;height:20px;margin-top:2px;flex-shrink:0"/>
+        <label for="pAgree" style="font-size:13.5px;color:var(--ink);line-height:1.5"><span data-pp="agree">These details are correct and I agree to the</span> <a href="/terms-of-service.html" target="_blank" rel="noopener" style="color:var(--pine)" data-pp="terms">Terms of Service</a> <span data-pp="and">and</span> <a href="/privacy-policy.html" target="_blank" rel="noopener" style="color:var(--pine)" data-pp="privacy">Privacy Policy</a>.</label>
       </div>
       <div class="pp-row">
-        <button class="pp-btn pp-btn-ol" style="flex:1" id="ppBackBtn" onclick="ppGo(2)">← Back</button>
-        <button class="pp-btn" style="flex:2" id="pSubmitBtn" onclick="ppSubmit()">Submit for verification</button>
+        <button type="button" class="pp-btn pp-btn-ol" style="flex:1" id="ppBackBtn" onclick="ppGo(3)" data-pp="back">Back</button>
+        <button type="button" class="pp-btn" style="flex:2" id="pSubmitBtn" onclick="ppSubmit()" data-pp="send">Send my homestay</button>
       </div>
     </div>
 
     <!-- DONE -->
     <div id="ppDone" style="display:none;text-align:center;padding:20px 4px">
-      <div style="font-size:44px;margin-bottom:8px">✅</div>
-      <div style="font-family:var(--fd);font-size:22px;color:var(--pine);font-weight:600;margin-bottom:8px">Application received</div>
-      <p style="font-size:13px;color:var(--stone);line-height:1.7;margin-bottom:18px">Thank you! Our team will verify your details and contact you on WhatsApp within 48 hours. After approval your host login is emailed to you — finish a short setup and your listing goes live.</p>
-      <p style="font-size:12px;color:var(--stone);line-height:1.6;margin:-8px 0 18px">Check progress any time: <a href="#" onclick="ppClose();hjCheckApplication();return false;" style="color:var(--pine);font-weight:600">Check application status</a> (also on the Host Login page).</p>
-      <button class="pp-btn" onclick="ppClose()">Close</button>
+      <div style="font-size:48px;margin-bottom:8px" aria-hidden="true">✅</div>
+      <div style="font-family:var(--fd);font-size:24px;color:var(--pine);font-weight:600;margin-bottom:8px" data-pp="doneT">Done! Your homestay is sent</div>
+      <p style="font-size:14.5px;color:var(--stone);line-height:1.7;margin-bottom:12px" data-pp="doneP">We'll call you on WhatsApp within 48 hours. After approval, your host login comes to your email. Then add your registration, ID and bank details in Setup, and go live.</p>
+      <p style="font-size:13px;color:var(--stone);line-height:1.6;margin:0 0 18px"><a href="#" onclick="ppClose();hjCheckApplication();return false;" style="color:var(--pine);font-weight:600" data-pp="status">Check application status</a></p>
+      <button type="button" class="pp-btn" onclick="ppClose()" data-pp="close">Close</button>
     </div>
   </div>
 </div>
@@ -1664,14 +1653,72 @@ function declineCookies(){localStorage.setItem('pp_cookie_consent','no');documen
 function showPrivacy(){document.getElementById('privacyMo').style.display='flex';document.getElementById('privacyMo').classList.add('open');}
 function showTerms(){document.getElementById('termsMo').style.display='flex';document.getElementById('termsMo').classList.add('open');}
 /* showPartnerForm: defined with the list-your-property wizard below */
-// ---- List-your-property wizard (details -> photos -> review -> admin queue) ----
-let _ppPhotos=[], _ppStep=1, _ppBusy=false;
-const PP_MAX_PHOTOS=5, PP_MIN_PHOTOS=2, PP_MAX_FILE_MB=15;
+// ---- List-your-property: short form (you -> homestay -> photos -> check & send) ----
+// Registration, ID proof, address and payout details are collected later in the host's
+// Setup checklist (host.js), after the PahariPath call and approval.
+let _ppPhotos=[], _ppStep=0, _ppBusy=false, _ppLang=null;
+const PP_MAX_PHOTOS=5, PP_MAX_FILE_MB=15;
+const PPT={
+  en:{
+    title:'List your homestay on PahariPath',intro:'Free to list. Takes about 3 minutes. Papers and bank details come later, after our call.',
+    s1:'Your name and phone',s2:'Your homestay and rooms',s3:'A few photos (you can add later)',s4:'Check and send',
+    later:'After our call and approval, you add your HP homestay registration, an ID proof and your UPI or bank details in Setup. Then your homestay goes live.',
+    start:'Start',stuck:'Stuck anywhere?',wa:'WhatsApp us',step:n=>'Step '+n+' of 4',back:'Back',next:'Next',
+    q1:'About you',fOwner:'Your name *',phOwner:'e.g. Ramesh Thakur',fPhone:'WhatsApp number *',phPhone:'10-digit mobile',fEmail:'Email *',hEmail:'Your host login is sent to this email after approval.',
+    q2:'Your homestay',fName:'Homestay name *',phName:'e.g. Deodar View Homestay',fLoc:'Village and district *',phLoc:'e.g. Jibhi, Kullu',
+    fRooms:'Rooms for guests',fGuests:'Most guests at once',fPrice:'Your usual price per night (₹) — optional',hPrice:'Not sure? Leave it empty. We agree the final price with you on the call.',
+    q3:'Add photos of your place',addPh:'Take or choose photos',phTip:'Up to 5 photos:',phList:'outside of the house, a guest room, bathroom, the view, kitchen or dining.',skip:'Skip, I\'ll add photos later',
+    q4:'Check and send',agree:'These details are correct and I agree to the',terms:'Terms of Service',and:'and',privacy:'Privacy Policy',send:'Send my homestay',
+    doneT:'Done! Your homestay is sent',doneP:'We\'ll call you on WhatsApp within 48 hours. After approval, your host login comes to your email. Then add your registration, ID and bank details in Setup, and go live.',
+    status:'Check application status',close:'Close',
+    rName:'Name',rPhone:'WhatsApp',rEmail:'Email',rHome:'Homestay',rLoc:'Place',rRooms:'Rooms',rGuests:'Guests',rPrice:'Price',rPhotos:'Photos',
+    perNight:' / night',toAgree:'We\'ll agree on the call',none:'None yet — add later',
+    eOwner:'Please write your name',ePhone:'Please enter a 10-digit WhatsApp number',eEmail:'Please enter a valid email',eName:'Please write your homestay name',eLoc:'Please write your village and district',
+    ePrice:'Price should be between ₹100 and ₹1,00,000 — or leave it empty',eAgree:'Please tick the box to continue',maxPh:'You can add up to 5 photos',notImg:' is not a photo',tooBig:' is too large (max 15 MB)',
+    upPh:(i,n)=>'Uploading photo '+i+' of '+n+'…',sending:'Sending…',noNet:'No internet connection. Please try again.',fail:'Something went wrong. Please try again.',
+    waFallback:'Could not save online. Opening WhatsApp so you can send it to us.'
+  },
+  hi:{
+    title:'अपना होमस्टे PahariPath पर लगाइए',intro:'लिस्टिंग मुफ़्त है। लगभग 3 मिनट लगेंगे। काग़ज़ और बैंक की जानकारी बाद में, हमारी कॉल के बाद।',
+    s1:'आपका नाम और फ़ोन',s2:'आपका होमस्टे और कमरे',s3:'कुछ फ़ोटो (बाद में भी डाल सकते हैं)',s4:'देखें और भेजें',
+    later:'हमारी कॉल और मंज़ूरी के बाद, आप सेटअप में अपना HP होमस्टे रजिस्ट्रेशन, एक पहचान पत्र और UPI या बैंक की जानकारी डालेंगे। फिर आपका होमस्टे लाइव हो जाएगा।',
+    start:'शुरू करें',stuck:'कहीं अटक गए?',wa:'हमें WhatsApp करें',step:n=>'कदम '+n+' / 4',back:'पीछे',next:'आगे',
+    q1:'आपके बारे में',fOwner:'आपका नाम *',phOwner:'जैसे रमेश ठाकुर',fPhone:'WhatsApp नंबर *',phPhone:'10 अंकों का मोबाइल नंबर',fEmail:'ईमेल *',hEmail:'मंज़ूरी के बाद आपका होस्ट लॉगिन इसी ईमेल पर आएगा।',
+    q2:'आपका होमस्टे',fName:'होमस्टे का नाम *',phName:'जैसे देवदार व्यू होमस्टे',fLoc:'गाँव और ज़िला *',phLoc:'जैसे जीभी, कुल्लू',
+    fRooms:'मेहमानों के लिए कमरे',fGuests:'एक साथ ज़्यादा से ज़्यादा मेहमान',fPrice:'एक रात का आपका आम किराया (₹) — ज़रूरी नहीं',hPrice:'पक्का नहीं पता? खाली छोड़ दीजिए। आख़िरी किराया हम कॉल पर आपके साथ तय करेंगे।',
+    q3:'अपनी जगह की फ़ोटो डालिए',addPh:'फ़ोटो खींचें या चुनें',phTip:'5 फ़ोटो तक:',phList:'घर का बाहर, मेहमान का कमरा, बाथरूम, नज़ारा, रसोई या खाने की जगह।',skip:'छोड़ें, फ़ोटो बाद में डालूँगा',
+    q4:'देखें और भेजें',agree:'ये जानकारी सही है और मैं इनसे सहमत हूँ:',terms:'सेवा की शर्तें',and:'और',privacy:'प्राइवेसी पॉलिसी',send:'मेरा होमस्टे भेजें',
+    doneT:'हो गया! आपका होमस्टे भेज दिया गया',doneP:'हम 48 घंटे के अंदर आपको WhatsApp पर कॉल करेंगे। मंज़ूरी के बाद होस्ट लॉगिन आपके ईमेल पर आएगा। फिर सेटअप में रजिस्ट्रेशन, पहचान पत्र और बैंक की जानकारी डालें, और लाइव हो जाएँ।',
+    status:'आवेदन की स्थिति देखें',close:'बंद करें',
+    rName:'नाम',rPhone:'WhatsApp',rEmail:'ईमेल',rHome:'होमस्टे',rLoc:'जगह',rRooms:'कमरे',rGuests:'मेहमान',rPrice:'किराया',rPhotos:'फ़ोटो',
+    perNight:' / रात',toAgree:'कॉल पर तय करेंगे',none:'अभी नहीं — बाद में डालेंगे',
+    eOwner:'कृपया अपना नाम लिखें',ePhone:'कृपया 10 अंकों का WhatsApp नंबर डालें',eEmail:'कृपया सही ईमेल डालें',eName:'कृपया होमस्टे का नाम लिखें',eLoc:'कृपया गाँव और ज़िला लिखें',
+    ePrice:'किराया ₹100 से ₹1,00,000 के बीच हो — या खाली छोड़ दें',eAgree:'आगे बढ़ने के लिए बॉक्स पर टिक करें',maxPh:'आप 5 फ़ोटो तक डाल सकते हैं',notImg:' फ़ोटो नहीं है',tooBig:' बहुत बड़ी है (15 MB तक)',
+    upPh:(i,n)=>'फ़ोटो '+i+' / '+n+' भेजी जा रही है…',sending:'भेजा जा रहा है…',noNet:'इंटरनेट नहीं है। कृपया फिर से कोशिश करें।',fail:'कुछ गड़बड़ हो गई। कृपया फिर से कोशिश करें।',
+    waFallback:'ऑनलाइन सेव नहीं हो पाया। WhatsApp खुल रहा है, वहाँ से हमें भेज दीजिए।'
+  }
+};
+function ppT(){return PPT[_ppLang]||PPT.en;}
 function ppEsc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function ppVal(id){return (document.getElementById(id)?.value||'').trim();}
+function ppSetLang(l){
+  _ppLang=l==='hi'?'hi':'en';
+  try{localStorage.setItem('pp_lang',_ppLang);}catch(e){}
+  const t=ppT(),m=document.getElementById('partnerMo');if(!m)return;
+  m.setAttribute('lang',_ppLang);
+  m.querySelectorAll('[data-pp]').forEach(el=>{const v=t[el.dataset.pp];if(typeof v==='string')el.textContent=v;});
+  m.querySelectorAll('[data-pp-ph]').forEach(el=>{const v=t[el.dataset.ppPh];if(typeof v==='string')el.placeholder=v;});
+  document.getElementById('ppLangEn').classList.toggle('on',_ppLang==='en');
+  document.getElementById('ppLangHi').classList.toggle('on',_ppLang==='hi');
+  document.getElementById('ppLangEn').setAttribute('aria-pressed',_ppLang==='en');
+  document.getElementById('ppLangHi').setAttribute('aria-pressed',_ppLang==='hi');
+  if(_ppStep>=1&&_ppStep<=4)document.getElementById('ppStepNo').textContent=t.step(_ppStep);
+  if(_ppStep===4)ppRenderReview();
+}
 function showPartnerForm(){
   const m=document.getElementById('partnerMo');
   m.style.display='flex';m.classList.add('open');
+  if(!_ppLang){let l='en';try{l=localStorage.getItem('pp_lang')||'en';}catch(e){}ppSetLang(l);}
   if(document.getElementById('ppDone').style.display!=='none')ppReset();else ppGo(_ppStep);
 }
 function ppClose(){
@@ -1680,55 +1727,48 @@ function ppClose(){
   if(document.getElementById('ppDone').style.display!=='none')ppReset();
 }
 function ppReset(){
-  ['pName','pLoc','pPrice','pDesc','pOwner','pPhone','pEmail','pRooms','pMaxGuests','pAddress','pMapUrl','pRules','pRegNo','pGstin','pUpi','pAccHolder','pAccNo','pIfsc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  ['pIdDoc','pRegDoc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  const t=document.getElementById('pType');if(t)t.selectedIndex=0;
-  ['pEco','pAgree'].forEach(id=>{const e=document.getElementById(id);if(e)e.checked=false;});
-  const idf=document.getElementById('pIdDoc');if(idf)idf.value='';
+  ['pName','pLoc','pPrice','pOwner','pPhone','pEmail'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('pRooms').value='2';document.getElementById('pMaxGuests').value='4';
+  const a=document.getElementById('pAgree');if(a)a.checked=false;
   _ppPhotos.forEach(p=>URL.revokeObjectURL(p.url));_ppPhotos=[];ppRenderPhotos();
-  ppGo(1);
+  ppGo(0);
 }
 function ppGo(n){
   _ppStep=n;
   document.getElementById('ppDone').style.display='none';
-  document.getElementById('ppSteps').style.display='flex';
-  [1,2,3].forEach(i=>{
-    document.getElementById('ppStep'+i).style.display=(i===n)?'block':'none';
-    const p=document.getElementById('ppPill'+i);p.className='pp-pill'+(i===n?' on':(i<n?' done':''));
-  });
-  if(n===3)ppRenderReview();
+  [0,1,2,3,4].forEach(i=>{document.getElementById('ppStep'+i).style.display=(i===n)?'block':'none';});
+  document.getElementById('ppProg').style.display=n>=1?'block':'none';
+  if(n>=1){document.getElementById('ppStepNo').textContent=ppT().step(n);document.getElementById('ppBarFill').style.width=(n*25)+'%';}
+  if(n===4)ppRenderReview();
   const box=document.querySelector('#partnerMo .mo-box');if(box)box.scrollTop=0;
+  const first=document.querySelector('#ppStep'+n+' input.fi');if(first&&n>=1&&n<=2&&window.matchMedia('(min-width:700px)').matches)setTimeout(()=>first.focus(),50);
+}
+function ppCount(id,d){
+  const o=document.getElementById(id),lim=id==='pRooms'?[1,6]:[1,24];
+  o.value=String(Math.min(lim[1],Math.max(lim[0],(parseInt(o.value)||lim[0])+d)));
+  if(id==='pRooms'){const g=document.getElementById('pMaxGuests');if(parseInt(g.value)<parseInt(o.value))g.value=o.value;}
 }
 function ppValidate(n){
+  const t=ppT();
   if(n===1){
-    if(!ppVal('pName')||!ppVal('pLoc')||!ppVal('pOwner')||!ppVal('pPhone')||!ppVal('pEmail')){toast('Please fill all required fields');return false;}
-    if(!(parseInt(document.getElementById('pPrice')?.value)>=100)){toast('Enter your price per night (minimum ₹100)');return false;}
-    if(!/^[6-9]\d{9}$/.test(ppVal('pPhone'))){toast('Enter a valid 10-digit WhatsApp number');return false;}
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ppVal('pEmail'))){toast('Enter a valid email address');return false;}
-    const rooms=parseInt(ppVal('pRooms')),guests=parseInt(ppVal('pMaxGuests'));
-    if(!(rooms>=1&&rooms<=6)){toast('Enter the number of rooms (1 to 6 for a homestay)');return false;}
-    if(!(guests>=1&&guests<=24)){toast('Enter the maximum number of guests');return false;}
-    if(ppVal('pAddress').length<10){toast('Enter the full address of your property');return false;}
-    if(!ppVal('pRegNo')){toast('Enter your HP Tourism homestay registration number');return false;}
+    if(!ppVal('pOwner')){toast(t.eOwner);return false;}
+    if(!/^[6-9]\d{9}$/.test(ppVal('pPhone'))){toast(t.ePhone);return false;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ppVal('pEmail'))){toast(t.eEmail);return false;}
   }
   if(n===2){
-    if(_ppPhotos.length<PP_MIN_PHOTOS){toast('Please add at least '+PP_MIN_PHOTOS+' photos of your property');return false;}
-    if(!document.getElementById('pIdDoc')?.files?.[0]){toast('Please add an ID or ownership proof');return false;}
-    if(!document.getElementById('pRegDoc')?.files?.[0]){toast('Please add your homestay registration certificate');return false;}
-    const upi=ppVal('pUpi'),acc=ppVal('pAccNo'),ifsc=ppVal('pIfsc').toUpperCase(),holder=ppVal('pAccHolder');
-    if(!upi&&!acc){toast('Add a UPI ID or a bank account so we can pay you');return false;}
-    if(upi&&!/^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}$/.test(upi)){toast('Enter a valid UPI ID, e.g. name@okaxis');return false;}
-    if(acc&&!(/^\d{9,18}$/.test(acc)&&/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)&&holder)){toast('Check the account number, IFSC and account holder name');return false;}
+    if(!ppVal('pName')){toast(t.eName);return false;}
+    if(!ppVal('pLoc')){toast(t.eLoc);return false;}
+    const pr=ppVal('pPrice');if(pr&&!(parseInt(pr)>=100&&parseInt(pr)<=100000)){toast(t.ePrice);return false;}
   }
   return true;
 }
 function ppNext(n){if(ppValidate(n))ppGo(n+1);}
 function ppAddPhotos(input){
-  const files=Array.from(input.files||[]);
+  const t=ppT(),files=Array.from(input.files||[]);
   for(const f of files){
-    if(_ppPhotos.length>=PP_MAX_PHOTOS){toast('Maximum '+PP_MAX_PHOTOS+' photos');break;}
-    if(!/^image\//.test(f.type)){toast(f.name+' is not an image');continue;}
-    if(f.size>PP_MAX_FILE_MB*1024*1024){toast(f.name+' is too large (max '+PP_MAX_FILE_MB+' MB)');continue;}
+    if(_ppPhotos.length>=PP_MAX_PHOTOS){toast(t.maxPh);break;}
+    if(!/^image\//.test(f.type)){toast(f.name+t.notImg);continue;}
+    if(f.size>PP_MAX_FILE_MB*1024*1024){toast(f.name+t.tooBig);continue;}
     _ppPhotos.push({file:f,url:URL.createObjectURL(f)});
   }
   input.value='';ppRenderPhotos();
@@ -1739,25 +1779,20 @@ function ppRemovePhoto(i){
 }
 function ppRenderPhotos(){
   const g=document.getElementById('ppPhotoGrid');if(!g)return;
-  g.innerHTML=_ppPhotos.map((p,i)=>`<div class="pp-ph"><img src="${p.url}" alt="Property photo ${i+1}"/><button type="button" aria-label="Remove photo" onclick="ppRemovePhoto(${i})">✕</button></div>`).join('');
+  g.innerHTML=_ppPhotos.map((p,i)=>`<div class="pp-ph"><img src="${p.url}" alt="Photo ${i+1}"/><button type="button" aria-label="Remove photo" onclick="ppRemovePhoto(${i})">✕</button></div>`).join('');
 }
 function ppRenderReview(){
-  const idf=document.getElementById('pIdDoc')?.files?.[0];
+  const t=ppT(),pr=ppVal('pPrice');
   const rows=[
-    ['Property',ppVal('pName')],['Location',ppVal('pLoc')],['Type',document.getElementById('pType')?.value||''],
-    ['Price','₹'+ppEsc(document.getElementById('pPrice')?.value||'')+' / night'],
-    ['Eco-friendly',document.getElementById('pEco')?.checked?'Yes':'No'],
-    ['Rooms',ppVal('pRooms')],['Max guests',ppVal('pMaxGuests')],['Address',ppVal('pAddress')],
-    ['Check-in / out',(ppVal('pCheckin')||'—')+' / '+(ppVal('pCheckout')||'—')],
-    ['HP reg. no.',ppVal('pRegNo')],['GSTIN',ppVal('pGstin')||'—'],
-    ['Host',ppVal('pOwner')],['WhatsApp',ppVal('pPhone')],['Email',ppVal('pEmail')],
-    ['ID proof',idf?idf.name:'—'],['Registration',document.getElementById('pRegDoc')?.files?.[0]?.name||'—'],
-    ['Payout',ppVal('pUpi')?('UPI '+ppVal('pUpi')):(ppVal('pAccNo')?('Bank ••••'+ppVal('pAccNo').slice(-4)):'—')]
+    [t.rName,ppVal('pOwner')],[t.rPhone,ppVal('pPhone')],[t.rEmail,ppVal('pEmail')],
+    [t.rHome,ppVal('pName')],[t.rLoc,ppVal('pLoc')],[t.rRooms,document.getElementById('pRooms').value],[t.rGuests,document.getElementById('pMaxGuests').value],
+    [t.rPrice,pr?'₹'+pr+t.perNight:t.toAgree],[t.rPhotos,_ppPhotos.length?String(_ppPhotos.length):t.none]
   ];
-  document.getElementById('ppReview').innerHTML=rows.map(r=>`<div><b>${r[0]}</b> ${ppEsc(r[1])}</div>`).join('')+(ppVal('pDesc')?`<div style="margin-top:6px"><b>About</b> ${ppEsc(ppVal('pDesc'))}</div>`:'');
+  document.getElementById('ppReview').innerHTML=rows.map(r=>`<div><b>${ppEsc(r[0])}</b> ${ppEsc(r[1])}</div>`).join('');
   document.getElementById('ppReviewPhotos').innerHTML=_ppPhotos.map((p,i)=>`<div class="pp-ph"><img src="${p.url}" alt="Photo ${i+1}"/></div>`).join('');
 }
 // Shrink phone photos (often 5-10 MB) before upload; falls back to the original file on any problem.
+// Also used by the host dashboard (host.js).
 function ppCompress(file){
   return new Promise(resolve=>{
     if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size<400*1024){resolve(file);return;}
@@ -1782,68 +1817,53 @@ async function ppUpload(bucket,name,blob){
 }
 async function ppSubmit(){
   if(_ppBusy)return;
+  const t=ppT();
   if(!ppValidate(1)){ppGo(1);return;}
   if(!ppValidate(2)){ppGo(2);return;}
-  if(!document.getElementById('pAgree')?.checked){toast('Please tick the confirmation to continue');return;}
+  if(!document.getElementById('pAgree')?.checked){toast(t.eAgree);return;}
   _ppBusy=true;
   const btn=document.getElementById('pSubmitBtn'),back=document.getElementById('ppBackBtn');
-  const setBtn=t=>{if(btn)btn.textContent=t;};
+  const setBtn=x=>{if(btn)btn.textContent=x;};
   if(btn)btn.disabled=true;if(back)back.disabled=true;
-  const name=ppVal('pName'),loc=ppVal('pLoc'),owner=ppVal('pOwner'),phone=ppVal('pPhone'),email=ppVal('pEmail');
-  const price=document.getElementById('pPrice')?.value||'',type=document.getElementById('pType')?.value||'Homestay';
-  const desc=ppVal('pDesc'),eco=!!document.getElementById('pEco')?.checked;
-  const restore=()=>{_ppBusy=false;if(btn){btn.disabled=false;btn.textContent='Submit for verification';}if(back)back.disabled=false;};
+  const name=ppVal('pName'),loc=ppVal('pLoc'),owner=ppVal('pOwner'),phone=ppVal('pPhone'),email=ppVal('pEmail'),price=ppVal('pPrice');
+  const rooms=parseInt(document.getElementById('pRooms').value)||1,maxGuests=parseInt(document.getElementById('pMaxGuests').value)||1;
+  const restore=()=>{_ppBusy=false;if(btn){btn.disabled=false;btn.textContent=ppT().send;}if(back)back.disabled=false;};
   try{
-    // Photos go to the public "stay-photos" bucket (they show on the live listing once approved).
-    // If that bucket is not set up yet, fall back to the verification bucket so applications still work.
+    // Photos are optional. They go to the public "stay-photos" bucket (shown on the listing once approved);
+    // if that bucket is not set up yet, fall back to the verification bucket. A failed photo never blocks the application.
     let photoBucket='stay-photos';
     const photoRefs=[];
     for(let i=0;i<_ppPhotos.length;i++){
-      setBtn('Uploading photo '+(i+1)+' of '+_ppPhotos.length+'…');
+      setBtn(t.upPh(i+1,_ppPhotos.length));
       const blob=await ppCompress(_ppPhotos[i].file);
       const ext=blob.type==='image/jpeg'?'jpg':((_ppPhotos[i].file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg');
       let ref=await ppUpload(photoBucket,`app-${ppRand()}.${ext}`,blob);
       if(!ref&&photoBucket==='stay-photos'&&!photoRefs.length){photoBucket='host-verification';ref=await ppUpload(photoBucket,`app-${ppRand()}.${ext}`,blob);}
       if(ref)photoRefs.push(ref);
     }
-    if(photoRefs.length<PP_MIN_PHOTOS){toast('Photo upload failed. Check your connection and try again.');restore();return;}
-    setBtn('Uploading ID proof…');
-    const idFile=document.getElementById('pIdDoc').files[0];
-    const idExt=(idFile.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg';
-    const idRef=await ppUpload('host-verification',`id-${ppRand()}.${idExt}`,idFile);
-    if(!idRef){toast('ID upload failed. Check your connection and try again.');restore();return;}
-    setBtn('Uploading registration certificate…');
-    const regFile=document.getElementById('pRegDoc').files[0];
-    const regExt=(regFile.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg';
-    const regRef=await ppUpload('host-verification',`reg-${ppRand()}.${regExt}`,regFile);
-    if(!regRef){toast('Certificate upload failed. Check your connection and try again.');restore();return;}
-    setBtn('Submitting…');
+    setBtn(t.sending);
     let res,data={};
     try{
       res=await fetch('/api/support',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-        action:'partner-apply',propertyName:name,location:loc,ownerName:owner,phone,email,price:parseInt(price),
-        propertyType:type,description:desc,eco,photos:photoRefs,idDoc:idRef,
-        rooms:parseInt(ppVal('pRooms')),maxGuests:parseInt(ppVal('pMaxGuests')),address:ppVal('pAddress'),mapUrl:ppVal('pMapUrl'),
-        checkinTime:ppVal('pCheckin'),checkoutTime:ppVal('pCheckout'),houseRules:ppVal('pRules'),
-        registrationNo:ppVal('pRegNo'),registrationDoc:regRef,gstin:ppVal('pGstin').toUpperCase(),
-        upi:ppVal('pUpi'),accountHolder:ppVal('pAccHolder'),accountNumber:ppVal('pAccNo'),ifsc:ppVal('pIfsc').toUpperCase()})});
+        action:'partner-apply',propertyName:name,location:loc,ownerName:owner,phone,email,
+        price:price?parseInt(price):null,propertyType:'Homestay',photos:photoRefs,rooms,maxGuests,lang:_ppLang})});
       data=await res.json().catch(()=>({}));
-    }catch(netErr){toast('No internet connection. Please try again.');restore();return;}
+    }catch(netErr){toast(t.noNet);restore();return;}
     if(res.ok&&data.success){
-      document.getElementById('ppSteps').style.display='none';
-      [1,2,3].forEach(i=>document.getElementById('ppStep'+i).style.display='none');
+      [0,1,2,3,4].forEach(i=>document.getElementById('ppStep'+i).style.display='none');
+      document.getElementById('ppProg').style.display='none';
       document.getElementById('ppDone').style.display='block';
       const box=document.querySelector('#partnerMo .mo-box');if(box)box.scrollTop=0;
       restore();return;
     }
-    if(res.status>=400&&res.status<500){toast(data.error||'Please check your details and try again.');restore();return;}
+    if(res.status>=400&&res.status<500){toast(data.error||t.fail);restore();return;}
     // Server problem: let the owner finish over WhatsApp instead of losing the application.
-    const msg=`Hi PahariPath! I want to list my property:\n*${name}* at ${loc}\nHost: ${owner}\nPhone: ${phone}\nEmail: ${email}\nPrice: ₹${price}/night\nType: ${type}\nEco: ${eco?'Yes':'No'}\n${desc}`;
+    const msg=`Hi PahariPath! I want to list my homestay:\n*${name}* at ${loc}\nHost: ${owner}\nPhone: ${phone}\nEmail: ${email}\nRooms: ${rooms} · up to ${maxGuests} guests${price?'\nPrice: ₹'+price+'/night':''}`;
     window.open('https://wa.me/919317110366?text='+encodeURIComponent(msg),'_blank');
-    toast('Could not save online. Redirecting to WhatsApp to complete your application.');
+    toast(t.waFallback);
     restore();
   }catch(e){
-    toast('Something went wrong. Please try again.');restore();
+    toast(t.fail);restore();
   }
 }
 </script>
