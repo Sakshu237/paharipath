@@ -718,6 +718,7 @@
     tag(document.querySelector('#mobDrawer .mob-footer'));                  // Find Stays / Book a Stay
     byText('footer a, #view-home a', /Manage \/ Cancel Booking/);
     var st = $('pdstays'); if (st && st.parentNode) tag(st.parentNode);     // "Stays in X · book directly" on place pages
+    byText('#mapwrap .map-filter-btn', /Has Stays/);                         // map filter that only finds placeholder stays
   }
 
   /* ---------------- boot ---------------- */
@@ -741,6 +742,7 @@
       Array.prototype.forEach.call(nr.querySelectorAll('.nb'), function (b) { if (/Find Stays|Book a Stay/.test(b.textContent)) b.classList.add('sp-hide-btn'); });
     }
     if (FREEZE) freeze();
+    var hostLink = document.querySelector('nav .nr .nr-host'); if (hostLink) hostLink.classList.add('sp-nav-off'); // owners: side menu + footer
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
     document.addEventListener('change', onChange);

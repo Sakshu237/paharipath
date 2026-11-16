@@ -186,3 +186,4 @@ body:has(#pd[style*="block"]) .pp-wa,body:has(#pd.open) .pp-wa,body:has(#spSheet
 @media(min-width:900px){.sp-pledge{grid-template-columns:repeat(4,1fr)}}
 /* Frozen features (simple.js FREEZE) */
 body.pp-freeze .sp-frz{display:none!important}
+body.sp nav .nr .sp-nav-off{display:none!important}
