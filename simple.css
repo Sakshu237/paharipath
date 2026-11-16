@@ -191,3 +191,4 @@ body.sp nav .nr .sp-nav-off{display:none!important}
 .sp-busyline{margin:22px 0 0;padding-top:14px;border-top:1px solid #e3e9e4;font-size:13.5px;color:#55625b;line-height:1.6}
 .sp-busyline b{color:#8a4a32;font-weight:600}
 .sp-busyline .sp-link{min-height:0;padding:0;font-size:13.5px;font-weight:500;color:#55625b;text-decoration:underline}
+body.sp .sp-map-off{display:none!important}

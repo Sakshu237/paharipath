@@ -520,7 +520,7 @@
     var foot = document.querySelector('#view-home > footer'); if (foot) foot.classList.toggle('sp-show', tab === 'home');
     var legal = foot && foot.nextElementSibling; if (legal && legal.classList.contains('sp-old')) legal.classList.toggle('sp-show', tab === 'home');
     if (tab === 'plan') preparePlan();
-    if (tab === 'map') setTimeout(function () { try { initMap(); _lmap && _lmap.invalidateSize(); } catch (e) { /* map not ready */ } }, 60);
+    if (tab === 'map') setTimeout(function () { try { initMap(); _lmap && _lmap.invalidateSize(); } catch (e) { /* map not ready */ } mapQuietFirst(); }, 60);
     render();
     updateTabs();
     var hash = tab === 'home' ? '' : '#/' + tab;
@@ -757,6 +757,34 @@
     byText('#mapwrap .map-filter-btn', /Has Stays/);                         // map filter that only finds placeholder stays
   }
 
+  /* ---------------- map: simpler (Nov 2026) ---------------- */
+  // 4 buttons (Quiet · Snow · Near me · All), no name search, no public "Add a Place" pins (nobody moderating yet).
+  function simplifyMap() {
+    var wrap = $('mapwrap'); if (!wrap) return;
+    var btns = wrap.querySelectorAll('.map-filter-btn'), all = null;
+    Array.prototype.forEach.call(btns, function (b) {
+      var x = b.textContent;
+      if (/All 146/.test(x)) all = b;
+      else if (!/Quiet|Snow|Near Me/.test(x)) b.classList.add('sp-map-off');
+    });
+    if (all && all.parentNode) all.parentNode.appendChild(all);   // "All" last; map opens on Quiet
+    ['msSearch', 'addPinBtn'].forEach(function (id) { var e = $(id); if (e) e.classList.add('sp-map-off'); });
+  }
+  var _mapQuiet = false;
+  function mapQuietFirst() {
+    if (_mapQuiet) return;
+    var tries = 0;
+    (function go() {
+      var ready = false; try { ready = !!_lmap && Object.keys(_markers || {}).length > 0; } catch (e) { /* not yet */ }
+      if (ready) {
+        var q = document.querySelector('#mapwrap .map-filter-btn.quiet-only');
+        if (q) { try { mapFilter('quiet', q); _mapQuiet = true; } catch (e) { /* ignore */ } }
+        return;
+      }
+      if (++tries < 30) setTimeout(go, 150);
+    })();
+  }
+
   /* ---------------- boot ---------------- */
   function boot() {
     var home = $('view-home'); if (!home || $('spRoot')) return;
@@ -778,6 +806,7 @@
       Array.prototype.forEach.call(nr.querySelectorAll('.nb'), function (b) { if (/Find Stays|Book a Stay/.test(b.textContent)) b.classList.add('sp-hide-btn'); });
     }
     if (FREEZE) freeze();
+    simplifyMap();
     var hostLink = document.querySelector('nav .nr .nr-host'); if (hostLink) hostLink.classList.add('sp-nav-off'); // owners: side menu + footer
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
