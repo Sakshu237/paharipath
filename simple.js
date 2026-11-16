@@ -30,6 +30,10 @@
       going: 'Going:', from: 'From', today: 'Today', weekend: 'This weekend', nextWeekend: 'Next weekend', pick: 'Pick date',
       h1a: 'Same Himachal.', h1b: 'Without the crowd.',
       kicker: 'Responsible travel · Himachal',
+      newHere: 'New here? Here’s how it works', how1: 'Pick when you’re going', how2: 'See how busy each place will be', how3: 'Go where it’s quiet, stay with locals', gotIt: 'Got it',
+      regionsT: 'Explore Himachal by region', regionsS: 'First time? Start with a region that fits your days.', goodFor: 'Good for', seeRegion: 'See places',
+      monthT: function (m) { return 'Himachal in ' + m; }, tipsT: 'First trip to Himachal?', tipsS: 'Six things worth knowing before you go.',
+      regionOn: 'Region:', clearRegion: 'Show all regions',
       motto: 'We don’t send you where everyone goes. We show you quiet, lesser-known places — and help you visit them gently.',
       findBtn: 'Find my quiet place', findSub: '3 quick questions · we suggest, you choose', whenGoing: 'When are you going?', browseAll: 'Or browse all 146 places',
       swapT: 'Skip the rush', swapS: 'Heading somewhere famous? Its quiet neighbour is right there.', insteadOf: 'Instead of', busy: 'busy',
@@ -78,6 +82,10 @@
       going: 'कब:', from: 'कहाँ से', today: 'आज', weekend: 'इस वीकेंड', nextWeekend: 'अगला वीकेंड', pick: 'तारीख चुनें',
       h1a: 'वही हिमाचल,', h1b: 'बिना भीड़ के।',
       kicker: 'ज़िम्मेदार यात्रा · हिमाचल',
+      newHere: 'पहली बार? ऐसे काम करता है', how1: 'चुनें कब जा रहे हैं', how2: 'देखें हर जगह कितनी भीड़ होगी', how3: 'शांत जगह जाएँ, स्थानीय लोगों के साथ रुकें', gotIt: 'समझ गया',
+      regionsT: 'इलाक़े के हिसाब से हिमाचल घूमें', regionsS: 'पहली बार? अपने दिनों के हिसाब से इलाक़ा चुनें।', goodFor: 'किसके लिए', seeRegion: 'जगहें देखें',
+      monthT: function (m) { return m + ' में हिमाचल'; }, tipsT: 'हिमाचल की पहली यात्रा?', tipsS: 'जाने से पहले छह ज़रूरी बातें।',
+      regionOn: 'इलाक़ा:', clearRegion: 'सभी इलाक़े दिखाएँ',
       motto: 'हम आपको वहाँ नहीं भेजते जहाँ सब जाते हैं। हम शांत, कम जानी-पहचानी जगहें दिखाते हैं — और उन्हें सम्मान से घूमने में मदद करते हैं।',
       findBtn: 'मेरी शांत जगह ढूँढें', findSub: '3 छोटे सवाल · हम सुझाएँ, आप चुनें', whenGoing: 'कब जा रहे हैं?', browseAll: 'या सभी 146 जगहें देखें',
       swapT: 'भीड़ से बचें', swapS: 'मशहूर जगह जा रहे हैं? पास में ही शांत जगह है।', insteadOf: 'की जगह', busy: 'भीड़',
@@ -122,6 +130,72 @@
 
   var TABS = ['home', 'explore', 'crowd', 'plan', 'saved'];
   var CITY_QUICK = [['Delhi', 'Delhi NCR'], ['Chandigarh', 'Chandigarh / Punjab'], ['Mumbai', 'Mumbai / Pune'], ['Bengaluru', 'Bengaluru / South']];
+  /* ---------------- first-time explorer help (Nov 2026) ---------------- */
+  // Himachal in 7 easy regions, grouped by the zone field in places data.
+  var REGIONS = [
+    { k: 'kangra', z: ['kangra'], e: '🍵',
+      en: ['Kangra & Dhauladhar', 'Tea gardens, monasteries and snow peaks right behind town.', 'Easy first trip', '3–4 days', 'Good all year'],
+      hi: ['कांगड़ा और धौलाधार', 'चाय बागान, मठ और ठीक पीछे बर्फ़ीले पहाड़।', 'पहली यात्रा के लिए आसान', '3–4 दिन', 'पूरे साल अच्छा'] },
+    { k: 'kullu', z: ['kullu', 'tirthan', 'parvati'], e: '🌲',
+      en: ['Kullu, Tirthan & Seraj', 'Rivers, deodar forests and wooden villages — go beyond Manali.', 'Nature lovers', '4–5 days', 'Mar–Jun, Sep–Dec'],
+      hi: ['कुल्लू, तीर्थन और सराज', 'नदियाँ, देवदार के जंगल और लकड़ी के गाँव — मनाली से आगे।', 'प्रकृति प्रेमी', '4–5 दिन', 'मार्च–जून, सितंबर–दिसंबर'] },
+    { k: 'shimla', z: ['shimla', 'sirmaur', 'solan'], e: '🍎',
+      en: ['Shimla hills & Sirmaur', 'Apple orchards and old hill towns, closest to Delhi and Chandigarh.', 'Short trips', '2–3 days', 'All year · snow Jan–Feb'],
+      hi: ['शिमला की पहाड़ियाँ और सिरमौर', 'सेब के बाग़ और पुराने पहाड़ी कस्बे, दिल्ली-चंडीगढ़ के सबसे पास।', 'छोटी यात्रा', '2–3 दिन', 'पूरे साल · बर्फ़ जनवरी–फ़रवरी'] },
+    { k: 'mandi', z: ['mandi'], e: '🏞️',
+      en: ['Mandi & Barot', 'Lakes, trout streams and old temples — hardly touristy.', 'Quiet escapes', '3–4 days', 'Mar–Nov'],
+      hi: ['मंडी और बरोट', 'झीलें, ट्राउट वाली नदियाँ और पुराने मंदिर — बहुत कम पर्यटक।', 'शांत छुट्टी', '3–4 दिन', 'मार्च–नवंबर'] },
+    { k: 'chamba', z: ['chamba'], e: '🛕',
+      en: ['Chamba & Pangi', 'Stone temples, shepherd trails and remote valleys.', 'Slow travellers', '4–6 days', 'Apr–Nov'],
+      hi: ['चंबा और पांगी', 'पत्थर के मंदिर, गद्दी चरवाहों के रास्ते और दूर की घाटियाँ।', 'आराम से घूमने वाले', '4–6 दिन', 'अप्रैल–नवंबर'] },
+    { k: 'high', z: ['kinnaur', 'spiti', 'lahaul'], e: '🏔️',
+      en: ['Kinnaur, Spiti & Lahaul', 'High mountain desert, monasteries and long, dramatic drives.', 'Big adventure', '7+ days', 'Late May–Oct'],
+      hi: ['किन्नौर, स्पीति और लाहौल', 'ऊँचा पहाड़ी रेगिस्तान, मठ और लंबे शानदार रास्ते।', 'बड़ा एडवेंचर', '7+ दिन', 'मई के अंत से अक्टूबर'] },
+    { k: 'lower', z: ['hamirpur', 'bilaspur', 'una'], e: '🌅',
+      en: ['Lower hills', 'Temples, lakes and warm, easy hills — good for winter weekends.', 'Families & elders', '1–2 days', 'Oct–Mar'],
+      hi: ['निचली पहाड़ियाँ', 'मंदिर, झीलें और गर्म, आसान पहाड़ — सर्दी के वीकेंड के लिए अच्छा।', 'परिवार और बुज़ुर्ग', '1–2 दिन', 'अक्टूबर–मार्च'] }
+  ];
+  var MONTHS = {
+    en: ['Coldest month. Snow in the upper hills of Shimla, Kullu and Chamba; high passes closed. Lower hills are sunny.',
+      'Still cold, snow likely higher up. One of the quietest months almost everywhere.',
+      'Rhododendrons and early blossom. Warm days, cold nights — lovely in Kangra and Kullu valleys.',
+      'Apple and cherry blossom, clear views. A great month before the summer rush.',
+      'Warm in the valleys. Famous hill towns fill up with holiday crowds — go offbeat or higher.',
+      'Peak holiday crowds in famous towns. Roads to Spiti and Lahaul open — best start for the high regions.',
+      'Monsoon. Landslides and road closures are common; Spiti and Lahaul get little rain.',
+      'Monsoon continues — green but risky roads. Keep spare days and check the weather.',
+      'Rain eases, everything is green and few tourists come. One of the best months.',
+      'Clear skies, crisp air, apple harvest — the best views of the year. Kullu is busy around Dussehra.',
+      'Clear sunny days, cold nights and very few crowds. High passes start to close.',
+      'Winter begins; snow possible up high late in the month. Shimla and Manali get crowded around Christmas–New Year.'],
+    hi: ['सबसे ठंडा महीना। शिमला, कुल्लू और चंबा की ऊँची पहाड़ियों में बर्फ़; ऊँचे दर्रे बंद। निचली पहाड़ियों में धूप।',
+      'अब भी ठंड, ऊपर बर्फ़ की संभावना। लगभग हर जगह सबसे शांत महीनों में से एक।',
+      'बुरांश के फूल और शुरुआती बहार। दिन गर्म, रातें ठंडी — कांगड़ा और कुल्लू घाटी में बढ़िया।',
+      'सेब और चेरी के फूल, साफ़ नज़ारे। गर्मी की भीड़ से पहले शानदार महीना।',
+      'घाटियों में गर्मी। मशहूर कस्बों में छुट्टियों की भीड़ — कम जानी जगहों या ऊपर जाएँ।',
+      'मशहूर कस्बों में सबसे ज़्यादा भीड़। स्पीति और लाहौल के रास्ते खुलते हैं।',
+      'मानसून। भूस्खलन और रास्ते बंद होना आम है; स्पीति और लाहौल में कम बारिश।',
+      'मानसून जारी — हरियाली पर रास्ते जोखिम भरे। अतिरिक्त दिन रखें, मौसम देखें।',
+      'बारिश कम, सब हरा-भरा और कम पर्यटक। सबसे अच्छे महीनों में से एक।',
+      'साफ़ आसमान, ठंडी हवा, सेब की फ़सल — साल के सबसे अच्छे नज़ारे। दशहरे पर कुल्लू में भीड़।',
+      'धूप वाले साफ़ दिन, ठंडी रातें और बहुत कम भीड़। ऊँचे दर्रे बंद होने लगते हैं।',
+      'सर्दी शुरू; महीने के अंत में ऊपर बर्फ़ संभव। क्रिसमस–नए साल पर शिमला और मनाली में भीड़।']
+  };
+  var TIPS = {
+    en: [['🚌', 'Getting there', 'Overnight Volvo buses from Delhi and Chandigarh reach most valleys. Airports: Kangra (Gaggal), Kullu (Bhuntar) and Shimla. Trains go to Kalka, Pathankot and Una.'],
+      ['🛣️', 'Hill roads are slow', 'Plan on about 25–30 km an hour. Avoid driving after dark, and keep a spare day in monsoon and winter.'],
+      ['📶', 'Phone & cash', 'Network fades in remote valleys — download offline maps. Carry cash; ATMs are few beyond the towns.'],
+      ['⛰️', 'Going high', 'For Spiti, Lahaul and Kinnaur, go up slowly, drink plenty of water and rest on the first day.'],
+      ['📝', 'Permits', 'A few places, like Rohtang Pass, need a permit — check before you go.'],
+      ['🆘', 'Stay safe', 'Tell your homestay your plans when you trek. The SOS button on this site works even with weak network.']],
+    hi: [['🚌', 'कैसे पहुँचें', 'दिल्ली और चंडीगढ़ से रात की वोल्वो बसें ज़्यादातर घाटियों तक जाती हैं। हवाई अड्डे: कांगड़ा (गग्गल), कुल्लू (भुंतर) और शिमला। ट्रेनें कालका, पठानकोट और ऊना तक।'],
+      ['🛣️', 'पहाड़ी रास्ते धीमे हैं', 'लगभग 25–30 किमी प्रति घंटा मानकर चलें। अँधेरे में गाड़ी न चलाएँ, मानसून और सर्दी में एक दिन अतिरिक्त रखें।'],
+      ['📶', 'फ़ोन और नकद', 'दूर की घाटियों में नेटवर्क कमज़ोर — ऑफ़लाइन मैप डाउनलोड करें। नकद रखें; कस्बों के बाहर एटीएम कम हैं।'],
+      ['⛰️', 'ऊँचाई पर', 'स्पीति, लाहौल और किन्नौर में धीरे-धीरे ऊपर जाएँ, खूब पानी पिएँ और पहले दिन आराम करें।'],
+      ['📝', 'परमिट', 'कुछ जगहों जैसे रोहतांग दर्रे के लिए परमिट चाहिए — जाने से पहले जाँच लें।'],
+      ['🆘', 'सुरक्षित रहें', 'ट्रेक पर जाने से पहले होमस्टे को बताएँ। इस साइट का SOS बटन कमज़ोर नेटवर्क में भी काम करता है।']]
+  };
+
   var LIKES = { village: ['offbeat', 'culture'], nature: ['nature'], snow: ['snow'], trek: ['trek', 'adventure'], temple: ['spiritual'] };
 
   /* ---------------- state ---------------- */
@@ -130,7 +204,7 @@
     origin: load('pp_origin', 'Delhi'),
     help: { step: 0, city: null, days: null, like: null, kids: false },
     q: '', chip: 'all', exploreN: 20, stayDone: false, budget: 'b2',
-    cType: 'all', cSort: 'quiet', crowdN: 20
+    cType: 'all', cSort: 'quiet', crowdN: 20, region: null, seenHow: load('pp_seen_how', '') === '1'
   };
   function load(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
@@ -300,6 +374,12 @@
       '</select></label></div>' +
       (h.step === 0 ? '<button class="sp-notsure" data-act="tab" data-tab="explore">' + esc(tt.browseAll) + ' <span aria-hidden="true">→</span></button>' : '');
 
+    // first visit only: three steps, dismissible
+    if (!S.seenHow && h.step === 0) {
+      html += '<div class="sp-how"><div class="sp-row" style="margin-bottom:8px"><b>' + esc(tt.newHere) + '</b><button class="sp-link" data-act="how-ok">' + esc(tt.gotIt) + '</button></div><ol>' +
+        [tt.how1, tt.how2, tt.how3].map(function (x, i) { return '<li><span>' + (i + 1) + '</span>' + esc(x) + '</li>'; }).join('') + '</ol></div>';
+    }
+
     // help me choose
     if (h.step === 0) {
       /* the "Find my quiet place" button sits in the lead card above */
@@ -339,6 +419,16 @@
     html += '<div class="sp-sec"><div class="sp-row"><h2 class="sp-h2">' + esc(topped ? tt.leastBusy + ' ' + dateLabelShort() : S.dateKey === 'now' ? tt.quietToday : tt.quietOn + ' ' + dateLabelShort()) + '</h2><button class="sp-link" data-act="tab" data-tab="crowd">' + esc(tt.seeAll) + '</button></div>' +
       '<div class="sp-hlist">' + quiet.map(tile).join('') + '</div></div>';
 
+    // explore by region — the easy way in for first-timers
+    html += '<div class="sp-sec"><h2 class="sp-h2">' + esc(tt.regionsT) + '</h2><p class="sp-muted" style="margin:4px 0 12px">' + esc(tt.regionsS) + '</p><div class="sp-hlist">' +
+      REGIONS.map(function (r) {
+        var x = r[S.lang] || r.en, top = regionPlaces(r)[0];
+        return '<button class="sp-region" data-act="region" data-key="' + r.k + '"><span class="sp-img">' + (top ? img(top) : '<span aria-hidden="true">' + r.e + '</span>') + '</span>' +
+          '<span class="sp-tb"><span class="sp-name">' + esc(x[0]) + '</span><span class="sp-small">' + esc(x[1]) + '</span>' +
+          '<span class="sp-rmeta"><span>⏱ ' + esc(x[3]) + '</span><span>🗓 ' + esc(x[4]) + '</span></span>' +
+          '<span class="sp-rgood">' + esc(tt.goodFor) + ': ' + esc(x[2]) + '</span></span></button>';
+      }).join('') + '</div></div>';
+
     // "Skip the rush": famous place -> quiet neighbour (ALTS list in app.js)
     var swaps = swapList();
     if (swaps.length) {
@@ -350,6 +440,13 @@
             '<span class="sp-small sp-swap-d">' + esc(x.desc) + '</span></button>';
         }).join('') + '</div></div>';
     }
+
+    // what the chosen month is like + first-trip tips (collapsed so the page stays short)
+    var md = planDate(), mi = md.getMonth();
+    var mName = md.toLocaleDateString(S.lang === 'hi' ? 'hi-IN' : 'en-IN', { month: 'long' });
+    html += '<div class="sp-sec"><div class="sp-month"><b>🗓 ' + esc(tt.monthT(mName)) + '</b><span>' + esc((MONTHS[S.lang] || MONTHS.en)[mi]) + '</span></div></div>';
+    html += '<div class="sp-sec"><h2 class="sp-h2">' + esc(tt.tipsT) + '</h2><p class="sp-muted" style="margin:4px 0 12px">' + esc(tt.tipsS) + '</p><div class="sp-tips">' +
+      (TIPS[S.lang] || TIPS.en).map(function (x) { return '<details><summary><span aria-hidden="true">' + x[0] + '</span>' + esc(x[1]) + '</summary><p>' + esc(x[2]) + '</p></details>'; }).join('') + '</div></div>';
 
     // responsible travel, in four lines
     html += '<div class="sp-sec"><h2 class="sp-h2" style="margin-bottom:12px">' + esc(tt.pledgeT) + '</h2><div class="sp-pledge">' +
@@ -363,6 +460,13 @@
       '<button class="sp-mini" data-act="stay"><span aria-hidden="true">🏡</span><span class="sp-mini-tx"><b>' + esc(tt.stayTitle) + '</b><span>' + esc(tt.stayBtn) + '</span></span><span aria-hidden="true">›</span></button>' +
       '</div></div>';
     el.innerHTML = html;
+  }
+
+  function regionOf(k) { return REGIONS.find(function (r) { return r.k === k; }); }
+  function regionPlaces(r) {
+    return sortBy(places().filter(function (p) { return r.z.indexOf(String(p.zone || '').toLowerCase()) >= 0 && !crowd(p).closed; }), function (p) {
+      return (media()[p.id] && media()[p.id].images && media()[p.id].images.length ? 0 : 1000) + (tier(p) === 'A' ? 0 : 500) + sortVal(p);
+    });
   }
 
   function swapList() {
@@ -408,6 +512,7 @@
     if (S.chip === 'snow') { try { snowSet = PPSnow.snowFor(ymd(planDate())); } catch (e) { snowSet = new Set(); } }
     return sortBy(places().filter(function (p) {
       if (q && (p.name + ' ' + (p.district || '') + ' ' + (p.famousFor || '')).toLowerCase().indexOf(q) < 0) return false;
+      if (S.region) { var rg = regionOf(S.region); if (rg && rg.z.indexOf(String(p.zone || '').toLowerCase()) < 0) return false; }
       if (S.chip === 'quiet') return crowd(p).value < 30 && !crowd(p).closed;
       if (S.chip === 'near') { var r = travel(p); return r && r.hours <= (r.far ? 5 : 8); }
       if (S.chip === 'snow') return snowSet.has(p.id);
@@ -423,6 +528,7 @@
       '<form class="sp-search" data-form="search" role="search" style="margin-top:4px"><span aria-hidden="true">🔍</span><label for="spQ2" class="sp-datein">' + esc(tt.searchPh) + '</label>' +
       '<input id="spQ2" type="search" placeholder="' + esc(tt.searchPh) + '" value="' + esc(S.q) + '" autocomplete="off"></form>' +
       '<div class="sp-scroll" style="margin:14px -16px 0;padding:0 16px">' + chips.map(function (c) { return '<button class="sp-chip big' + (S.chip === c[0] ? ' on' : '') + '" data-act="chip" data-chip="' + c[0] + '">' + esc(c[1]) + '</button>'; }).join('') + '</div>' +
+      (S.region && regionOf(S.region) ? '<div class="sp-rbar"><span>' + esc(tt.regionOn) + ' <b>' + esc((regionOf(S.region)[S.lang] || regionOf(S.region).en)[0]) + '</b></span><button class="sp-link" data-act="region-clear">' + esc(tt.clearRegion) + ' ✕</button></div>' : '') +
       '<div id="spExList"></div></div>';
     renderExploreList();
   }
@@ -697,6 +803,9 @@
       case 'ctype': S.cType = b.dataset.key; S.crowdN = 20; renderCrowd(); break;
       case 'csort': S.cSort = b.dataset.key; S.crowdN = 20; renderCrowd(); break;
       case 'cmore': S.crowdN += 20; renderCrowdList(); break;
+      case 'how-ok': S.seenHow = true; store('pp_seen_how', '1'); renderHome(); break;
+      case 'region': S.region = b.dataset.key; S.q = ''; S.chip = 'all'; S.exploreN = 20; show('explore'); window.scrollTo(0, 0); break;
+      case 'region-clear': S.region = null; S.exploreN = 20; renderExplore(); break;
       case 'snow': try { PPSnow.open(); } catch (x) { /* ignore */ } break;
       case 'stay': openStay(id); break;
       case 'sheet-close': closeSheet(); break;
