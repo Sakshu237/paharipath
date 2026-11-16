@@ -240,9 +240,12 @@
   window.PPTrip = {
     // Used by itinerary.js: travel from the chosen city to this place, or null.
     travel: function (p) {
-      if (!st.origin || st.mode !== 'suggest' || !p) return null;
-      var t = travelFrom(st.origin, p);
-      return t ? { from: st.origin.name, hours: t.hours, label: fmtH(t.hours), route: t.route, far: !!t.far } : null;
+      if (!p) return null;
+      // Old "Suggest a place" mode, or the simplified app's "Travelling from" city (window.PP_ORIGIN from simple.js).
+      var o = st.origin && st.mode === 'suggest' ? st.origin : (window.PP_ORIGIN || null);
+      if (!o) return null;
+      var t = travelFrom(o, p);
+      return t ? { from: o.name, hours: t.hours, label: fmtH(t.hours), route: t.route, far: !!t.far } : null;
     },
     setMode: setMode, run: run, plan: plan, pick: pick, toggle: toggle, more: function () { st.showAll = true; renderResults(); },
     _score: score, _travelFrom: travelFrom, _state: st, _origins: ORIGINS, _suggest: function () { return suggest(); },

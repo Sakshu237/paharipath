@@ -65,7 +65,7 @@
   }
 
   function loadForecast(places) {
-    var key = 'ppsf_fc_v1_' + todayStr() + '_' + places.length;
+    var key = 'ppsf_fc_v2_' + todayStr() + '_' + places.length;
     var cached = sessionGet(key);
     if (cached) return Promise.resolve(cached);
     var base = CONFIG.OPEN_METEO_KEY ? 'https://customer-api.open-meteo.com/v1/forecast' : 'https://api.open-meteo.com/v1/forecast';
@@ -76,6 +76,8 @@
       var url = base +
         '?latitude=' + group.map(function (g) { return g.p.lat; }).join(',') +
         '&longitude=' + group.map(function (g) { return g.p.lng; }).join(',') +
+        // real altitude of each place, so the model isn't using a higher grid cell
+        '&elevation=' + group.map(function (g) { return g.p.alt > 0 ? g.p.alt : 'nan'; }).join(',') +
         '&daily=snowfall_sum&hourly=snow_depth&timezone=' + encodeURIComponent(TZ) +
         '&forecast_days=16' + keyParam;
       return fetch(url)
@@ -126,8 +128,12 @@
       var f = state.forecast.byIndex[i] || { fresh: [], depthNoon: [] };
       var fresh = f.fresh[di] || 0;              // cm
       var depth = (f.depthNoon[di] || 0) * 100;  // m -> cm
+      // The weather model's snow-on-ground is unreliable for places well below the usual
+      // snow line for the month (it averages a big mountain grid cell). There, only trust fresh snowfall.
+      var band = BANDS[+date.slice(5, 7)];
+      if (isFinite(p.alt) && p.alt > 0 && p.alt < band[1] - 500) { depth = 0; if (fresh < 2) fresh = 0; }
       if (fresh >= 2) return { lvl: 3, score: 1000 + fresh + depth, badge: 'Snow forecast', note: 'About ' + Math.round(fresh) + ' cm of fresh snow expected.' };
-      if (depth >= 5) return { lvl: 3, score: 500 + depth, badge: 'Snow on ground', note: 'About ' + Math.round(depth) + ' cm of snow likely on the ground.' };
+      if (depth >= 5) return { lvl: 3, score: 500 + depth, badge: 'Snow on ground', note: depth >= 30 ? 'Deep snow likely on the ground.' : 'Some snow likely on the ground.' };
       if (fresh >= 0.2) return { lvl: 2, score: 100 + fresh, badge: 'Light snow', note: 'Light snowfall possible on this day.' };
       if (depth >= 1) return { lvl: 2, score: depth, badge: 'Patchy snow', note: 'Some old snow may still be lying around.' };
       return { lvl: 1, score: 0, badge: 'No snow', note: 'No snow expected on this date.' };
@@ -139,8 +145,20 @@
     return { lvl: 1, score: alt, badge: 'Low chance', note: 'Snow is rare here at this time of year.' };
   }
 
+  // Road closed for the season on that date (crowd-predict.js knows pass closures) — not a snow trip.
+  function closedOn(id, date) {
+    try {
+      var ap = appPlaces().find(function (x) { return x.id === id; });
+      if (!ap || !window.PP_CROWD) return false;
+      var pr = date === todayStr() ? PP_CROWD.now(ap) : PP_CROWD.predict(ap, new Date(toUTC(date) + 6 * 36e5));
+      return !!(pr && pr.closed);
+    } catch (e) { return false; }
+  }
   function results(date) {
-    return state.places.map(function (p, i) { return Object.assign({}, p, assess(p, i, date)); })
+    return state.places.map(function (p, i) {
+      if (closedOn(p.id, date)) return Object.assign({}, p, { lvl: 0, score: 0, badge: 'Road closed', note: 'Road closed for the season on this date.' });
+      return Object.assign({}, p, assess(p, i, date));
+    })
       .sort(function (a, b) { return b.lvl - a.lvl || (a.trek ? 1 : 0) - (b.trek ? 1 : 0) || b.score - a.score; });
   }
 
@@ -171,7 +189,7 @@
     '.ppsf-list{display:flex;flex-direction:column;gap:10px}' +
     '.ppsf-item{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;background:#fff;border:1.5px solid #dde4df;border-radius:14px;padding:14px}' +
     '.ppsf-item:hover{border-color:var(--sage,#4a7c5f)}' +
-    '.ppsf-item.l3{border-color:#b9d0ee}.ppsf-item.l1{opacity:.75}' +
+    '.ppsf-item.l3{border-color:#b9d0ee}.ppsf-item.l1{opacity:.75}.ppsf-item.l0{opacity:.6}' +
     '.ppsf-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;width:100%}' +
     '.ppsf-name{font-size:16px;font-weight:700;color:#1c2420}' +
     '.ppsf-meta{display:block;font-size:12px;color:#4c5a51;margin-top:2px}' +
@@ -194,7 +212,7 @@
     // Keep everything inside the map (legend, zoom, Add a Place) below the sticky top menu when scrolling.
     '#lfmap-wrap{isolation:isolate}';
 
-  var COLORS = { 3: ['#1A4A85', '#5B9BE6'], 2: ['#9A5300', '#F2A541'], 1: ['#7C8783', '#C9D0CD'] };
+  var COLORS = { 3: ['#1A4A85', '#5B9BE6'], 2: ['#9A5300', '#F2A541'], 1: ['#7C8783', '#C9D0CD'], 0: ['#7C8783', '#E3E7E5'] };
 
   function injectCSS() {
     if (document.getElementById('ppsf-css')) return;
@@ -471,7 +489,7 @@
     res.slice().reverse().forEach(function (r) {
       var c = COLORS[r.lvl];
       var m = L.circleMarker([r.lat, r.lng], {
-        radius: r.lvl === 3 ? 9 : 7, color: c[0], weight: 2, fillColor: c[1], fillOpacity: r.lvl === 1 ? 0.45 : 0.9
+        radius: r.lvl === 3 ? 9 : 7, color: c[0], weight: 2, fillColor: c[1], fillOpacity: r.lvl <= 1 ? 0.45 : 0.9
       });
       m.bindPopup('<div class="ppsf-pop"><b>' + esc(r.name) + '</b><span>' + esc(r.badge) + '</span><span>' + esc(r.note) + '</span>' +
         '<button type="button" onclick="_lmap&&_lmap.closePopup();openPD(' + r.id + ')">View place →</button></div>');
@@ -503,7 +521,7 @@
     var date = chips()[0].d;
     var places = state.places || buildPlaces();
     var out = new Set();
-    places.forEach(function (p, i) { if (assess(p, i, date).lvl >= 2) out.add(p.id); });
+    places.forEach(function (p, i) { if (!closedOn(p.id, date) && assess(p, i, date).lvl >= 2) out.add(p.id); });
     if (!state.places) {
       ensureData().then(function () {
         var b = document.querySelector('.pf-btn.act');
@@ -519,7 +537,7 @@
   function snowFor(date) {
     var places = state.places || buildPlaces();
     var out = new Set();
-    places.forEach(function (p, i) { try { if (!p.trek && assess(p, i, date).lvl >= 2) out.add(p.id); } catch (e) { /* skip */ } });
+    places.forEach(function (p, i) { try { if (!p.trek && !closedOn(p.id, date) && assess(p, i, date).lvl >= 2) out.add(p.id); } catch (e) { /* skip */ } });
     return out;
   }
   window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet, snowFor: snowFor, ready: ensureData };

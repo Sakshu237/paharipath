@@ -293,6 +293,7 @@
   }
 
   /* ---------------- travel ---------------- */
+  function syncOrigin() { try { window.PP_ORIGIN = originObj(S.origin); } catch (e) { /* ignore */ } }
   function originObj(name) {
     var list = (window.PPTrip && PPTrip.origins) || [];
     var o = list.find(function (x) { return x[0] === name; }) || list[0];
@@ -402,7 +403,7 @@
         var p = r.p;
         html += '<div class="sp-pick"><div class="sp-top"><span class="sp-img">' + img(p) + '</span><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span class="sp-name">' + esc(p.name) + '</span>' +
           '<span class="sp-small">' + esc(reach(p)) + '</span>' + pill(p) + '</span>' + heart(p) + '</div>' +
-          (r.why && r.why.length ? '<div class="sp-why">' + r.why.map(function (w) { return '<span>' + esc(w) + '</span>'; }).join('') + '</div>' : '') +
+          (r.why && r.why.length ? '<div class="sp-why">' + r.why.map(function (w) { return '<span>' + esc(whyText(w)) + '</span>'; }).join('') + '</div>' : '') +
           '<div class="sp-2"><button class="sp-btn ghost" data-act="open" data-id="' + p.id + '">' + esc(tt.seePlace) + '</button><button class="sp-btn" data-act="plan" data-id="' + p.id + '">' + esc(tt.planTrip) + '</button></div></div>';
       });
       html += '</div>';
@@ -469,22 +470,35 @@
     });
   }
 
+  // trip-finder.js writes its "why" tags in English; translate the common ones for Hindi.
+  var WHY_HI = { 'Best season': 'सही मौसम', 'Good season': 'अच्छा मौसम', 'Offbeat': 'कम जानी जगह', 'Culture': 'संस्कृति', 'Nature': 'प्रकृति', 'Snow': 'बर्फ़',
+    'Trek': 'ट्रेक', 'Treks': 'ट्रेक', 'Adventure': 'एडवेंचर', 'Spiritual': 'आध्यात्मिक', 'Temples': 'मंदिर', 'Family-friendly': 'परिवार के लिए', 'Easy roads': 'आसान रास्ते', 'Quiet': 'शांत',
+    'Monsoon — check roads': 'मानसून — रास्ते जाँच लें', 'Snow likely': 'बर्फ़ की संभावना', 'Village': 'गाँव', 'River': 'नदी', 'Lake': 'झील' };
+  function whyText(w) {
+    if (S.lang !== 'hi') return w;
+    var s = String(w);
+    if (WHY_HI[s]) return WHY_HI[s];
+    var m = s.match(/^(Quiet|Calm|Moderate|Busy)\s*·\s*(\d+)% crowd$/);
+    if (m) return ({ Quiet: 'शांत', Calm: 'शांत', Moderate: 'मध्यम', Busy: 'भीड़' }[m[1]]) + ' · ' + m[2] + '% भीड़';
+    return s;
+  }
+
   function swapList() {
     // Own copy so the home screen doesn't depend on app.js load order (same pairs as ALTS in app.js).
     var alts = [
-      { instead: 'Manali', crowd: 92, name: 'Sethan', desc: 'Hidden 20 min from Manali. Deep snow in winter, worlds apart in feel.' },
-      { instead: 'Kasol', crowd: 88, name: 'Grahan', desc: '9 km forest trek — silence, no cafes, just stars and mountains.' },
-      { instead: 'Shimla', crowd: 85, name: 'Narkanda', desc: 'Apple orchards, Hatu Peak, skiing — 65 km from Shimla, no Mall Road chaos.' },
-      { instead: 'Triund', crowd: 68, name: 'Kareri Lake', desc: 'Alpine lake above Dharamshala. Same Dhauladhar views, far fewer people.' },
-      { instead: 'Dharamshala', crowd: 71, name: 'Bir Billing', desc: 'Paragliding, monasteries, good cafes — without the McLeod crush.' },
-      { instead: 'Spiti Valley', crowd: 35, name: 'Barot', desc: 'Trout streams, pine forests, Pahari villages. No permit needed.' }
+      { instead: 'Manali', crowd: 92, name: 'Sethan', desc: 'Hidden 20 min from Manali. Deep snow in winter, worlds apart in feel.', hi: 'मनाली से सिर्फ़ 20 मिनट, फिर भी बिल्कुल अलग दुनिया। सर्दी में गहरी बर्फ़।' },
+      { instead: 'Kasol', crowd: 88, name: 'Grahan', desc: '9 km forest trek — silence, no cafes, just stars and mountains.', hi: '9 किमी जंगल का ट्रेक — सन्नाटा, कोई कैफ़े नहीं, बस तारे और पहाड़।' },
+      { instead: 'Shimla', crowd: 85, name: 'Narkanda', desc: 'Apple orchards, Hatu Peak, skiing — 65 km from Shimla, no Mall Road chaos.', hi: 'सेब के बाग़, हाटू पीक, स्कीइंग — शिमला से 65 किमी, मॉल रोड की भीड़ नहीं।' },
+      { instead: 'Triund', crowd: 68, name: 'Kareri Lake', desc: 'Alpine lake above Dharamshala. Same Dhauladhar views, far fewer people.', hi: 'धर्मशाला के ऊपर पहाड़ी झील। वही धौलाधार नज़ारे, बहुत कम लोग।' },
+      { instead: 'Dharamshala', crowd: 71, name: 'Bir Billing', desc: 'Paragliding, monasteries, good cafes — without the McLeod crush.', hi: 'पैराग्लाइडिंग, मठ, अच्छे कैफ़े — मैक्लोडगंज की भीड़ के बिना।' },
+      { instead: 'Spiti Valley', crowd: 35, name: 'Barot', desc: 'Trout streams, pine forests, Pahari villages. No permit needed.', hi: 'ट्राउट वाली नदियाँ, चीड़ के जंगल, पहाड़ी गाँव। परमिट की ज़रूरत नहीं।' }
     ];
     var all = places();
     return alts.map(function (a) {
       var p = all.find(function (x) { return x.name === a.name; }); if (!p) return null;
       var f = all.find(function (x) { return x.name === a.instead; });
       var busy = f ? crowd(f).value : a.crowd;
-      return { p: p, instead: a.instead, busy: busy == null ? null : Math.round(busy), desc: a.desc };
+      return { p: p, instead: a.instead, busy: busy == null ? null : Math.round(busy), desc: S.lang === 'hi' && a.hi ? a.hi : a.desc };
     }).filter(Boolean);
   }
 
@@ -502,7 +516,7 @@
     try {
       if (!window.PPSnow || !PPSnow.snowFor) return [];
       var set = PPSnow.snowFor(ymd(planDate()));
-      return places().filter(function (p) { return set.has(p.id); }).map(function (p) { return p.name; });
+      return places().filter(function (p) { return set.has(p.id) && !crowd(p).closed; }).map(function (p) { return p.name; });
     } catch (e) { return []; }
   }
 
@@ -515,7 +529,7 @@
       if (S.region) { var rg = regionOf(S.region); if (rg && rg.z.indexOf(String(p.zone || '').toLowerCase()) < 0) return false; }
       if (S.chip === 'quiet') return crowd(p).value < 30 && !crowd(p).closed;
       if (S.chip === 'near') { var r = travel(p); return r && r.hours <= (r.far ? 5 : 8); }
-      if (S.chip === 'snow') return snowSet.has(p.id);
+      if (S.chip === 'snow') return snowSet.has(p.id) && !crowd(p).closed;
       if (S.chip === 'temples') return (p.vibes || []).indexOf('spiritual') >= 0;
       return true;
     }), sortVal);
@@ -668,6 +682,7 @@
     var lang = $('spLang');
     if (lang) lang.innerHTML = '<button data-lang="en" class="' + (S.lang === 'en' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'en') + '">EN</button><button data-lang="hi" lang="hi" class="' + (S.lang === 'hi' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'hi') + '">हिंदी</button>';
     document.documentElement.lang = S.lang === 'hi' ? 'hi' : 'en';
+    drawerLabels();
     updateTabs();
   }
 
@@ -806,7 +821,7 @@
       case 'how-ok': S.seenHow = true; store('pp_seen_how', '1'); renderHome(); break;
       case 'region': S.region = b.dataset.key; S.q = ''; S.chip = 'all'; S.exploreN = 20; show('explore'); window.scrollTo(0, 0); break;
       case 'region-clear': S.region = null; S.exploreN = 20; renderExplore(); break;
-      case 'snow': try { PPSnow.open(); } catch (x) { /* ignore */ } break;
+      case 'snow': try { if (PPSnow.setDate) PPSnow.setDate(ymd(planDate())); PPSnow.open(); } catch (x) { /* ignore */ } break;
       case 'stay': openStay(id); break;
       case 'sheet-close': closeSheet(); break;
       case 'budget': S.budget = b.dataset.b; b.parentNode.querySelectorAll('.sp-chip').forEach(function (c) { c.classList.toggle('on', c === b); }); break;
@@ -820,7 +835,7 @@
     var h = S.help;
     if (h.step === 1) {
       if (v === '__other') { var sel = $('spFrom'); if (sel) { sel.focus(); try { sel.showPicker(); } catch (x) { /* older browsers */ } } h.city = S.origin; }
-      else { h.city = v; if (v !== '__hp') { S.origin = v; store('pp_origin', v); _tc = {}; renderBar(); } }
+      else { h.city = v; if (v !== '__hp') { S.origin = v; store('pp_origin', v); _tc = {}; syncOrigin(); renderBar(); } }
     } else if (h.step === 2) h.days = v;
     else h.like = v;
     h.step++;
@@ -840,7 +855,7 @@
   }
   function onChange(e) {
     var tg = e.target;
-    if (tg.id === 'spFrom') { S.origin = tg.value; store('pp_origin', S.origin); _tc = {}; render(); }
+    if (tg.id === 'spFrom') { S.origin = tg.value; store('pp_origin', S.origin); _tc = {}; syncOrigin(); render(); }
     else if (tg.id === 'spDateIn' && tg.value) { var p = tg.value.split('-'); S.customDate = new Date(+p[0], +p[1] - 1, +p[2]); S.dateKey = 'custom'; _dopts = null; _planTouched = false; render(); }
     else if (tg.id === 'spKids') { S.help.kids = tg.checked; renderHome(); }
     else if (tg.id === 'ppDate' || tg.id === 'ppNights') { _planTouched = true; }
@@ -863,7 +878,36 @@
     tag(document.querySelector('#mobDrawer .mob-footer'));                  // Find Stays / Book a Stay
     byText('footer a, #view-home a', /Manage \/ Cancel Booking/);
     var st = $('pdstays'); if (st && st.parentNode) tag(st.parentNode);     // "Stays in X · book directly" on place pages
+    // Help & Support: no booking / payment / PAHADI topics or booking reference while those are paused.
+    var origSup = window.openSupportMo;
+    if (typeof origSup === 'function') window.openSupportMo = function () {
+      var r = origSup.apply(this, arguments);
+      try {
+        var sel = $('supCategory');
+        if (sel) Array.prototype.slice.call(sel.options).forEach(function (o) { if (/^(booking|payment|account|host)$/.test(o.value)) o.remove(); });
+        var ref = $('supBookingRef'); if (ref && ref.parentNode) ref.parentNode.style.display = 'none';
+      } catch (e) { /* form changed */ }
+      return r;
+    };
     byText('#mapwrap .map-filter-btn', /Has Stays/);                         // map filter that only finds placeholder stays
+  }
+
+  /* ---------------- side menu: Home + Saved at the top ---------------- */
+  function drawerExtras() {
+    var links = document.querySelector('#mobDrawer .mob-links'); if (!links || $('spDrHome')) return;
+    var mk = function (id, icon, tab) {
+      var d = document.createElement('div'); d.className = 'mob-link'; d.id = id; d.dataset.tab = tab;
+      d.innerHTML = '<span class="ml-icon">' + icon + '</span><span class="sp-drl"></span>';
+      d.addEventListener('click', function () { try { closeMobMenu(); } catch (e) { /* ignore */ } });
+      return d;
+    };
+    links.insertBefore(mk('spDrSaved', '♡', 'saved'), links.firstChild);
+    links.insertBefore(mk('spDrHome', '🏠', 'home'), links.firstChild);
+    drawerLabels();
+  }
+  function drawerLabels() {
+    var tt = t();
+    [['spDrHome', 0], ['spDrSaved', 4]].forEach(function (x) { var e = $(x[0]); if (e) e.querySelector('.sp-drl').textContent = tt.tabs[x[1]]; });
   }
 
   /* ---------------- map: simpler (Nov 2026) ---------------- */
@@ -915,7 +959,9 @@
       Array.prototype.forEach.call(nr.querySelectorAll('.nb'), function (b) { if (/Find Stays|Book a Stay/.test(b.textContent)) b.classList.add('sp-hide-btn'); });
     }
     if (FREEZE) freeze();
+    syncOrigin();
     simplifyMap();
+    drawerExtras();
     var hostLink = document.querySelector('nav .nr .nr-host'); if (hostLink) hostLink.classList.add('sp-nav-off'); // owners: side menu + footer
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
