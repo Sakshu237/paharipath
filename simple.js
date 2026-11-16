@@ -55,6 +55,7 @@
       exploreTitle: 'Explore', all: 'All', quiet: 'Quiet', near: 'Close to me', snow: 'Snow', temples: 'Temples',
       mapView: 'Map view', showMore: 'Show more', places: function (n) { return n === 1 ? '1 place' : n + ' places'; },
       noResults: 'No places match. Try another word or filter.',
+      cNature: 'Nature', cTrek: 'Treks & adventure', cCulture: 'Village & culture', sortLbl: 'Sort', sQuiet: 'Quietest first', sClose: 'Closest to you', busyOn: 'Busy on', busyNow: 'Busy today', noneHere: 'No places match. Try another filter.',
       crowdTitle: 'How busy is it?', quietest: 'Quietest', avoid: 'Busiest — avoid if you can',
       planIntro: 'Plan your trip',
       savedTitle: 'Saved', savedEmpty: 'Tap ♡ on any place to save it here. Then send your shortlist to family on WhatsApp.',
@@ -100,6 +101,7 @@
       exploreTitle: 'जगहें खोजें', all: 'सभी', quiet: 'शांत', near: 'मेरे पास', snow: 'बर्फ़', temples: 'मंदिर',
       mapView: 'मैप देखें', showMore: 'और देखें', places: function (n) { return n + ' जगहें'; },
       noResults: 'कोई जगह नहीं मिली। दूसरा शब्द या फ़िल्टर आज़माएँ।',
+      cNature: 'प्रकृति', cTrek: 'ट्रेक और एडवेंचर', cCulture: 'गाँव और संस्कृति', sortLbl: 'क्रम', sQuiet: 'सबसे शांत पहले', sClose: 'आपके सबसे पास', busyOn: 'भीड़ रहेगी —', busyNow: 'आज भीड़ —', noneHere: 'कोई जगह नहीं मिली। दूसरा फ़िल्टर आज़माएँ।',
       crowdTitle: 'कितनी भीड़ है?', quietest: 'सबसे शांत', avoid: 'सबसे ज़्यादा भीड़ — हो सके तो बचें',
       planIntro: 'अपनी यात्रा प्लान करें',
       savedTitle: 'सेव की गई', savedEmpty: 'किसी भी जगह पर ♡ दबाएँ, वो यहाँ सेव होगी। फिर लिस्ट परिवार को WhatsApp पर भेजें।',
@@ -127,7 +129,8 @@
     tab: 'home', lang: load('pp_lang', 'en'), dateKey: 'now', customDate: null,
     origin: load('pp_origin', 'Delhi'),
     help: { step: 0, city: null, days: null, like: null, kids: false },
-    q: '', chip: 'all', exploreN: 20, stayDone: false, budget: 'b2'
+    q: '', chip: 'all', exploreN: 20, stayDone: false, budget: 'b2',
+    cType: 'all', cSort: 'quiet', crowdN: 20
   };
   function load(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
@@ -431,11 +434,26 @@
       (list.length > S.exploreN ? '<button class="sp-btn ghost full" data-act="more" style="margin-top:6px">' + esc(tt.showMore) + '</button>' : '');
   }
 
+  // Crowd tab (Nov 2026): quietest first, with type filter + sort; busy places shrink to one line at the bottom.
+  var CTYPES = { nature: ['nature'], temples: ['spiritual'], trek: ['trek', 'adventure'], culture: ['culture', 'offbeat'] };
+  function crowdList() {
+    var snowSet = null;
+    if (S.cType === 'snow') { try { snowSet = PPSnow.snowFor(ymd(planDate())); } catch (e) { snowSet = new Set(); } }
+    var match = function (p) {
+      if (crowd(p).closed) return false;
+      if (S.cType === 'snow') return snowSet.has(p.id);
+      var want = CTYPES[S.cType]; if (!want) return true;
+      return (p.vibes || []).some(function (v) { return want.indexOf(v) >= 0; });
+    };
+    var all = places().filter(match);
+    // Trip-worthy places only, unless that leaves too few for this filter.
+    var list = all.filter(function (p) { return tier(p) === 'A'; });
+    if (list.length < 8) list = all;
+    if (S.cSort === 'close') return sortBy(list, function (p) { var r = travel(p); return (r ? r.hours : 99) * 100 + crowd(p).value / 2; });
+    return sortBy(list, sortVal);
+  }
   function renderCrowd() {
     var tt = t(), el = $('spCrowd'); if (!el) return;
-    var list = sortBy(places(), sortVal);
-    var open = list.filter(function (p) { return !crowd(p).closed; });
-    var busiest = sortBy(open, function (p) { return -crowd(p).value; }).slice(0, 5);
     var o = curDate(), note = o.names || '';
     if (!note) {
       try {
@@ -443,9 +461,24 @@
         if (di && di.run && di.run.isLong) note = (di.run.names || []).join(', ') + ' · ' + fmtRange(di.run.start, di.run.end);
       } catch (e) { /* no calendar */ }
     }
+    var types = [['all', tt.all], ['nature', tt.cNature], ['temples', tt.temples], ['trek', tt.cTrek], ['culture', tt.cCulture], ['snow', tt.snow]];
+    var chip = function (act, key, on, label) { return '<button class="sp-chip' + (on ? ' on' : '') + '" data-act="' + act + '" data-key="' + key + '" aria-pressed="' + on + '">' + esc(label) + '</button>'; };
     el.innerHTML = '<div class="sp-wrap"><h1 class="sp-h1" style="font-size:34px">' + esc(tt.crowdTitle) + '</h1><p class="sp-sub">' + esc(dateLabelShort()) + (note ? ' · ' + esc(note) : '') + '</p>' +
-      '<div class="sp-sec"><h2 class="sp-h2" style="font-size:22px;margin-bottom:12px">' + esc(tt.avoid) + '</h2><div class="sp-grid">' + busiest.map(item).join('') + '</div></div>' +
-      '<div class="sp-sec"><h2 class="sp-h2" style="font-size:22px;margin-bottom:12px">' + esc(tt.quietest) + '</h2><div class="sp-grid">' + open.filter(function (p) { return tier(p) === 'A'; }).slice(0, 20).map(item).join('') + '</div></div></div>';
+      '<div class="sp-scroll" style="margin:14px -16px 0;padding:0 16px">' + types.map(function (x) { return chip('ctype', x[0], S.cType === x[0], x[1]); }).join('') + '</div>' +
+      '<div class="sp-sortrow"><span class="sp-sl">' + esc(tt.sortLbl) + '</span>' + chip('csort', 'quiet', S.cSort === 'quiet', tt.sQuiet) + chip('csort', 'close', S.cSort === 'close', tt.sClose + ' (' + S.origin + ')') + '</div>' +
+      '<div id="spCrList"></div></div>';
+    renderCrowdList();
+  }
+  function renderCrowdList() {
+    var tt = t(), el = $('spCrList'); if (!el) return;
+    var list = crowdList();
+    var open = places().filter(function (p) { return !crowd(p).closed; });
+    var busy = sortBy(open, function (p) { return -crowd(p).value; }).slice(0, 5);
+    el.innerHTML = '<p class="sp-muted" style="margin:12px 0 10px">' + esc(tt.places(list.length)) + '</p>' +
+      (list.length ? '<div class="sp-grid">' + list.slice(0, S.crowdN).map(item).join('') + '</div>' : '<div class="sp-empty">' + esc(tt.noneHere) + '</div>') +
+      (list.length > S.crowdN ? '<button class="sp-btn ghost full" data-act="cmore" style="margin-top:6px">' + esc(tt.showMore) + '</button>' : '') +
+      (busy.length ? '<p class="sp-busyline"><b>' + esc(S.dateKey === 'now' ? tt.busyNow : tt.busyOn + ' ' + dateLabelShort()) + ':</b> ' +
+        busy.map(function (p) { return '<button class="sp-link" data-act="open" data-id="' + p.id + '">' + esc(p.name) + '</button>'; }).join(', ') + '</p>' : '');
   }
 
   function plans() { try { return JSON.parse(localStorage.getItem('pp_plans') || '[]'); } catch (e) { return []; } }
@@ -661,6 +694,9 @@
       case 'help-answer': helpAnswer(b.dataset.val); break;
       case 'chip': S.chip = b.dataset.chip; S.exploreN = 20; renderExplore(); break;
       case 'more': S.exploreN += 20; renderExploreList(); break;
+      case 'ctype': S.cType = b.dataset.key; S.crowdN = 20; renderCrowd(); break;
+      case 'csort': S.cSort = b.dataset.key; S.crowdN = 20; renderCrowd(); break;
+      case 'cmore': S.crowdN += 20; renderCrowdList(); break;
       case 'snow': try { PPSnow.open(); } catch (x) { /* ignore */ } break;
       case 'stay': openStay(id); break;
       case 'sheet-close': closeSheet(); break;
