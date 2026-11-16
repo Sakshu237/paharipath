@@ -18,6 +18,10 @@
 (function () {
   'use strict';
 
+  // FREEZE (Nov 2026): no real host partners or bookings yet, so booking, stays listings,
+  // traveller login / PAHADI profile and "manage booking" are hidden. Code stays; flip to false to bring them back.
+  var FREEZE = true;
+
   var WA_NUMBER = '919317110366'; // PahariPath support WhatsApp (same as Help & Support)
 
   /* ---------------- text (English / Hindi) ---------------- */
@@ -25,6 +29,11 @@
     en: {
       going: 'Going:', from: 'From', today: 'Today', weekend: 'This weekend', nextWeekend: 'Next weekend', pick: 'Pick date',
       h1a: 'Same Himachal.', h1b: 'Without the crowd.',
+      kicker: 'Responsible travel · Himachal',
+      motto: 'We don’t send you where everyone goes. We show you quiet, lesser-known places — and help you visit them gently.',
+      findBtn: 'Find my quiet place', findSub: '3 quick questions · we suggest, you choose', whenGoing: 'When are you going?', browseAll: 'Or browse all 146 places',
+      swapT: 'Skip the rush', swapS: 'Heading somewhere famous? Its quiet neighbour is right there.', insteadOf: 'Instead of', busy: 'busy',
+      pledgeT: 'Travel light on the hills', pl1: 'Stay with local families, eat at local dhabas', pl2: 'Carry your plastic back down', pl3: 'Respect village and temple customs', pl4: 'Go on weekdays when you can',
       heroT: 'Find a quiet place in the hills', heroS: 'Offbeat Himachal, away from the crowds — 146 places with crowd forecasts.',
       where: 'Where', when: 'When', fromLbl: 'Travelling from', searchBtn: 'Search', notSure: 'Not sure where to go? We’ll suggest a place',
       sub: 'Crowd forecasts for 146 offbeat places — pick a quiet one for your dates.',
@@ -67,6 +76,11 @@
       where: 'कहाँ', when: 'कब', fromLbl: 'कहाँ से आ रहे हैं', searchBtn: 'खोजें', notSure: 'पता नहीं कहाँ जाएँ? हम जगह सुझाएँगे',
       going: 'कब:', from: 'कहाँ से', today: 'आज', weekend: 'इस वीकेंड', nextWeekend: 'अगला वीकेंड', pick: 'तारीख चुनें',
       h1a: 'वही हिमाचल,', h1b: 'बिना भीड़ के।',
+      kicker: 'ज़िम्मेदार यात्रा · हिमाचल',
+      motto: 'हम आपको वहाँ नहीं भेजते जहाँ सब जाते हैं। हम शांत, कम जानी-पहचानी जगहें दिखाते हैं — और उन्हें सम्मान से घूमने में मदद करते हैं।',
+      findBtn: 'मेरी शांत जगह ढूँढें', findSub: '3 छोटे सवाल · हम सुझाएँ, आप चुनें', whenGoing: 'कब जा रहे हैं?', browseAll: 'या सभी 146 जगहें देखें',
+      swapT: 'भीड़ से बचें', swapS: 'मशहूर जगह जा रहे हैं? पास में ही शांत जगह है।', insteadOf: 'की जगह', busy: 'भीड़',
+      pledgeT: 'पहाड़ों पर हल्के कदम', pl1: 'स्थानीय परिवारों के साथ रुकें, स्थानीय ढाबों में खाएँ', pl2: 'अपना प्लास्टिक वापस ले जाएँ', pl3: 'गाँव और मंदिर के रीति-रिवाज़ों का सम्मान करें', pl4: 'हो सके तो हफ़्ते के बीच जाएँ',
       sub: '146 अनछुई जगहों पर भीड़ का अनुमान — अपनी तारीखों के लिए शांत जगह चुनें।',
       searchPh: 'जगह खोजें, जैसे Tirthan', go: 'खोजें',
       helpTitle: 'कहाँ जाएँ, तय नहीं?', helpSub: '3 टैप में अपनी जगह पाएँ',
@@ -268,25 +282,24 @@
     var opts0 = dateOptions();
     var origins = (window.PPTrip && PPTrip.origins) || [['Delhi'], ['Chandigarh'], ['Mumbai'], ['Bengaluru']];
     var ico = function (d) { return '<span class="sp-ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg></span>'; };
-    var html = '<div class="sp-hero"><div class="sp-hero-in"><h1>' + esc(tt.heroT) + '</h1><p>' + esc(tt.heroS) + '</p></div></div>' +
-      '<div class="sp-wrap sp-home-wrap">' +
-      '<form class="sp-sbox" data-form="search" role="search">' +
-      '<label class="sp-srow" for="spQ">' + ico('<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>') +
-      '<span class="sp-sf"><span class="sp-sl">' + esc(tt.where) + '</span><input id="spQ" type="search" placeholder="' + esc(tt.searchPh) + '" value="' + esc(S.q) + '" autocomplete="off"></span></label>' +
-      '<div class="sp-srow">' + ico('<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>') +
-      '<span class="sp-sf"><span class="sp-sl">' + esc(tt.when) + '</span><span class="sp-scroll sp-when">' +
+    // Nov 2026: no search box on home. PahariPath suggests quiet places; people searching for a name
+    // they already know are usually after the famous, crowded ones. Search still lives on Explore.
+    var html = '<div class="sp-hero"><div class="sp-hero-in"><span class="sp-kick">' + esc(tt.kicker) + '</span><h1>' + esc(tt.h1a) + ' <em>' + esc(tt.h1b) + '</em></h1><p>' + esc(tt.motto) + '</p></div></div>' +
+      '<div class="sp-wrap sp-home-wrap"><div class="sp-lead">' +
+      (h.step === 0 ? '<button class="sp-btn clay sp-findbtn" data-act="help-open"><span>' + esc(tt.findBtn) + ' →</span><small>' + esc(tt.findSub) + '</small></button>' : '') +
+      '<div class="sp-lead-row"><span class="sp-sl">' + esc(tt.whenGoing) + '</span><span class="sp-scroll sp-when">' +
       opts0.map(function (o) { return '<button type="button" class="sp-chip' + (o.key === S.dateKey ? ' on' : '') + '" data-act="date" data-key="' + o.key + '">' + esc(o.label) + '</button>'; }).join('') +
       '<button type="button" class="sp-chip" data-act="pickdate">' + esc(tt.pick) + '</button><input type="date" id="spDateIn" class="sp-datein" min="' + ymd(new Date()) + '" aria-label="' + esc(tt.pick) + '">' +
-      '</span></span></div>' +
-      '<label class="sp-srow" for="spFrom">' + ico('<path d="M5 17h14M6 17l1.5-6h9L18 17"/><circle cx="8" cy="18.5" r="1.5"/><circle cx="16" cy="18.5" r="1.5"/>') +
-      '<span class="sp-sf"><span class="sp-sl">' + esc(tt.fromLbl) + '</span><select id="spFrom" class="sp-from2">' +
+      '</span></div>' +
+      '<label class="sp-lead-from" for="spFrom">' + ico('<path d="M5 17h14M6 17l1.5-6h9L18 17"/><circle cx="8" cy="18.5" r="1.5"/><circle cx="16" cy="18.5" r="1.5"/>') +
+      '<span class="sp-sl">' + esc(tt.fromLbl) + '</span><select id="spFrom" class="sp-from2">' +
       origins.map(function (o) { return '<option' + (o[0] === S.origin ? ' selected' : '') + '>' + esc(o[0]) + '</option>'; }).join('') +
-      '</select></span></label>' +
-      '<button class="sp-btn sp-sbtn" type="submit">' + esc(tt.searchBtn) + '</button></form>';
+      '</select></label></div>' +
+      (h.step === 0 ? '<button class="sp-notsure" data-act="tab" data-tab="explore">' + esc(tt.browseAll) + ' <span aria-hidden="true">→</span></button>' : '');
 
     // help me choose
     if (h.step === 0) {
-      html += '<button class="sp-notsure" data-act="help-open">' + esc(tt.notSure) + ' <span aria-hidden="true">→</span></button>';
+      /* the "Find my quiet place" button sits in the lead card above */
     } else if (h.step <= 3) {
       var opts = h.step === 1
         ? CITY_QUICK.map(function (c) { return [c[0], c[1]]; }).concat([['__hp', tt.inHP], ['__other', tt.otherCity]])
@@ -323,6 +336,22 @@
     html += '<div class="sp-sec"><div class="sp-row"><h2 class="sp-h2">' + esc(topped ? tt.leastBusy + ' ' + dateLabelShort() : S.dateKey === 'now' ? tt.quietToday : tt.quietOn + ' ' + dateLabelShort()) + '</h2><button class="sp-link" data-act="tab" data-tab="crowd">' + esc(tt.seeAll) + '</button></div>' +
       '<div class="sp-hlist">' + quiet.map(tile).join('') + '</div></div>';
 
+    // "Skip the rush": famous place -> quiet neighbour (ALTS list in app.js)
+    var swaps = swapList();
+    if (swaps.length) {
+      html += '<div class="sp-sec"><h2 class="sp-h2">' + esc(tt.swapT) + '</h2><p class="sp-muted" style="margin:4px 0 12px">' + esc(tt.swapS) + '</p><div class="sp-hlist">' +
+        swaps.map(function (x) {
+          var from = S.lang === 'hi' ? esc(x.instead) + ' ' + esc(tt.insteadOf) : esc(tt.insteadOf) + ' ' + esc(x.instead);
+          return '<button class="sp-swap" data-act="open" data-id="' + x.p.id + '"><span class="sp-swap-from">' + from + (x.busy != null ? ' · <b>' + x.busy + '% ' + esc(tt.busy) + '</b>' : '') + '</span>' +
+            '<span class="sp-swap-to"><span class="sp-img">' + img(x.p) + '</span><span class="sp-tb">' + pill(x.p) + '<span class="sp-name">' + esc(x.p.name) + '</span></span></span>' +
+            '<span class="sp-small sp-swap-d">' + esc(x.desc) + '</span></button>';
+        }).join('') + '</div></div>';
+    }
+
+    // responsible travel, in four lines
+    html += '<div class="sp-sec"><h2 class="sp-h2" style="margin-bottom:12px">' + esc(tt.pledgeT) + '</h2><div class="sp-pledge">' +
+      [['🏡', tt.pl1], ['♻️', tt.pl2], ['🛕', tt.pl3], ['📅', tt.pl4]].map(function (x) { return '<div><span aria-hidden="true">' + x[0] + '</span>' + esc(x[1]) + '</div>'; }).join('') + '</div></div>';
+
     // two quiet one-line shortcuts instead of big cards (keeps the home screen short)
     var snow = snowNames();
     html += '<div class="sp-sec sp-minis">' +
@@ -331,6 +360,25 @@
       '<button class="sp-mini" data-act="stay"><span aria-hidden="true">🏡</span><span class="sp-mini-tx"><b>' + esc(tt.stayTitle) + '</b><span>' + esc(tt.stayBtn) + '</span></span><span aria-hidden="true">›</span></button>' +
       '</div></div>';
     el.innerHTML = html;
+  }
+
+  function swapList() {
+    // Own copy so the home screen doesn't depend on app.js load order (same pairs as ALTS in app.js).
+    var alts = [
+      { instead: 'Manali', crowd: 92, name: 'Sethan', desc: 'Hidden 20 min from Manali. Deep snow in winter, worlds apart in feel.' },
+      { instead: 'Kasol', crowd: 88, name: 'Grahan', desc: '9 km forest trek — silence, no cafes, just stars and mountains.' },
+      { instead: 'Shimla', crowd: 85, name: 'Narkanda', desc: 'Apple orchards, Hatu Peak, skiing — 65 km from Shimla, no Mall Road chaos.' },
+      { instead: 'Triund', crowd: 68, name: 'Kareri Lake', desc: 'Alpine lake above Dharamshala. Same Dhauladhar views, far fewer people.' },
+      { instead: 'Dharamshala', crowd: 71, name: 'Bir Billing', desc: 'Paragliding, monasteries, good cafes — without the McLeod crush.' },
+      { instead: 'Spiti Valley', crowd: 35, name: 'Barot', desc: 'Trout streams, pine forests, Pahari villages. No permit needed.' }
+    ];
+    var all = places();
+    return alts.map(function (a) {
+      var p = all.find(function (x) { return x.name === a.name; }); if (!p) return null;
+      var f = all.find(function (x) { return x.name === a.instead; });
+      var busy = f ? crowd(f).value : a.crowd;
+      return { p: p, instead: a.instead, busy: busy == null ? null : Math.round(busy), desc: a.desc };
+    }).filter(Boolean);
   }
 
   function suggestions() {
@@ -423,6 +471,7 @@
   function show(tab, opts) {
     opts = opts || {};
     if (['home', 'explore', 'crowd', 'plan', 'saved', 'map', 'stays'].indexOf(tab) < 0) tab = 'home';
+    if (FREEZE && tab === 'stays') { tab = 'home'; setTimeout(function () { openStay(); }, 0); }
     S.tab = tab;
     try {
       var pd = $('pd');
@@ -476,7 +525,7 @@
     }).join('');
     var nl = document.querySelector('nav .nl');
     if (nl) nl.innerHTML = ['explore', 'crowd', 'plan', 'saved'].map(function (k) { return '<li><a data-tab="' + k + '" href="#/' + k + '">' + esc(tt.tabs[TABS.indexOf(k)]) + '</a></li>'; }).join('') +
-      '<li><a data-tab="stays" href="#/stays">' + esc(tt.stays) + '</a></li><li><a href="/blog">' + esc(tt.blog) + '</a></li>';
+      (FREEZE ? '' : '<li><a data-tab="stays" href="#/stays">' + esc(tt.stays) + '</a></li>') + '<li><a href="/blog">' + esc(tt.blog) + '</a></li>';
     var lang = $('spLang');
     if (lang) lang.innerHTML = '<button data-lang="en" class="' + (S.lang === 'en' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'en') + '">EN</button><button data-lang="hi" lang="hi" class="' + (S.lang === 'hi' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'hi') + '">हिंदी</button>';
     document.documentElement.lang = S.lang === 'hi' ? 'hi' : 'en';
@@ -659,6 +708,18 @@
     else if (f.dataset.form === 'stay') sendStay(f);
   }
 
+  /* ---------------- freeze (no real hosts / bookings yet) ---------------- */
+  function freeze() {
+    document.body.classList.add('pp-freeze');
+    var tag = function (el) { if (el) el.classList.add('sp-frz'); };
+    var byText = function (sel, re) { Array.prototype.forEach.call(document.querySelectorAll(sel), function (el) { if (re.test(el.textContent)) tag(el); }); };
+    byText('nav .nr .nb', /My Profile|Find Stays|Book a Stay/);           // traveller login / PAHADI, booking buttons
+    byText('#mobDrawer .mob-link', /My Profile|Find Stays/);
+    tag(document.querySelector('#mobDrawer .mob-footer'));                  // Find Stays / Book a Stay
+    byText('footer a, #view-home a', /Manage \/ Cancel Booking/);
+    var st = $('pdstays'); if (st && st.parentNode) tag(st.parentNode);     // "Stays in X · book directly" on place pages
+  }
+
   /* ---------------- boot ---------------- */
   function boot() {
     var home = $('view-home'); if (!home || $('spRoot')) return;
@@ -679,6 +740,7 @@
       nr.insertBefore(lang, nr.firstChild);
       Array.prototype.forEach.call(nr.querySelectorAll('.nb'), function (b) { if (/Find Stays|Book a Stay/.test(b.textContent)) b.classList.add('sp-hide-btn'); });
     }
+    if (FREEZE) freeze();
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
     document.addEventListener('change', onChange);

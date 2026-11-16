@@ -162,3 +162,27 @@ body:has(#pd[style*="block"]) .pp-wa,body:has(#pd.open) .pp-wa,body:has(#spSheet
 .sp-sbtn{display:block;width:calc(100% - 20px);margin:10px;min-height:54px;font-size:17px}
 .sp-notsure{display:flex;align-items:center;gap:6px;min-height:48px;margin-top:8px;padding:0;background:none;border:0;font:600 15px var(--fb);color:var(--pine);cursor:pointer;text-align:left}
 @media(min-width:900px){.sp-hero{padding:40px 0 84px}.sp-hero h1{font-size:42px}}
+
+/* Home without a search box (Nov 2026) */
+.sp-kick{display:inline-block;margin-bottom:10px;font:700 11.5px var(--fb);letter-spacing:.09em;text-transform:uppercase;color:#e8b04a}
+.sp-hero h1 em{font-style:italic;font-weight:500;color:#f1c77a}
+.sp-lead{position:relative;margin-top:-56px;max-width:560px;padding:14px;background:#fff;border:1px solid #e3e9e4;border-radius:16px;box-shadow:0 6px 20px rgba(23,33,28,.12);box-sizing:border-box}
+.sp-findbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;min-height:62px;margin-bottom:12px;font-size:17px}
+.sp-findbtn small{font-size:12.5px;font-weight:500;opacity:.9}
+.sp-lead-row{display:flex;flex-direction:column;gap:6px}
+.sp-lead .sp-when{margin-right:-14px}
+.sp-lead-from{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #e4e8e6}
+.sp-lead-from .sp-from2{flex:1;font-size:15px}
+.sp-swap{flex:0 0 250px;display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;border:1px solid #e8ede9;background:#fff;color:var(--ink);font-family:var(--fb);text-align:left;cursor:pointer}
+.sp-swap-from{font-size:12.5px;color:#7a5a45}
+.sp-swap-from b{color:#b8452f;font-weight:600}
+.sp-swap-to{display:flex;align-items:center;gap:10px}
+.sp-swap-to .sp-img{flex:0 0 58px;height:58px;border-radius:10px}
+.sp-swap-to .sp-tb{display:flex;flex-direction:column;gap:4px}
+.sp-swap-d{line-height:1.45}
+.sp-pledge{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sp-pledge div{display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:12px;background:#eef3ef;font-size:14px;line-height:1.4;color:#24372c}
+.sp-pledge span{font-size:20px;line-height:1}
+@media(min-width:900px){.sp-pledge{grid-template-columns:repeat(4,1fr)}}
+/* Frozen features (simple.js FREEZE) */
+body.pp-freeze .sp-frz{display:none!important}
