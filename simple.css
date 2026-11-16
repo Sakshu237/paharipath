@@ -226,3 +226,12 @@ body.pp-freeze [onclick*="stays-bg"],
 body.pp-freeze [onclick*="openManageBooking"],
 body.pp-freeze [onclick*="openTravellerProfile"],
 body.pp-freeze .itn-sum{display:none!important}
+/* Slim cookie bar (was a big block covering a third of a phone screen) */
+#cookieBanner{padding:8px 12px!important;gap:8px 12px!important;flex-wrap:nowrap!important;font-size:12px!important;line-height:1.35;box-shadow:0 -2px 10px rgba(0,0,0,.15)}
+#cookieBanner > div:first-child{flex:1;min-width:0}
+#cookieBanner > div:last-child{gap:6px!important;flex-shrink:0}
+#cookieBanner button{padding:7px 12px!important;font-size:12.5px!important;min-height:34px}
+body.sp #cookieBanner{bottom:calc(66px + env(safe-area-inset-bottom))!important}
+@media(min-width:900px){body.sp #cookieBanner{bottom:0!important}}
+body.sp.sp-cookie-on #pp-wa,body.sp.sp-cookie-on .pp-wa{bottom:132px!important}
+@media(min-width:900px){body.sp.sp-cookie-on #pp-wa,body.sp.sp-cookie-on .pp-wa{bottom:66px!important}}

@@ -35,7 +35,7 @@
       monthT: function (m) { return 'Himachal in ' + m; }, tipsT: 'First trip to Himachal?', tipsS: 'Six things worth knowing before you go.',
       regionOn: 'Region:', clearRegion: 'Show all regions',
       motto: 'We don’t send you where everyone goes. We show you quiet, lesser-known places — and help you visit them gently.',
-      findBtn: 'Find my quiet place', findSub: '3 quick questions · we suggest, you choose', whenGoing: 'When are you going?', browseAll: 'Or browse all 146 places',
+      findBtn: 'Find my quiet place', findSub: '2 quick questions · we suggest, you choose', whenGoing: 'When are you going?', browseAll: 'Or browse all 146 places',
       swapT: 'Skip the rush', swapS: 'Heading somewhere famous? Its quiet neighbour is right there.', insteadOf: 'Instead of', busy: 'busy',
       pledgeT: 'Travel light on the hills', pl1: 'Stay with local families, eat at local dhabas', pl2: 'Carry your plastic back down', pl3: 'Respect village and temple customs', pl4: 'Go on weekdays when you can',
       heroT: 'Find a quiet place in the hills', heroS: 'Offbeat Himachal, away from the crowds — 146 places with crowd forecasts.',
@@ -43,7 +43,7 @@
       sub: 'Crowd forecasts for 146 offbeat places — pick a quiet one for your dates.',
       searchPh: 'Search a place, e.g. Tirthan', go: 'Go',
       helpTitle: 'Not sure where to go?', helpSub: 'Find your place in 3 taps',
-      step: function (n) { return 'Question ' + n + ' of 3'; }, close: 'Close',
+      step: function (n) { return 'Question ' + n + ' of 2'; }, close: 'Close',
       q1: 'Where are you coming from?', q2: 'How many days do you have?', q3: 'What would make the trip?',
       d2: '2–3 days', d4: '4–5 days', d6: '6 days or more',
       likeVillage: 'Quiet village life', likeNature: 'Forest, rivers, nature', likeSnow: 'Snow', likeTrek: 'Treks & adventure', likeTemple: 'Temples & culture',
@@ -87,13 +87,13 @@
       monthT: function (m) { return m + ' में हिमाचल'; }, tipsT: 'हिमाचल की पहली यात्रा?', tipsS: 'जाने से पहले छह ज़रूरी बातें।',
       regionOn: 'इलाक़ा:', clearRegion: 'सभी इलाक़े दिखाएँ',
       motto: 'हम आपको वहाँ नहीं भेजते जहाँ सब जाते हैं। हम शांत, कम जानी-पहचानी जगहें दिखाते हैं — और उन्हें सम्मान से घूमने में मदद करते हैं।',
-      findBtn: 'मेरी शांत जगह ढूँढें', findSub: '3 छोटे सवाल · हम सुझाएँ, आप चुनें', whenGoing: 'कब जा रहे हैं?', browseAll: 'या सभी 146 जगहें देखें',
+      findBtn: 'मेरी शांत जगह ढूँढें', findSub: '2 छोटे सवाल · हम सुझाएँ, आप चुनें', whenGoing: 'कब जा रहे हैं?', browseAll: 'या सभी 146 जगहें देखें',
       swapT: 'भीड़ से बचें', swapS: 'मशहूर जगह जा रहे हैं? पास में ही शांत जगह है।', insteadOf: 'की जगह', busy: 'भीड़',
       pledgeT: 'पहाड़ों पर हल्के कदम', pl1: 'स्थानीय परिवारों के साथ रुकें, स्थानीय ढाबों में खाएँ', pl2: 'अपना प्लास्टिक वापस ले जाएँ', pl3: 'गाँव और मंदिर के रीति-रिवाज़ों का सम्मान करें', pl4: 'हो सके तो हफ़्ते के बीच जाएँ',
       sub: '146 अनछुई जगहों पर भीड़ का अनुमान — अपनी तारीखों के लिए शांत जगह चुनें।',
       searchPh: 'जगह खोजें, जैसे Tirthan', go: 'खोजें',
       helpTitle: 'कहाँ जाएँ, तय नहीं?', helpSub: '3 टैप में अपनी जगह पाएँ',
-      step: function (n) { return 'सवाल ' + n + ' / 3'; }, close: 'बंद करें',
+      step: function (n) { return 'सवाल ' + n + ' / 2'; }, close: 'बंद करें',
       q1: 'आप कहाँ से आ रहे हैं?', q2: 'आपके पास कितने दिन हैं?', q3: 'यात्रा में क्या चाहिए?',
       d2: '2–3 दिन', d4: '4–5 दिन', d6: '6 दिन या ज़्यादा',
       likeVillage: 'शांत गाँव', likeNature: 'जंगल, नदी, प्रकृति', likeSnow: 'बर्फ़', likeTrek: 'ट्रेक और एडवेंचर', likeTemple: 'मंदिर और संस्कृति',
@@ -389,8 +389,8 @@
         ? CITY_QUICK.map(function (c) { return [c[0], c[1]]; }).concat([['__hp', tt.inHP], ['__other', tt.otherCity]])
         : h.step === 2 ? [['2', tt.d2], ['4', tt.d4], ['6', tt.d6]]
           : [['village', tt.likeVillage], ['nature', tt.likeNature], ['snow', tt.likeSnow], ['trek', tt.likeTrek], ['temple', tt.likeTemple]];
-      html += '<div class="sp-card" style="max-width:560px;margin-top:18px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="sp-muted" style="font-weight:600">' + esc(tt.step(h.step)) +
-        '</span><button class="sp-link" data-act="help-close">' + esc(tt.close) + '</button></div><div class="sp-steps"><i class="on"></i><i class="' + (h.step >= 2 ? 'on' : '') + '"></i><i class="' + (h.step >= 3 ? 'on' : '') + '"></i></div>' +
+      html += '<div class="sp-card" style="max-width:560px;margin-top:18px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="sp-muted" style="font-weight:600">' + esc(tt.step(h.step - 1)) +
+        '</span><button class="sp-link" data-act="help-close">' + esc(tt.close) + '</button></div><div class="sp-steps"><i class="on"></i><i class="' + (h.step >= 3 ? 'on' : '') + '"></i></div>' +
         '<div class="sp-q">' + esc(tt['q' + h.step]) + '</div>' +
         opts.map(function (o) { return '<button class="sp-opt" data-act="help-answer" data-val="' + esc(o[0]) + '">' + esc(o[1]) + '</button>'; }).join('') +
         (h.step === 1 && h.city === '__other' ? '' : '') + '</div>';
@@ -683,6 +683,7 @@
     if (lang) lang.innerHTML = '<button data-lang="en" class="' + (S.lang === 'en' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'en') + '">EN</button><button data-lang="hi" lang="hi" class="' + (S.lang === 'hi' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'hi') + '">हिंदी</button>';
     document.documentElement.lang = S.lang === 'hi' ? 'hi' : 'en';
     drawerLabels();
+    cookieText();
     updateTabs();
   }
 
@@ -809,9 +810,9 @@
       case 'open': try { openPD(id); addPdBar(id); } catch (x) { console.warn(x); } break;
       case 'plan': planFor(id); break;
       case 'save': toggleSaved(id); break;
-      case 'help-open': S.help.step = 1; renderHome(); break;
+      case 'help-open': S.help.step = 2; S.help.city = S.origin; renderHome(); break; // city comes from 'Travelling from'
       case 'help-close': S.help.step = 0; renderHome(); break;
-      case 'help-restart': S.help = { step: 1, city: null, days: null, like: null, kids: S.help.kids }; renderHome(); break;
+      case 'help-restart': S.help = { step: 2, city: S.origin, days: null, like: null, kids: S.help.kids }; renderHome(); break;
       case 'help-answer': helpAnswer(b.dataset.val); break;
       case 'chip': S.chip = b.dataset.chip; S.exploreN = 20; renderExplore(); break;
       case 'more': S.exploreN += 20; renderExploreList(); break;
@@ -892,6 +893,19 @@
     byText('#mapwrap .map-filter-btn', /Has Stays/);                         // map filter that only finds placeholder stays
   }
 
+  /* ---------------- shorter cookie text (fits two lines on a phone) ---------------- */
+  function cookieText() {
+    var cb = $('cookieBanner'), d = cb && cb.firstElementChild; if (!d) return;
+    var hi = S.lang === 'hi';
+    d.innerHTML = '🍪 ' + (hi ? 'सिर्फ़ बेसिक एनालिटिक्स — कोई विज्ञापन नहीं।' : 'Basic analytics only — no ads.') +
+      ' <a href="#" onclick="showPrivacy();return false;" style="color:#7fd4a0;text-decoration:underline">' + (hi ? 'प्राइवेसी' : 'Privacy') + '</a>';
+    var on = function () { document.body.classList.toggle('sp-cookie-on', getComputedStyle(cb).display !== 'none'); };
+    on(); if (!cb._spObs) { cb._spObs = new MutationObserver(on); cb._spObs.observe(cb, { attributes: true, attributeFilter: ['style'] }); }
+    var bs = cb.querySelectorAll('button');
+    if (bs[0]) bs[0].textContent = hi ? 'ठीक है' : 'Accept';
+    if (bs[1]) bs[1].textContent = hi ? 'नहीं' : 'Decline';
+  }
+
   /* ---------------- side menu: Home + Saved at the top ---------------- */
   function drawerExtras() {
     var links = document.querySelector('#mobDrawer .mob-links'); if (!links || $('spDrHome')) return;
@@ -962,6 +976,7 @@
     syncOrigin();
     simplifyMap();
     drawerExtras();
+    cookieText();
     var hostLink = document.querySelector('nav .nr .nr-host'); if (hostLink) hostLink.classList.add('sp-nav-off'); // owners: side menu + footer
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
