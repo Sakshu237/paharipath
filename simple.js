@@ -49,7 +49,7 @@
       likeVillage: 'Quiet village life', likeNature: 'Forest, rivers, nature', likeSnow: 'Snow', likeTrek: 'Treks & adventure', likeTemple: 'Temples & culture',
       otherCity: 'Another city…', inHP: 'I’m already in Himachal',
       forYou: 'Picked for you', change: 'Change answers', withKids: 'Travelling with kids or elders',
-      seePlace: 'See place', planTrip: 'Plan trip', noPicks: 'Nothing fits all of that. Try more days or another interest.',
+      seePlace: 'See place', planTrip: 'Plan trip', noPicks: 'Nothing fits all of that. Try more days or another interest.', noSnowPicks: 'No snow expected at places you can reach on these dates. Try a date between December and February, or open the snow finder.',
       quietOn: 'Quiet on', leastBusy: 'Least busy on', quietToday: 'Quiet today', seeAll: 'See all',
       snowOn: 'Snow likely on', snowToday: 'Snow likely today', snowNone: 'No snow expected at places you can drive to on these dates.', snowMore: 'Open snow finder',
       stayTitle: 'Need a homestay?', staySub: 'Tell us where and when. We’ll WhatsApp you 2–3 local homestays within 24 hours.',
@@ -99,7 +99,7 @@
       likeVillage: 'शांत गाँव', likeNature: 'जंगल, नदी, प्रकृति', likeSnow: 'बर्फ़', likeTrek: 'ट्रेक और एडवेंचर', likeTemple: 'मंदिर और संस्कृति',
       otherCity: 'कोई और शहर…', inHP: 'मैं हिमाचल में ही हूँ',
       forYou: 'आपके लिए चुनी गई', change: 'जवाब बदलें', withKids: 'बच्चों या बुज़ुर्गों के साथ',
-      seePlace: 'जगह देखें', planTrip: 'प्लान बनाएँ', noPicks: 'इन सब से मेल खाती जगह नहीं मिली। ज़्यादा दिन या दूसरी पसंद चुनें।',
+      seePlace: 'जगह देखें', planTrip: 'प्लान बनाएँ', noPicks: 'इन सब से मेल खाती जगह नहीं मिली। ज़्यादा दिन या दूसरी पसंद चुनें।', noSnowPicks: 'इन तारीखों पर पहुँचने लायक जगहों पर बर्फ़ की उम्मीद नहीं। दिसंबर से फ़रवरी की कोई तारीख चुनें या स्नो फ़ाइंडर खोलें।',
       quietOn: 'शांत जगहें:', leastBusy: 'सबसे कम भीड़:', quietToday: 'आज शांत जगहें', seeAll: 'सभी देखें',
       snowOn: 'बर्फ़ की संभावना:', snowToday: 'आज बर्फ़ की संभावना', snowNone: 'इन तारीखों पर सड़क से पहुँचने वाली जगहों पर बर्फ़ की उम्मीद नहीं।', snowMore: 'स्नो फ़ाइंडर खोलें',
       stayTitle: 'होमस्टे चाहिए?', staySub: 'बताइए कहाँ और कब। हम 24 घंटे में WhatsApp पर 2–3 स्थानीय होमस्टे भेजेंगे।',
@@ -398,7 +398,9 @@
       html += '<div class="sp-sec" style="max-width:720px"><div class="sp-row"><h2 class="sp-h2">' + esc(tt.forYou) + '</h2><button class="sp-link" data-act="help-restart">' + esc(tt.change) + '</button></div>' +
         '<label style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;margin-bottom:8px"><input type="checkbox" id="spKids"' + (h.kids ? ' checked' : '') + ' style="width:20px;height:20px"> ' + esc(tt.withKids) + '</label>';
       var picks = suggestions();
-      if (!picks.length) html += '<div class="sp-empty">' + esc(tt.noPicks) + '</div>';
+      if (!picks.length) html += h.like === 'snow'
+        ? '<div class="sp-empty">' + esc(tt.noSnowPicks) + ' <button class="sp-link" data-act="snow">' + esc(tt.snowMore) + ' →</button></div>'
+        : '<div class="sp-empty">' + esc(tt.noPicks) + '</div>';
       picks.forEach(function (r) {
         var p = r.p;
         html += '<div class="sp-pick"><div class="sp-top"><span class="sp-img">' + img(p) + '</span><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span class="sp-name">' + esc(p.name) + '</span>' +
@@ -473,7 +475,7 @@
   // trip-finder.js writes its "why" tags in English; translate the common ones for Hindi.
   var WHY_HI = { 'Best season': 'सही मौसम', 'Good season': 'अच्छा मौसम', 'Offbeat': 'कम जानी जगह', 'Culture': 'संस्कृति', 'Nature': 'प्रकृति', 'Snow': 'बर्फ़',
     'Trek': 'ट्रेक', 'Treks': 'ट्रेक', 'Adventure': 'एडवेंचर', 'Spiritual': 'आध्यात्मिक', 'Temples': 'मंदिर', 'Family-friendly': 'परिवार के लिए', 'Easy roads': 'आसान रास्ते', 'Quiet': 'शांत',
-    'Monsoon — check roads': 'मानसून — रास्ते जाँच लें', 'Snow likely': 'बर्फ़ की संभावना', 'Village': 'गाँव', 'River': 'नदी', 'Lake': 'झील' };
+    'Monsoon — check roads': 'मानसून — रास्ते जाँच लें', 'Snow possible': 'बर्फ़ पड़ सकती है', 'Long journey': 'लंबा सफ़र', 'Snow likely': 'बर्फ़ की संभावना', 'Village': 'गाँव', 'River': 'नदी', 'Lake': 'झील' };
   function whyText(w) {
     if (S.lang !== 'hi') return w;
     var s = String(w);

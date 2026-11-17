@@ -105,6 +105,23 @@
     var x = Math.sin(dl / 2) * Math.sin(dl / 2) + Math.cos(a * r) * Math.cos(c * r) * Math.sin(dn / 2) * Math.sin(dn / 2);
     return 2 * R * Math.asin(Math.sqrt(x));
   }
+  // Real snow chance for a date, from the Snow Finder (live forecast within ~15 days, else the
+  // monthly snow line). Falls back to the same snow-line table if snow-finder.js isn't loaded.
+  var SNOW_LINE = { 0: [2200, 1800], 1: [2300, 1900], 2: [2900, 2400], 3: [3800, 3200], 4: [4500, 4000], 5: [5500, 5000],
+    6: [6000, 5500], 7: [6000, 5500], 8: [5000, 4500], 9: [4200, 3600], 10: [3300, 2800], 11: [2600, 2000] };
+  var _snow = { key: '', lv: null };
+  function ymdOf(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function snowLevel(p, date) {
+    var key = ymdOf(date);
+    if (_snow.key !== key) {
+      _snow.key = key; _snow.lv = null;
+      try { if (window.PPSnow && PPSnow.levelFor) _snow.lv = PPSnow.levelFor(key); } catch (e) { _snow.lv = null; }
+    }
+    if (_snow.lv && _snow.lv[p.id] != null) return _snow.lv[p.id];
+    var b = SNOW_LINE[date.getMonth()], a = alt(p);
+    return a >= b[0] ? 3 : a >= b[1] ? 2 : 1;
+  }
+
   function alt(p) { var m = String(p.altitude || '').replace(/,/g, '').match(/\d+/); return m ? +m[0] : 1500; }
   function fmtH(h) { if (h < 1) return 'under 1h'; var r = Math.round(h * 2) / 2; return '~' + (r % 1 ? Math.floor(r) + '½' : r) + 'h'; }
   function todayISO() { var d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().slice(0, 10); }
@@ -175,7 +192,6 @@
     if (tr.hours > cap) return null;
 
     var wantSnow = st.interests.indexOf('snow') >= 0;
-    var winter = [10, 11, 0, 1, 2].indexOf(m) >= 0;
 
     // Worth the journey? Add-ons and local stops are never the main pick for someone
     // travelling in from outside Himachal; locals can still get them, ranked lower.
@@ -191,18 +207,26 @@
     var closedHigh = HIGH_ZONES[z] && zs === 'snow';
     if (closedHigh && (st.who === 'family' || !wantSnow)) return null;
 
+    // Asked for snow: only places where snow is actually likely/possible on that date count.
+    // (Was "any winter month above 2000 m", which made Haripurdhar win almost every time.)
+    var snowLvl = wantSnow ? snowLevel(p, date) : 0;
+    if (wantSnow && snowLvl < 2) return null;
+
     var s = tier === 'A' ? 0 : tier === 'B' ? -20 : -40, why = [];
-    var bm = bestMonths(p.bestTime);
-    var inBest = bm ? !!bm[m] : false;
-    if (inBest) { s += 30; why.push('Best season'); } else s -= 10;
+    if (wantSnow) {
+      s += snowLvl === 3 ? 45 : 25;
+      why.push(snowLvl === 3 ? 'Snow likely' : 'Snow possible');
+    } else {
+      var bm = bestMonths(p.bestTime);
+      var inBest = bm ? !!bm[m] : false;
+      if (inBest) { s += 30; why.push('Best season'); } else s -= 10;
+    }
     s += ({ good: 15, dry: 10, warn: 0, warm: 0, rain: -35 })[zs] || 0;
     if (zs === 'rain') why.push('Monsoon — check roads');
     if (zs === 'snow') s += wantSnow ? 10 : (a > 2500 ? -30 : -10);
     if (closedHigh) s -= 40;
     if (ovr && ovr.verdict === 'caution') s -= 20;
 
-    var snowChance = winter && a >= 2000;
-    if (wantSnow) { if (snowChance) { s += 25; why.push('Snow likely'); } else s -= 20; }
 
     var vibes = p.vibes || [];
     var picked = st.interests.filter(function (i) { return i !== 'snow'; });
@@ -256,8 +280,16 @@
       var keep = { interests: st.interests, who: st.who, maxH: st.maxH, quiet: st.quiet };
       st.interests = opts.interests || []; st.who = opts.who || 'couple'; st.maxH = 'auto'; st.quiet = true;
       try {
-        var list = places().map(function (p) { return score(p, opts.origin, opts.date, opts.nights || 2); })
-          .filter(Boolean).sort(function (a, b) { return b.s - a.s; });
+        var run1 = function () {
+          return places().map(function (p) { return score(p, opts.origin, opts.date, opts.nights || 2); })
+            .filter(Boolean).sort(function (a, b) { return b.s - a.s; });
+        };
+        var list = run1();
+        // Snow but nothing in reach for these days: show the nearest real snow, flagged as a long journey.
+        if (!list.length && st.interests.indexOf('snow') >= 0) {
+          st.maxH = 16; list = run1();
+          list.forEach(function (r) { r.why = r.why.slice(0, 3).concat('Long journey'); });
+        }
         var top = [], zones = {}, bar = list.length ? list[0].s - 25 : 0;
         list.forEach(function (r) { var z = r.p.zone || ''; if (top.length < 3 && !zones[z] && r.s >= bar) { zones[z] = 1; top.push(r); } });
         list.forEach(function (r) { if (top.indexOf(r) < 0) top.push(r); });

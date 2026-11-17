@@ -540,6 +540,16 @@
     places.forEach(function (p, i) { try { if (!p.trek && !closedOn(p.id, date) && assess(p, i, date).lvl >= 2) out.add(p.id); } catch (e) { /* skip */ } });
     return out;
   }
-  window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet, snowFor: snowFor, ready: ensureData };
+  // Snow level per place id on a date: 3 = snow likely, 2 = possible, 1 = unlikely, 0 = road closed / trek-only.
+  // Same rules as the finder (live forecast once loaded, else the monthly snow line). Used by the trip finder.
+  function levelFor(date) {
+    var places = state.places || buildPlaces();
+    var out = {};
+    places.forEach(function (p, i) {
+      try { out[p.id] = p.trek || closedOn(p.id, date) ? 0 : assess(p, i, date).lvl; } catch (e) { out[p.id] = 0; }
+    });
+    return out;
+  }
+  window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet, snowFor: snowFor, levelFor: levelFor, ready: ensureData };
   injectCSS();
 })();
