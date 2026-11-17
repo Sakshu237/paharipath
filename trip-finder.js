@@ -203,6 +203,16 @@
     if (bf === 'pilgrims' && !want('spiritual')) return null;
     if (bf === 'roadtrip' && (!want('adventure') || nights < 4 || st.who === 'family')) return null;
     if (bf === 'birders' && (!want('nature') || [10, 11, 0, 1, 2].indexOf(m) < 0)) return null;
+    // Road or trail closed for the season on that date (crowd-predict.js knows) — never suggest it.
+    var pr = null;
+    try { if (window.PP_CROWD) pr = window.PP_CROWD.predict(p, date); } catch (e) { pr = null; }
+    if (pr && pr.closed) return null;
+    // Treks and high passes are seasonal: outside their months they're snowbound or unsafe,
+    // even when the crowd engine hasn't marked them closed (low "crowd" there just means nobody can go).
+    var bmT = bestMonths(p.bestTime), offSeason = (pr && pr.inSeason === false) || (bmT ? !bmT[m] : false);
+    var isTrek = bf === 'trekkers' || ((p.vibes || []).indexOf('trek') >= 0 && a >= 2800);
+    if (isTrek && offSeason) return null;
+    if (isTrek && st.who === 'family' && a > 3500) return null;
     var zs = (seasons()[z] || seasons().kullu || [])[m] || 'good';
     var closedHigh = HIGH_ZONES[z] && zs === 'snow';
     if (closedHigh && (st.who === 'family' || !wantSnow)) return null;
@@ -232,26 +242,35 @@
     var picked = st.interests.filter(function (i) { return i !== 'snow'; });
     var hits = picked.filter(function (i) { return vibes.indexOf(i) >= 0; });
     s += hits.length * 15;
-    if (picked.length && !hits.length) s -= 25;
+    if (picked.length && !hits.length) s -= 60;   // places that match the answer always come before ones that don't
     hits.forEach(function (h) { why.push(h.charAt(0).toUpperCase() + h.slice(1)); });
 
-    var crowd = p.crowd || 30;
-    try { if (window.PP_CROWD) crowd = window.PP_CROWD.predict(p, date).value; } catch (e) { /* fall back to base crowd */ }
-    if (st.quiet) { s += (60 - crowd) * 0.5; if (crowd < 35) why.push('Quiet · ' + Math.round(crowd) + '% crowd'); }
+    var crowd = pr && isFinite(pr.value) ? pr.value : (p.crowd || 30);
+    // Off-season "quiet" isn't a selling point (it's quiet because it's the wrong time), so no bonus/tag for it.
+    if (st.quiet) { s += (60 - crowd) * (offSeason ? 0.2 : 0.5); if (crowd < 35 && !offSeason) why.push('Quiet · ' + Math.round(crowd) + '% crowd'); }
     else s += crowd * 0.05;
 
-    s -= tr.hours * (nights <= 2 ? 4 : 2);
+    // Short trips: every hour on the road hurts. Longer trips have time for the journey, so hours
+    // up to a comfortable limit cost little — otherwise 4 and 6 days gave the same nearby picks.
+    var easyH = nights <= 2 ? 0 : nights === 3 ? 4 : nights <= 5 ? 6 : 9;
+    s -= Math.min(tr.hours, easyH) * 0.5 + Math.max(0, tr.hours - easyH) * (nights <= 2 ? 4 : 3);
     if (nights < 3 && a > 3000) s -= 20;
     if (st.who === 'family') { if (a > 3500) s -= 25; if (a > 2700 && (p.crowd || 30) < 10) s -= 10; }
     if (st.who === 'couple' && (vibes.indexOf('nature') >= 0 || vibes.indexOf('offbeat') >= 0)) s += 5;
     if ((st.who === 'friends' || st.who === 'solo') && (vibes.indexOf('adventure') >= 0 || vibes.indexOf('trek') >= 0)) s += 6;
 
-    return { p: p, s: s, tr: tr, crowd: crowd, why: why.slice(0, 4) };
+    return { p: p, s: s, tr: tr, crowd: crowd, why: why.slice(0, 4), match: !picked.length || hits.length > 0 };
   }
 
   function suggest() {
     var o = st.origin, date = new Date(val('tfDate') || todayISO()), nights = Math.max(1, Math.min(14, parseInt(val('tfNights'), 10) || 2));
     var list = places().map(function (p) { return score(p, o, date, nights); }).filter(Boolean).sort(function (a, b) { return b.s - a.s; });
+    if (!list.length && st.maxH === 'auto') {
+      st.maxH = '16';
+      try { list = places().map(function (p) { return score(p, o, date, nights); }).filter(Boolean).sort(function (a, b) { return b.s - a.s; }); }
+      finally { st.maxH = 'auto'; }
+      list.forEach(function (r) { r.why = r.why.slice(0, 3).concat('Long journey'); });
+    }
     // Spread the top picks across valleys.
     var top = [], zones = {};
     var bar = list.length ? list[0].s - 25 : 0;   // only spread out among genuinely good options
@@ -285,8 +304,19 @@
             .filter(Boolean).sort(function (a, b) { return b.s - a.s; });
         };
         var list = run1();
-        // Snow but nothing in reach for these days: show the nearest real snow, flagged as a long journey.
-        if (!list.length && st.interests.indexOf('snow') >= 0) {
+        // Only show places that match the answer (a trek answer shouldn't get Karsog as filler).
+        // Too few matches nearby? Add matching places a bit further away, flagged as a long journey.
+        var hit = list.filter(function (r) { return r.match; });
+        if (hit.length < 2 && (opts.interests || []).length) {
+          var near = {}; hit.forEach(function (r) { near[r.p.id] = 1; });
+          st.maxH = 16;
+          run1().forEach(function (r) { if (r.match && !near[r.p.id]) { r.why = r.why.slice(0, 3).concat('Long journey'); hit.push(r); } });
+          st.maxH = 'auto';
+        }
+        if (hit.length) list = hit;
+        // Nothing within reach for these days (e.g. 2 days from Jaipur, or snow far away):
+        // show the nearest good options anyway, flagged as a long journey, instead of an empty screen.
+        if (!list.length) {
           st.maxH = 16; list = run1();
           list.forEach(function (r) { r.why = r.why.slice(0, 3).concat('Long journey'); });
         }

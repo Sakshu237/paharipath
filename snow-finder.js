@@ -550,6 +550,12 @@
     });
     return out;
   }
-  window.PPSnow = { open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet, snowFor: snowFor, levelFor: levelFor, ready: ensureData };
+  // Pure snow chance (3/2/1) for one place on a date, ignoring road closures and trek flags. Used by the Plan tab.
+  function levelOf(id, date) {
+    var places = state.places || buildPlaces();
+    for (var i = 0; i < places.length; i++) if (places[i].id === +id) return assess(places[i], i, date).lvl;
+    return null;
+  }
+  window.PPSnow = { levelOf: levelOf, open: open, showOnMap: showOnMap, mapToggle: mapToggle, setDate: setDate, snowSet: snowSet, snowFor: snowFor, levelFor: levelFor, ready: ensureData };
   injectCSS();
 })();

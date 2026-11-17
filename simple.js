@@ -286,6 +286,14 @@
     if (v < 80) return { w: tt.c, fg: '#9b3a1e', bg: '#f6e1d8', v: v };
     return { w: tt.p, fg: '#8a2412', bg: '#f3d5ca', v: v };
   }
+  // Can't really go: road closed, or a trek/high pass outside its season (snowbound). Those show a
+  // tiny crowd % only because nobody can get there, so they must not appear as "quiet".
+  function shut(p) {
+    var r = crowd(p); if (r.closed) return true;
+    if (r.inSeason !== false) return false;
+    var alt = parseInt(String(p.altitude || '').replace(/[^0-9]/g, ''), 10) || 0;
+    return (p.vibes || []).indexOf('trek') >= 0 || /\b(Pass|Peak|Trek|Kund|Lake)\b/.test(p.name) && alt >= 2800;
+  }
   function sortVal(p) { var r = crowd(p); return r.value + (r.closed ? 200 : r.inSeason === false ? 60 : 0); }
   // Sort by a key computed once per item (not inside the comparator).
   function sortBy(list, fn) {
@@ -493,13 +501,14 @@
       { instead: 'Shimla', crowd: 85, name: 'Narkanda', desc: 'Apple orchards, Hatu Peak, skiing — 65 km from Shimla, no Mall Road chaos.', hi: 'सेब के बाग़, हाटू पीक, स्कीइंग — शिमला से 65 किमी, मॉल रोड की भीड़ नहीं।' },
       { instead: 'Triund', crowd: 68, name: 'Kareri Lake', desc: 'Alpine lake above Dharamshala. Same Dhauladhar views, far fewer people.', hi: 'धर्मशाला के ऊपर पहाड़ी झील। वही धौलाधार नज़ारे, बहुत कम लोग।' },
       { instead: 'Dharamshala', crowd: 71, name: 'Bir Billing', desc: 'Paragliding, monasteries, good cafes — without the McLeod crush.', hi: 'पैराग्लाइडिंग, मठ, अच्छे कैफ़े — मैक्लोडगंज की भीड़ के बिना।' },
-      { instead: 'Spiti Valley', crowd: 35, name: 'Barot', desc: 'Trout streams, pine forests, Pahari villages. No permit needed.', hi: 'ट्राउट वाली नदियाँ, चीड़ के जंगल, पहाड़ी गाँव। परमिट की ज़रूरत नहीं।' }
+      { instead: 'Spiti Valley', look: 'Kaza', crowd: 35, name: 'Barot', desc: 'Trout streams, pine forests, Pahari villages. No permit needed.', hi: 'ट्राउट वाली नदियाँ, चीड़ के जंगल, पहाड़ी गाँव। परमिट की ज़रूरत नहीं।' }
     ];
     var all = places();
     return alts.map(function (a) {
       var p = all.find(function (x) { return x.name === a.name; }); if (!p) return null;
-      var f = all.find(function (x) { return x.name === a.instead; });
-      var busy = f ? crowd(f).value : a.crowd;
+      if (shut(p)) return null;   // e.g. Kareri Lake / Grahan treks in snow season
+      var f = all.find(function (x) { return x.name === (a.look || a.instead); });
+      var busy = f ? crowd(f).value : null;
       return { p: p, instead: a.instead, busy: busy == null ? null : Math.round(busy), desc: S.lang === 'hi' && a.hi ? a.hi : a.desc };
     }).filter(Boolean);
   }
@@ -529,7 +538,7 @@
     return sortBy(places().filter(function (p) {
       if (q && (p.name + ' ' + (p.district || '') + ' ' + (p.famousFor || '')).toLowerCase().indexOf(q) < 0) return false;
       if (S.region) { var rg = regionOf(S.region); if (rg && rg.z.indexOf(String(p.zone || '').toLowerCase()) < 0) return false; }
-      if (S.chip === 'quiet') return crowd(p).value < 30 && !crowd(p).closed;
+      if (S.chip === 'quiet') return crowd(p).value < 30 && !shut(p);
       if (S.chip === 'near') { var r = travel(p); return r && r.hours <= (r.far ? 5 : 8); }
       if (S.chip === 'snow') return snowSet.has(p.id) && !crowd(p).closed;
       if (S.chip === 'temples') return (p.vibes || []).indexOf('spiritual') >= 0;
@@ -657,6 +666,9 @@
   }
   function render() {
     _cc = {};
+    // Snow finder and the map's Snow / Quiet buttons follow the "Going" date too (they used this Saturday / right now).
+    try { if (window.PPSnow && PPSnow.setDate) PPSnow.setDate(ymd(planDate())); } catch (e) { /* ignore */ }
+    try { if (S.tab === 'map' && typeof _mFilter !== 'undefined' && _mFilter === 'quiet') { var qb = document.querySelector('#mapwrap .map-filter-btn.quiet-only'); if (qb) mapFilter('quiet', qb); } } catch (e) { /* map not ready */ }
     renderBar();
     if (S.tab === 'home') renderHome();
     else if (S.tab === 'explore') renderExplore();
@@ -1005,7 +1017,7 @@
     if (typeof origOpenPD === 'function') window.openPD = function (id) { var r = origOpenPD.apply(this, arguments); try { addPdBar(id); } catch (e) { /* ignore */ } return r; };
     var origRunFC = window.runFC;
     if (typeof origRunFC === 'function') window.runFC = function () { var r = origRunFC.apply(this, arguments); setTimeout(renderPlanBar, 0); return r; };
-    try { if (window.PPSnow && PPSnow.ready) PPSnow.ready().then(function () { if (S.tab === 'home') renderHome(); }, function () { /* estimates */ }); } catch (e) { /* ignore */ }
+    try { if (window.PPSnow && PPSnow.ready) PPSnow.ready().then(function () { render(); }, function () { /* estimates */ }); } catch (e) { /* ignore */ }
 
     renderChrome();
     fromHash();
@@ -1015,6 +1027,8 @@
     show(m ? m[1] : 'home', { fromHash: true, keepScroll: !m });
   }
 
+  // Map 'Quiet only' (app.js): quiet on the chosen date, open, and in season — not snowbound passes showing 3%.
+  window.PP_QUIET = function (p) { return crowd(p).value < 45 && !shut(p); };
   window.PPSimple = { show: show, render: render, planFor: planFor, openStay: openStay, state: S };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
