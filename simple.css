@@ -1,5 +1,9 @@
 /* PahariPath — simplified app shell (simple.js). Only active when <body> has .sp */
 
+/* Before simple.js boots: hide the old homepage + old header buttons, show a small loader (see sp-boot in index.html) */
+html.sp-boot body:not(.sp) #view-home,html.sp-boot body:not(.sp) nav .nr{visibility:hidden}
+html.sp-boot body:not(.sp)::after{content:'';position:fixed;left:50%;top:45%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid #e8ede9;border-top-color:#1a3d2b;border-radius:50%;animation:spBoot .8s linear infinite;z-index:9999}
+@keyframes spBoot{to{transform:rotate(360deg)}}
 body.sp .sp-old{display:none!important}
 body.sp .sp-old.sp-show{display:block!important}
 body.sp #mapwrap.sp-show{display:block!important}

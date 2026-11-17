@@ -68,7 +68,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'"/>
 <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/></noscript>
-<link rel="stylesheet" href="/simple.css?v=20261116e"/>
+<link rel="stylesheet" href="/simple.css?v=20261117c"/>
+<script>/* Hide the old homepage until simple.js swaps in the new one (no flash of the old site). Safety: show it anyway after 15s. */
+(function(d){d.classList.add('sp-boot');setTimeout(function(){d.classList.remove('sp-boot')},15000)})(document.documentElement);</script>
 <script defer data-domain="paharipath.in" src="https://plausible.io/js/script.js"></script>
 <style>
 :root{
@@ -1214,7 +1216,7 @@ input[type=range]{flex:1;accent-color:var(--pine)}
 <script src="/seo.js?v=20261116e"></script>
 <script src="/snow-finder.js?v=20261117b"></script>
 <script src="/trip-finder.js?v=20261117b"></script>
-<script src="/simple.js?v=20261117b"></script>
+<script src="/simple.js?v=20261117c"></script>
 <!-- MANAGE / CANCEL BOOKING MODAL -->
 <div id="manageBookingMo" class="mo" onclick="if(event.target===this){this.classList.remove('open');this.style.display='none';}" style="display:none">
   <div class="mo-box" style="max-width:460px">
