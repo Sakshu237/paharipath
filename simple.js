@@ -128,7 +128,8 @@
     }
   };
 
-  var TABS = ['home', 'explore', 'crowd', 'plan', 'saved'];
+  var TABS = ['home', 'explore', 'crowd', 'plan', 'stays'];   // bottom bar (Nov 2026: Stays replaced Saved, which moved to a ♥ in the top bar)
+  var LBL = ['home', 'explore', 'crowd', 'plan', 'saved'];    // order of t().tabs labels
   var CITY_QUICK = [['Delhi', 'Delhi NCR'], ['Chandigarh', 'Chandigarh / Punjab'], ['Mumbai', 'Mumbai / Pune'], ['Bengaluru', 'Bengaluru / South']];
   /* ---------------- first-time explorer help (Nov 2026) ---------------- */
   // Himachal in 7 easy regions, grouped by the zone field in places data.
@@ -659,7 +660,9 @@
     if (!opts.keepScroll) window.scrollTo(0, 0);
   }
   function updateTabs() {
-    var active = S.tab === 'map' ? 'explore' : S.tab === 'stays' ? 'home' : S.tab;
+    var active = S.tab === 'map' ? 'explore' : S.tab;
+    var sv = $('spSavedTop'); if (sv) sv.classList.toggle('on', S.tab === 'saved');
+    document.body.classList.toggle('sp-map-on', S.tab === 'map');
     var tabs = $('spTabs');
     if (tabs) tabs.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === active); b.setAttribute('aria-current', b.dataset.tab === active ? 'page' : 'false'); });
     document.querySelectorAll('nav .nl a[data-tab]').forEach(function (a) { a.classList.toggle('on', a.dataset.tab === S.tab); });
@@ -681,17 +684,21 @@
     explore: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
     crowd: '<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/>',
     plan: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
-    saved: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>'
+    saved: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+    stays: '<path d="M3 20V10l9-6 9 6v10"/><path d="M3 20h18"/><path d="M9 20v-5h6v5"/>'
   };
+  function tabLabel(k) { var tt = t(); return k === 'stays' ? tt.stays : tt.tabs[LBL.indexOf(k)]; }
   function renderChrome() {
     var tt = t();
     var tabs = $('spTabs');
     if (tabs) tabs.innerHTML = TABS.map(function (k, i) {
-      var n = k === 'saved' && saved().length ? ' (' + saved().length + ')' : '';
-      return '<button data-tab="' + k + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[k] + '</svg>' + esc(tt.tabs[i] + n) + '</button>';
+      return '<button data-tab="' + k + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[k] + '</svg>' + esc(tabLabel(k)) + '</button>';
     }).join('');
+    var sv = $('spSavedTop');
+    if (sv) { var c = saved().length; sv.setAttribute('aria-label', tabLabel('saved') + (c ? ' (' + c + ')' : '')); sv.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS.saved + '</svg>' + (c ? '<span class="sp-badge">' + c + '</span>' : ''); }
+    var ms = $('spMapStay'); if (ms) ms.textContent = '🏡 ' + tt.stayBtn;
     var nl = document.querySelector('nav .nl');
-    if (nl) nl.innerHTML = ['explore', 'crowd', 'plan', 'saved'].map(function (k) { return '<li><a data-tab="' + k + '" href="#/' + k + '">' + esc(tt.tabs[TABS.indexOf(k)]) + '</a></li>'; }).join('') +
+    if (nl) nl.innerHTML = ['explore', 'crowd', 'plan', 'saved'].map(function (k) { return '<li><a data-tab="' + k + '" href="#/' + k + '">' + esc(tabLabel(k)) + '</a></li>'; }).join('') +
       '<li><a data-tab="stays" href="#/stays">🏡 ' + esc(tt.stays) + '</a></li>' + '<li><a href="/blog">' + esc(tt.blog) + '</a></li>';
     var lang = $('spLang');
     if (lang) lang.innerHTML = '<button data-lang="en" class="' + (S.lang === 'en' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'en') + '">EN</button><button data-lang="hi" lang="hi" class="' + (S.lang === 'hi' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'hi') + '">हिंदी</button>';
@@ -997,12 +1004,16 @@
     home.insertBefore(root, home.firstChild);
     var tabs = document.createElement('div'); tabs.id = 'spTabs'; tabs.setAttribute('role', 'navigation'); tabs.setAttribute('aria-label', 'Main'); document.body.appendChild(tabs);
     var sheet = document.createElement('div'); sheet.id = 'spSheet'; document.body.appendChild(sheet);
+    var mst = document.createElement('button'); mst.id = 'spMapStay'; mst.className = 'sp-mapstay'; mst.dataset.act = 'stay'; document.body.appendChild(mst);
+    window.ppFindStay = function (id) { openStay(id); };   // map pin popups (app.js)
     sheet.addEventListener('click', function (e) { if (e.target === sheet) closeSheet(); });
     // Header: language switch, hide duplicate stay buttons.
     var nr = document.querySelector('nav .nr');
     if (nr) {
       var lang = document.createElement('div'); lang.id = 'spLang'; lang.className = 'sp-lang'; lang.setAttribute('role', 'group'); lang.setAttribute('aria-label', 'Language');
       nr.insertBefore(lang, nr.firstChild);
+      var svt = document.createElement('button'); svt.id = 'spSavedTop'; svt.className = 'sp-savedtop'; svt.dataset.tab = 'saved';
+      nr.insertBefore(svt, lang.nextSibling);
       Array.prototype.forEach.call(nr.querySelectorAll('.nb'), function (b) { if (/Find Stays|Book a Stay/.test(b.textContent)) b.classList.add('sp-hide-btn'); });
     }
     if (FREEZE) freeze();

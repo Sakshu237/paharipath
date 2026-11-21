@@ -240,3 +240,13 @@ body.sp #cookieBanner{bottom:calc(66px + env(safe-area-inset-bottom))!important}
 @media(min-width:900px){body.sp #cookieBanner{bottom:0!important}}
 body.sp.sp-cookie-on #pp-wa,body.sp.sp-cookie-on .pp-wa{bottom:132px!important}
 @media(min-width:900px){body.sp.sp-cookie-on #pp-wa,body.sp.sp-cookie-on .pp-wa{bottom:66px!important}}
+
+/* Nov 2026: ♥ Saved in the top bar (Stays took its bottom tab), floating "Find a stay" on the map */
+.sp-savedtop{position:relative;display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;margin-right:6px;border:0;border-radius:10px;background:#e8ede9;color:var(--pine);cursor:pointer}
+.sp-savedtop svg{width:21px;height:21px}
+.sp-savedtop.on{background:#fbe9e0;color:#b25f3a}
+.sp-badge{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#c4704a;color:#fff;font:700 10px/16px var(--fb)}
+@media(min-width:900px){.sp-savedtop{display:none}}
+.sp-mapstay{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom));z-index:450;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:#c4704a;color:#fff;font:700 15px var(--fb);box-shadow:0 6px 20px rgba(0,0,0,.22);cursor:pointer}
+body.sp-map-on .sp-mapstay{display:block}
+@media(min-width:900px){.sp-mapstay{bottom:28px}}
