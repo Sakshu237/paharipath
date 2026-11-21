@@ -39,7 +39,7 @@
       swapT: 'Skip the rush', swapS: 'Heading somewhere famous? Its quiet neighbour is right there.', insteadOf: 'Instead of', busy: 'busy',
       pledgeT: 'Travel light on the hills', pl1: 'Stay with local families, eat at local dhabas', pl2: 'Carry your plastic back down', pl3: 'Respect village and temple customs', pl4: 'Go on weekdays when you can',
       heroT: 'Find a quiet place in the hills', heroS: 'Offbeat Himachal, away from the crowds — 146 places with crowd forecasts.',
-      where: 'Where', when: 'When', fromLbl: 'Travelling from', searchBtn: 'Search', notSure: 'Not sure where to go? We’ll suggest a place',
+      where: 'Where', when: 'When', fromLbl: 'Travelling from', searchBtn: 'Search', notSure: 'Not sure where to go? We’ll suggest a place', knowWhere: 'I know where to go', suggestMe: 'Suggest a place for me',
       sub: 'Crowd forecasts for 146 offbeat places — pick a quiet one for your dates.',
       searchPh: 'Search a place, e.g. Tirthan', go: 'Go',
       helpTitle: 'Not sure where to go?', helpSub: 'Find your place in 3 taps',
@@ -78,7 +78,7 @@
     },
     hi: {
       heroT: 'पहाड़ों में शांत जगह ढूँढिए', heroS: 'भीड़ से दूर, असली हिमाचल — 146 जगहों की भीड़ का अनुमान।',
-      where: 'कहाँ', when: 'कब', fromLbl: 'कहाँ से आ रहे हैं', searchBtn: 'खोजें', notSure: 'पता नहीं कहाँ जाएँ? हम जगह सुझाएँगे',
+      where: 'कहाँ', when: 'कब', fromLbl: 'कहाँ से आ रहे हैं', searchBtn: 'खोजें', notSure: 'पता नहीं कहाँ जाएँ? हम जगह सुझाएँगे', knowWhere: 'मुझे पता है कहाँ जाना है', suggestMe: 'मेरे लिए जगह सुझाएँ',
       going: 'कब:', from: 'कहाँ से', today: 'आज', weekend: 'इस वीकेंड', nextWeekend: 'अगला वीकेंड', pick: 'तारीख चुनें',
       h1a: 'वही हिमाचल,', h1b: 'बिना भीड़ के।',
       kicker: 'ज़िम्मेदार यात्रा · हिमाचल',
@@ -692,7 +692,7 @@
     }).join('');
     var nl = document.querySelector('nav .nl');
     if (nl) nl.innerHTML = ['explore', 'crowd', 'plan', 'saved'].map(function (k) { return '<li><a data-tab="' + k + '" href="#/' + k + '">' + esc(tt.tabs[TABS.indexOf(k)]) + '</a></li>'; }).join('') +
-      (FREEZE ? '' : '<li><a data-tab="stays" href="#/stays">' + esc(tt.stays) + '</a></li>') + '<li><a href="/blog">' + esc(tt.blog) + '</a></li>';
+      '<li><a data-tab="stays" href="#/stays">🏡 ' + esc(tt.stays) + '</a></li>' + '<li><a href="/blog">' + esc(tt.blog) + '</a></li>';
     var lang = $('spLang');
     if (lang) lang.innerHTML = '<button data-lang="en" class="' + (S.lang === 'en' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'en') + '">EN</button><button data-lang="hi" lang="hi" class="' + (S.lang === 'hi' ? 'on' : '') + '" aria-pressed="' + (S.lang === 'hi') + '">हिंदी</button>';
     document.documentElement.lang = S.lang === 'hi' ? 'hi' : 'en';
@@ -703,7 +703,23 @@
 
   /* ---------------- plan tab ---------------- */
   var _planTouched = false;
+  var _sugInit = false;
+  function prepareSuggest() {
+    if (!window.PPTrip || !$('tfForm')) return;
+    var tt = t(), k = $('tfModeKnow'), g = $('tfModeSuggest');
+    if (k) k.textContent = '📍 ' + tt.knowWhere;
+    if (g) g.textContent = '✨ ' + tt.suggestMe;
+    var o = $('tfOrigin');
+    if (o && S.origin && Array.prototype.some.call(o.options, function (x) { return x.value === S.origin; })) { o.value = S.origin; PPTrip.pick(S.origin); }
+    var td = $('tfDate'); if (td && !_planTouched) td.value = ymd(planDate());
+    if (!_sugInit) {
+      _sugInit = true;
+      // first visit with no place chosen: start on "Suggest a place for me"
+      if (!+(($('ppPlace') || {}).value || 0)) PPTrip.setMode('suggest');
+    }
+  }
   function preparePlan() {
+    prepareSuggest();
     var d = $('ppDate');
     if (d && !_planTouched) d.value = ymd(planDate());
     if (!$('spPlanBar')) {
@@ -722,6 +738,8 @@
   }
   function planFor(id) {
     var p = places().find(function (x) { return x.id === +id; }); if (!p) return;
+    _sugInit = true;
+    if (window.PPTrip && $('tfForm')) PPTrip.setMode('know');
     show('plan');
     var d = $('ppDate'); if (d) d.value = ymd(planDate());
     var n = $('ppNights'); if (n && S.help.days) n.value = S.help.days;
@@ -772,7 +790,8 @@
       '<label class="sp-field">' + esc(tt.fName) + '<input name="name" autocomplete="name" value="' + esc(name) + '" required maxlength="100"></label>' +
       '<label class="sp-field">' + esc(tt.fPhone) + '<input name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98xxxxxxxx" value="' + esc(phone) + '" required maxlength="13"></label>' +
       '<label class="sp-field">' + esc(tt.fNote) + '<input name="note" maxlength="300"></label>' +
-      '<button class="sp-btn clay full" type="submit" style="margin-top:16px;min-height:52px">' + esc(tt.send) + '</button><p class="sp-muted" style="text-align:center;margin:10px 0 0">' + esc(tt.free) + '</p></form></div>';
+      '<button class="sp-btn clay full" type="submit" style="margin-top:16px;min-height:52px">' + esc(tt.send) + '</button><p class="sp-muted" style="text-align:center;margin:10px 0 0">' + esc(tt.free) + '</p>' +
+      '<p style="text-align:center;margin:12px 0 0"><a href="/sample-stays" style="color:var(--pine);font-weight:600">' + esc(tt.stayBrowse) + ' →</a></p></form></div>';
     sheet.classList.add('on');
     document.body.style.overflow = 'hidden';
     setTimeout(function () { var f = sheet.querySelector('input[name="' + (p ? 'name' : 'where') + '"]'); if (f && !f.value) f.focus(); }, 50);

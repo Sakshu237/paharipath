@@ -7,7 +7,8 @@ html.sp-boot body:not(.sp)::after{content:'';position:fixed;left:50%;top:45%;wid
 body.sp .sp-old{display:none!important}
 body.sp .sp-old.sp-show{display:block!important}
 body.sp #mapwrap.sp-show{display:block!important}
-body.sp .tf-modes{display:none!important}
+body.sp .tf-modes{display:flex;gap:8px;max-width:1080px;margin:0 auto 16px}
+body.sp .tf-mode{flex:1;min-height:52px;border-radius:14px;font-size:15px;font-weight:600}
 body.sp nav .nr .nb.ol,body.sp nav .nr .sp-hide-btn{display:none!important}
 
 #spRoot{font-family:var(--fb);color:var(--ink);background:var(--cream)}
