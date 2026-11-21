@@ -97,7 +97,31 @@
   const SLOW_DAY = ['Long breakfast in the sun — no alarm today', 'Village walk — say "Ram Ram" to everyone you pass', 'Afternoon rest with a book and chai', 'Evening with your host family'];
 
   // ── state ──────────────────────────────────────────────────────────────
-  const S = { ctx: null, type: null, pace: 'relaxed', added: [], nearby: null, nearbyLoading: null, lastKey: '', open: [0] };
+  const S = { ctx: null, type: null, pace: 'relaxed', added: [], base: null, nearby: null, nearbyLoading: null, lastKey: '', open: [0], adding: null };
+
+  // ── how they get around (shared with trip-finder.js) ──────────────────
+  const tmode = () => (window.PPTrip && window.PPTrip.getTransport ? window.PPTrip.getTransport() : 'car');
+  const GO = { car: 'Drive to', bike: 'Ride to', bus: 'Take a local bus or shared taxi to', taxi: 'Take a taxi to' };
+  const goTo = (n, mins, hike) => { const v = GO[tmode()] || GO.car;
+    return hike ? `${v} the trailhead for ${n} (about ${fmtMins(mins)}), then hike in` : `${v} ${n} — about ${fmtMins(mins)}`; };
+
+  // ── traveller's own changes: removed lines and their own plans, per day ──
+  // Saved in the browser, keyed by place + start date. A day is matched by what it is
+  // (kind + place + title), so edits stay on the right day when trips are added or moved.
+  const editKey = () => 'pp_itn_edit_' + S.ctx.place.id + '_' + S.ctx.start.toISOString().slice(0, 10);
+  const memEdits = {};
+  function getEdits() { const k = editKey(); try { const v = localStorage.getItem(k); if (v) return JSON.parse(v); } catch (e) { /* storage blocked */ } return memEdits[k] || {}; }
+  function setEdits(e) { const k = editKey(); memEdits[k] = e; try { localStorage.setItem(k, JSON.stringify(e)); } catch (x) { /* storage blocked — memory copy kept */ } }
+  const dayKey = d => d.kind + ':' + d.pid + ':' + d.title;
+  // The schedule with the traveller's changes applied — used for the page, WhatsApp, email and copy.
+  function editedSched(plan) {
+    const sched = scheduleAll(plan), ed = getEdits();
+    return sched.map((slots, i) => {
+      const e = ed[dayKey(plan.days[i])]; if (!e) return slots;
+      const kept = slots.filter(x => !(e.rm || []).includes(x.text));
+      return kept.concat((e.add || []).map(text => ({ time: 'Your plan', part: '', text, own: true })));
+    });
+  }
 
   function loadNearby() {
     if (S.nearby) return Promise.resolve(S.nearby);
@@ -167,6 +191,7 @@
     // 1. The place's own days.
     mids.slice(0, middleCount).forEach(d => blocks.push({ kind: 'local', pid: p.id, title: cleanTitle(d.title) || `Around ${p.name}`, items: (d.items || []).map(clean) }));
     let remaining = middleCount - blocks.length;
+    const freeDays = remaining;
 
     // 2. Nearby: user-added first, then the list order. Skip snow-bound places in snow season.
     const snow = c.season === 'snow';
@@ -175,13 +200,14 @@
     const snowBound = n => snow && (S.nearby[String(n.id)] || {}).t === 'seasonal';
     const near = nearbyOf(p.id).filter(n => S.added.includes(n.id) || (!snowBound(n) && !covered(n)));
     const trips = [...S.added.map(id => near.find(n => n.id === id)).filter(Boolean), ...near.filter(n => !n.base && n.mins <= 150 && !S.added.includes(n.id))];
-    const baseCand = near.find(n => !n.hike && n.mins >= 40 && !S.added.includes(n.id));
+    const chosenBase = S.base ? near.find(n => n.id === S.base) : null;   // "Stay here too" from the nearby sheet
+    const baseCand = chosenBase || near.find(n => !n.hike && n.mins >= 40 && !S.added.includes(n.id));
 
     const dayTrip = n => ({
       kind: 'nearby', pid: n.id, mins: n.mins, hike: n.hike,
       title: `Day trip: ${n.p.name}`,
       items: [
-        n.hike ? `Drive to the trailhead for ${n.p.name} (about ${fmtMins(n.mins)}), then hike in` : `Drive to ${n.p.name} — about ${fmtMins(n.mins)}`,
+        goTo(n.p.name, n.mins, n.hike),
         ...tripHighlights(n.p).slice(0, 2),
         `Head back to ${p.name} before dark`,
       ],
@@ -190,7 +216,7 @@
 
     let base = null;
     if (remaining > 0) {
-      const useBase = remaining >= 4 && baseCand && !S.added.includes(baseCand.id);
+      const useBase = chosenBase ? remaining >= 2 : remaining >= 4 && baseCand && !S.added.includes(baseCand.id);
       const tripSlots = useBase ? Math.min(2, remaining - 3) : remaining;
       const used = new Set();
       for (const n of trips) {
@@ -202,7 +228,7 @@
       if (useBase && remaining >= 2) {
         base = baseCand;
         blocks.push({ kind: 'base', pid: base.id, mins: base.mins, title: `Move base to ${base.p.name}`,
-          items: [`Check out and drive to ${base.p.name} — about ${fmtMins(base.mins)}`, 'Settle into your new stay', `Walk around ${base.p.name} and get your bearings`, 'Ask your new host what to do tomorrow'] });
+          items: [`Check out. ${goTo(base.p.name, base.mins, false)}`, 'Settle into your new stay', `Walk around ${base.p.name} and get your bearings`, 'Ask your new host what to do tomorrow'] });
         const bw = window._itnCache && window._itnCache[base.id];
         const bDays = bw ? middleDaysOf(bw) : genericDaysFor(base.p, []);
         bDays.forEach(d => { if (blocks.length < middleCount) blocks.push({ kind: 'basedLocal', pid: base.id, title: cleanTitle(d.title) || `Around ${base.p.name}`, items: (d.items || []).map(clean) }); });
@@ -210,7 +236,7 @@
         nearbyOf(base.id).filter(n => !n.base && n.mins <= 120 && !usedIds.has(n.id) && !covered(n)).forEach(n => {
           if (blocks.length >= middleCount) return;
           blocks.push({ kind: 'nearby', pid: n.id, mins: n.mins, hike: n.hike, from: base.p.name, title: `Day trip: ${n.p.name}`,
-            items: [n.hike ? `Drive to the trailhead for ${n.p.name} (about ${fmtMins(n.mins)}), then hike in` : `Drive to ${n.p.name} — about ${fmtMins(n.mins)}`,
+            items: [goTo(n.p.name, n.mins, n.hike),
               ...placeHighlights(n.p).slice(0, 2), `Head back to ${base.p.name} before dark`] });
         });
       }
@@ -282,7 +308,8 @@
       departure.items.splice(1, 0, `Stop at ${n.p.name} on your way home (about ${fmtMins(n.mins)} from ${p.name})${h ? ` — ${h.replace(/^./, ch => ch.toLowerCase())}` : ''}`); });
     departure.stops = stopovers.map(n => n.id);
 
-    return { days: [arrival, ...blocks, departure], moved, base, stopovers, unfit };
+    const baseShort = chosenBase && !base ? Math.max(1, 2 - Math.max(0, freeDays)) : 0;
+    return { days: [arrival, ...blocks, departure], moved, base, stopovers, unfit, baseShort };
   }
 
   // ── rendering ──────────────────────────────────────────────────────────
@@ -703,7 +730,7 @@
     if (!el || !S.ctx) return;
     const c = S.ctx, p = c.place;
     const plan = buildPlan();
-    const sched = scheduleAll(plan);
+    const sched = editedSched(plan);
     const done = getDone();
     const near = nearbyOf(p.id).filter(n => n.mins <= 300).slice(0, 5);
     const zone = String(p.zone || '').toLowerCase();
@@ -719,7 +746,9 @@
       <div class="itn-controls">
         <div class="itn-ctl"><div class="itn-lbl">Who's travelling</div><div class="itn-pills">${pills(TYPES, S.type, 'setType')}</div></div>
         <div class="itn-ctl"><div class="itn-lbl">Pace</div><div class="itn-pills">${pills(PACES, S.pace, 'setPace')}</div></div>
-      </div>`;
+        ${window.PPTrip && window.PPTrip.transports ? `<div class="itn-ctl"><div class="itn-lbl">Getting around</div><div class="itn-pills">${pills(window.PPTrip.transports, tmode(), 'setTransport')}</div></div>` : ''}
+      </div>
+      <div class="itn-note" style="margin-top:12px">✏️ Make it yours: open a day to remove anything you don't want or add your own plans. Tap a nearby place to add a day trip, or to stay a night there too.</div>`;
 
     if (near.length) {
       html += `<div class="itn-lbl" style="margin-top:14px">Nearby places — tap to see what's there</div>
@@ -729,7 +758,8 @@
     const notes = [];
     if (plan.moved) notes.push(`We put ${esc(plan.moved.name)} on ${esc(dayName(plan.moved.day))}, a quieter day than the weekend.`);
     if (plan.days.some(d => d.kind === 'nearby')) notes.push(`${esc(p.name)} is covered in the first days, so we added nearby day trips for the rest.`);
-    if (plan.base) notes.push(`Halfway through, we move you to ${esc(plan.base.p.name)} — less driving and a new valley to wake up in.`);
+    if (plan.base) notes.push(S.base ? `Your second stop: you move to ${esc(plan.base.p.name)} halfway through. <button type="button" class="itn-addnight ghost" onclick="ppItn.setBase(null)">Remove this stop</button>` : `Halfway through, we move you to ${esc(plan.base.p.name)} — less driving and a new valley to wake up in.`);
+    if (plan.baseShort) { const bn = (place(S.base) || {}).name || 'that place'; html += `<div class="itn-note itn-unfit">Staying at ${esc(bn)} too needs at least 2 nights there. <button type="button" class="itn-addnight" onclick="ppItn.addNights(${plan.baseShort})">Add ${plan.baseShort} night${plan.baseShort > 1 ? 's' : ''}</button> <button type="button" class="itn-addnight ghost" onclick="ppItn.setBase(null)">Remove</button></div>`; }
     (plan.stopovers || []).forEach(n => notes.push(`No free day for ${esc(n.p.name)}, so it is a stop on your way home.`));
     if (notes.length) html += `<div class="itn-note">${notes.join(' ')}</div>`;
     (plan.unfit || []).forEach(n => { html += `<div class="itn-note itn-unfit">${esc(n.p.name)} needs a full day and your trip has none free. <button type="button" class="itn-addnight" onclick="ppItn.addNight(${n.id})">Add 1 night for it</button> <button type="button" class="itn-addnight ghost" onclick="ppItn.toggleAdd(${n.id})">Remove</button></div>`; });
@@ -779,8 +809,12 @@
           <button type="button" class="itn-dtoggle" aria-expanded="${open}" onclick="ppItn.toggleDay(${i})"><span class="itn-dtitle">${esc(d.title)}</span><span class="itn-chev" aria-hidden="true">${open ? '▴' : '▾'}</span></button>
           ${open ? tag : `<div class="itn-peek">${esc(slots.map(s => s.time).join(' · '))} · tap to see the day</div>`}
         </div>
-        ${open ? `<div class="itn-slots">${slots.map(s => `<div class="itn-slot"><div><div class="itn-time">${esc(s.time)}</div><div class="itn-part">${esc(s.part)}</div></div>
-          <div><div class="itn-text">${esc(s.text)}</div>${s.note ? `<div class="itn-snote">${esc(s.note)}</div>` : ''}${s.quiet ? `<span class="itn-quiet">${esc(s.quiet)}</span>` : ''}</div></div>`).join('')}</div>
+        ${open ? `<div class="itn-slots">${slots.map((s, si) => `<div class="itn-slot${s.own ? ' own' : ''}"><div><div class="itn-time">${esc(s.time)}</div><div class="itn-part">${esc(s.part)}</div></div>
+          <div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><div class="itn-text">${esc(s.text)}</div>${s.note ? `<div class="itn-snote">${esc(s.note)}</div>` : ''}${s.quiet ? `<span class="itn-quiet">${esc(s.quiet)}</span>` : ''}</div>
+          <button type="button" class="itn-rm" title="Remove" aria-label="Remove this" onclick="ppItn.rmSlot(${i},${si})">✕</button></div></div>`).join('')}</div>
+        ${S.adding === i ? `<div class="itn-addown"><input id="itnOwn" maxlength="160" placeholder="e.g. Lunch at the dhaba by the bridge" onkeydown="if(event.key==='Enter')ppItn.saveOwn(${i})"/><button type="button" class="itn-addnight" onclick="ppItn.saveOwn(${i})">Add</button><button type="button" class="itn-addnight ghost" onclick="ppItn.addOwn(null)">Cancel</button></div>`
+          : `<button type="button" class="itn-ownbtn" onclick="ppItn.addOwn(${i})">＋ Add your own plan to this day</button>`}
+        ${getEdits()[dayKey(d)] ? `<button type="button" class="itn-ownbtn ghost" onclick="ppItn.resetDay(${i})">↺ Undo my changes to this day</button>` : ''}
         <div class="itn-moment"><div class="itn-mlbl">Pahari moment</div>${esc(moments[i % moments.length])}</div>
         <button type="button" class="itn-task${isDone ? ' done' : ''}" onclick="ppItn.toggleTask(${i})" aria-pressed="${isDone}">
           <span class="itn-box" aria-hidden="true">${isDone ? '✓' : ''}</span>
@@ -790,7 +824,12 @@
     }).join('');
 
     html += `<div class="itn-sum">PAHADI points for responsible tasks are coming soon</div>
-      <button type="button" class="itn-share" onclick="ppItn.share()">Send this plan to WhatsApp</button>`;
+      <div class="itn-lbl" style="margin-top:14px">Save or send your plan</div>
+      <div class="itn-sendrow">
+        <button type="button" class="itn-share" onclick="ppItn.share()">💬 WhatsApp (send to yourself or friends)</button>
+        <button type="button" class="itn-share alt" onclick="ppItn.email()">✉️ Email it to me</button>
+        <button type="button" class="itn-share alt" onclick="ppItn.copy()">📋 Copy plan</button>
+      </div>`;
     el.innerHTML = html;
     S.lastPlan = plan;
   }
@@ -836,6 +875,7 @@
         </div>
         <div class="itn-sact">
           ${n && !n.base ? `<button type="button" class="itn-add${added ? ' on' : ''}" onclick="ppItn.toggleAdd(${id})">${added ? 'Added to your trip ✓' : 'Add as a day trip'}</button>` : ''}
+          ${n && !n.hike && n.mins >= 40 ? `<button type="button" class="itn-add${S.base === id ? ' on' : ''}" onclick="ppItn.setBase(${S.base === id ? 'null' : id})">${S.base === id ? 'Second stop ✓ (tap to remove)' : '🏡 Stay here too (2nd stop)'}</button>` : ''}
           <button type="button" class="itn-open" onclick="ppItn.close();openPD(${id})">Open the full ${esc(q.name)} page</button>
         </div>
       </div>`;
@@ -890,31 +930,70 @@
       runFC();
     },
     peek, close: closeSheet,
-    share() {
+    setTransport(k) {
+      if (!window.PPTrip || !window.PPTrip.setTransport) return;
+      window.PPTrip.setTransport(k); render();
+      if (window.PPTrip.log && S.ctx) window.PPTrip.log('transport', S.ctx.place, { date: S.ctx.start.toISOString().slice(0, 10), nights: S.ctx.nights });
+    },
+    setBase(id) {
+      S.base = id; if (id) S.added = S.added.filter(x => x !== id); closeSheet(); render();
+      say(id ? `${(place(id) || {}).name || 'That place'} added as your second stop` : 'Second stop removed');
+      if (id && window.PPTrip && window.PPTrip.log) window.PPTrip.log('second-stop', place(id), { date: S.ctx.start.toISOString().slice(0, 10), nights: S.ctx.nights });
+    },
+    addNights(n) {
+      const el = document.getElementById('ppNights'); if (!el || typeof runFC !== 'function') return;
+      el.value = Math.min(14, (parseInt(el.value, 10) || 2) + (n || 1)); runFC();
+    },
+    rmSlot(i, si) {
       const plan = S.lastPlan; if (!plan) return;
-      const c = S.ctx;
-      const lines = [`🏔️ My ${c.place.name} trip — PahariPath`, ''];
-      const sched = scheduleAll(plan);
+      const slot = (editedSched(plan)[i] || [])[si]; if (!slot) return;
+      const ed = getEdits(), k = dayKey(plan.days[i]), e = ed[k] || { rm: [], add: [] };
+      if (slot.own) e.add = (e.add || []).filter(t => t !== slot.text); else (e.rm = e.rm || []).push(slot.text);
+      ed[k] = e; setEdits(ed); render();
+    },
+    addOwn(i) { S.adding = i; render(); if (i != null) setTimeout(() => { const x = document.getElementById('itnOwn'); if (x) x.focus(); }, 30); },
+    saveOwn(i) {
+      const x = document.getElementById('itnOwn'), text = x ? x.value.trim() : ''; if (!text || !S.lastPlan) return;
+      const ed = getEdits(), k = dayKey(S.lastPlan.days[i]), e = ed[k] || { rm: [], add: [] };
+      (e.add = e.add || []).push(text.slice(0, 160)); ed[k] = e; setEdits(ed); S.adding = null; render(); say('Added to Day ' + (i + 1));
+    },
+    resetDay(i) { const ed = getEdits(); delete ed[dayKey(S.lastPlan.days[i])]; setEdits(ed); render(); },
+    text() {
+      const plan = S.lastPlan; if (!plan) return '';
+      const c = S.ctx, sched = editedSched(plan);
+      const lines = [`🏔️ My ${c.place.name} trip — PahariPath`, `${c.nights} night${c.nights > 1 ? 's' : ''} from ${dayName(c.start)}`, ''];
       plan.days.forEach((d, i) => {
         lines.push(`Day ${i + 1} · ${dayName(addDays(c.start, i))} — ${d.title}`);
         sched[i].forEach(s => lines.push(`  ${s.time}: ${s.text}`));
         lines.push('');
       });
       lines.push('Plan yours at paharipath.in');
-      window.open('https://wa.me/?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
+      return lines.join('\n');
+    },
+    share() { const t = window.ppItn.text(); if (t) window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank', 'noopener'); },
+    email() {
+      const t = window.ppItn.text(); if (!t) return;
+      window.location.href = 'mailto:?subject=' + encodeURIComponent(`My ${S.ctx.place.name} trip — PahariPath`) + '&body=' + encodeURIComponent(t.length > 1800 ? t.slice(0, 1800) + '\n…\nFull plan: paharipath.in' : t);
+    },
+    copy() {
+      const t = window.ppItn.text(); if (!t) return;
+      const done = () => say('Plan copied — paste it anywhere');
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => say('Could not copy on this device'));
+      else { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); done(); } catch (e) { say('Could not copy on this device'); } a.remove(); }
     },
   };
 
   // Called from runFC() in app.js.
   window.ppRenderItinerary = function (ctx) {
     const key = ctx.place.id + '|' + ctx.start.toISOString().slice(0, 10) + '|' + ctx.nights;
-    if (key.split('|')[0] !== S.lastKey.split('|')[0]) { S.added = []; S.open = [0]; }   // new place → clear added trips, open day 1 only
+    if (key.split('|')[0] !== S.lastKey.split('|')[0]) { S.added = []; S.base = null; S.adding = null; S.open = [0]; }   // new place → clear added trips, open day 1 only
     S.lastKey = key;
     S.ctx = ctx;
     if (window.PP_FINDER) { S.type = window.PP_FINDER.type || S.type; S.pace = window.PP_FINDER.pace || S.pace; window.PP_FINDER = null; }   // set by trip-finder.js
     if (!S.type) { const t = String(ctx.travellers || '2'); S.type = t === '1' ? 'friends' : t === '2' ? 'couple' : 'family'; }
     injectStyles();
     render();
+    if (window.PPTrip && window.PPTrip.log) window.PPTrip.log('itinerary', ctx.place, { date: ctx.start.toISOString().slice(0, 10), nights: ctx.nights });
     if (S.focusAdded) { const id = S.focusAdded; S.focusAdded = null; setTimeout(() => showAdded(id), 700); }
     // Nearby data and nearby places' own itineraries arrive asynchronously.
     loadNearby().then(() => {
@@ -996,6 +1075,17 @@
       .itn-unfit{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
       .itn-addnight{min-height:40px;padding:0 14px;border-radius:999px;border:none;background:#fff;color:var(--pine);font:700 13px var(--fb);cursor:pointer}
       .itn-addnight.ghost{background:transparent;color:inherit;border:1px solid rgba(255,255,255,.4)}
+      .itn-rm{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid #dfe5e0;background:#fff;color:#8a958c;font-size:13px;cursor:pointer}
+      .itn-rm:hover{color:#b03a2e;border-color:#e8b9b2}
+      .itn-slot.own .itn-time{color:var(--clay)}
+      .itn-ownbtn{display:block;width:calc(100% - 32px);margin:4px 16px 12px;min-height:42px;border:1.5px dashed #b9c9bd;border-radius:10px;background:none;color:var(--pine);font:600 14px var(--fb);cursor:pointer}
+      .itn-ownbtn.ghost{border:none;min-height:30px;margin-top:-6px;font-size:13px;color:#6b7c6e}
+      .itn-addown{display:flex;gap:8px;padding:4px 16px 14px;flex-wrap:wrap}
+      .itn-addown input{flex:1;min-width:180px;min-height:42px;padding:0 12px;border:1px solid #cfd8d2;border-radius:10px;font:15px var(--fb)}
+      .itn-addown .itn-addnight{background:var(--pine);color:#fff}.itn-addown .itn-addnight.ghost{background:none;color:var(--pine);border:1px solid #cfd8d2}
+      .itn-sendrow{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+      @media(max-width:640px){.itn-sendrow{grid-template-columns:1fr}}
+      .itn-share.alt{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4)}
       .itn-warn{margin-top:12px;background:#fbefe7;color:#6e3a20;border-radius:12px;padding:10px 12px;font-size:13px}
       .itn-sact{padding:16px 20px 24px;display:flex;flex-direction:column;gap:10px}
       .itn-add{min-height:50px;border-radius:12px;border:1.5px solid var(--pine);background:var(--pine);color:#fff;font:700 15px var(--fb);cursor:pointer}

@@ -55,6 +55,10 @@
     ['nature', '🌲 Nature'], ['offbeat', '🧭 Offbeat'], ['adventure', '🧗 Adventure'],
     ['trek', '🥾 Treks'], ['spiritual', '🛕 Spiritual'], ['culture', '🎭 Culture'], ['snow', '❄️ Snow']
   ];
+  // How they get around. Changes travel time, route text, a few safety rules, and day-trip wording in itinerary.js.
+  var TRANSPORT = [['car', '🚗 Own car'], ['bike', '🏍️ Bike'], ['bus', '🚌 Bus'], ['taxi', '🚕 Taxi']];
+  var MODE = { car: { f: 1, word: 'by car' }, bike: { f: 1.1, word: 'by bike' }, bus: { f: 1.3, word: 'by bus' }, taxi: { f: 1, word: 'by taxi' } };
+  var MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var WHO = [['couple', 'Couple', '2'], ['family', 'Family', '4'], ['friends', 'Friends', '3'], ['solo', 'Solo', '1']];
   var MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
   var HIGH_ZONES = { spiti: 1, lahaul: 1 };
@@ -89,7 +93,30 @@
     return Object.keys(ADDON_OF).filter(function (k) { return ADDON_OF[k] === id && byId[+k]; }).map(function (k) { return byId[+k].name; });
   }
 
-  var st = { mode: 'know', origin: null, who: 'couple', interests: [], maxH: 'auto', quiet: true, pace: 'relaxed', results: [], showAll: false };
+  var st = { mode: 'know', transport: loadT(), origin: null, who: 'couple', interests: [], maxH: 'auto', quiet: true, pace: 'relaxed', results: [], showAll: false };
+
+  function loadT() { try { var v = localStorage.getItem('pp_transport'); return MODE[v] ? v : 'car'; } catch (e) { return 'car'; } }
+  function saveT(v) { try { localStorage.setItem('pp_transport', v); } catch (e) { /* storage blocked */ } }
+
+  /* ---------- anonymous trip log (no names, phones or emails) ----------
+   * One row per real choice: which city people start from, where they go, when,
+   * for how long and how they travel. Used to decide where car/bike rental makes sense.
+   * Table: trip_intents (insert-only for visitors, readable by admin) — see supabase/trip-intents.sql */
+  var _logged = {};
+  function logIntent(source, p, extra) {
+    try {
+      if (typeof _sb === 'undefined' || !_sb || !p) return;
+      var x = extra || {};
+      var row = {
+        source: source, place_id: p.id, place_name: String(p.name || '').slice(0, 80), zone: String(p.zone || '').slice(0, 40),
+        origin: String((x.origin && x.origin.name) || (window.PP_ORIGIN && window.PP_ORIGIN.name) || '').slice(0, 60) || null,
+        transport: st.transport, start_date: x.date || null, nights: x.nights || null, who: x.who || st.who || null
+      };
+      var key = [source, row.place_id, row.origin, row.transport, row.start_date, row.nights].join('|');
+      if (_logged[key]) return; _logged[key] = 1;
+      _sb.from('trip_intents').insert(row).then(function () {}, function () {});
+    } catch (e) { /* logging must never break planning */ }
+  }
 
   /* ---------- app.js globals (shared top-level bindings between classic scripts) ---------- */
   /* global ALL, PLACE_COORDS, ZS, JOURNEY_OVR, selectPlanPlace, toast, runFC */
@@ -175,6 +202,15 @@
     return { hours: base.h, route: 'by road after you fly into ' + hub, far: true, hub: hub };
   }
 
+  // travelFrom() + the chosen transport (slower by bus, a bit slower by bike).
+  function travelMode(o, p) {
+    var t = travelFrom(o, p); if (!t) return null;
+    var m = MODE[st.transport] || MODE.car;
+    var r = { hours: t.hours * m.f, route: t.route, far: t.far, hub: t.hub, mode: st.transport };
+    r.route = t.far ? String(t.route).replace(/^by road/, m.word) : String(t.route).replace(/^by road/, m.word);
+    return r;
+  }
+
   function maxHoursFor(nights) {
     if (st.maxH !== 'auto') return +st.maxH;
     // 3 nights allows an overnight bus/drive from Delhi to Jibhi/Tirthan/Kasol (estimates run ~1h high)
@@ -186,7 +222,7 @@
     var m = date.getMonth(), a = alt(p), z = String(p.zone || '').toLowerCase();
     var ovr = overrides()[p.id];
     if (ovr && ovr.verdict === 'not_recommended') return null;
-    var tr = travelFrom(o, p);
+    var tr = travelMode(o, p);
     if (!tr) return null;
     var cap = maxHoursFor(nights);
     if (tr.hours > cap) return null;
@@ -223,6 +259,14 @@
     if (wantSnow && snowLvl < 2) return null;
 
     var s = tier === 'A' ? 0 : tier === 'B' ? -20 : -40, why = [];
+    var modeNote = '';
+    if (st.transport === 'bike') {
+      var iceLvl = wantSnow ? snowLvl : snowLevel(p, date);
+      if (iceLvl >= 2 || zs === 'snow') { s -= 35; modeNote = 'Snow and ice on the road — not safe on a bike on these dates'; }
+      if (zs === 'rain') s -= 10;
+      if (!modeNote && ((p.vibes || []).indexOf('adventure') >= 0 || bf === 'roadtrip')) s += 8;
+    }
+    if (st.transport === 'bus' && (HIGH_ZONES[z] || a > 3000)) { s -= 15; modeNote = 'Few buses go this high — expect a change of bus and a long day'; }
     if (wantSnow) {
       s += snowLvl === 3 ? 45 : 25;
       why.push(snowLvl === 3 ? 'Snow likely' : 'Snow possible');
@@ -259,7 +303,29 @@
     if (st.who === 'couple' && (vibes.indexOf('nature') >= 0 || vibes.indexOf('offbeat') >= 0)) s += 5;
     if ((st.who === 'friends' || st.who === 'solo') && (vibes.indexOf('adventure') >= 0 || vibes.indexOf('trek') >= 0)) s += 6;
 
-    return { p: p, s: s, tr: tr, crowd: crowd, why: why.slice(0, 4), match: !picked.length || hits.length > 0 };
+    var inBestM = (function () { var b = bestMonths(p.bestTime); return b ? !!b[m] : false; })();
+    return { p: p, s: s, tr: tr, crowd: crowd, why: why.slice(0, 4), match: !picked.length || hits.length > 0,
+      d: { hits: hits, snowLvl: snowLvl, inBest: inBestM, offSeason: offSeason, month: m, nights: nights, alt: a, vibes: vibes, modeNote: modeNote, origin: o } };
+  }
+
+  // A plain-language "Why this place?" built from the same facts the score used.
+  function whyLine(r) {
+    var d = r.d || {}, p = r.p, tr = r.tr, parts = [];
+    var mw = (MODE[tr.mode] || MODE.car).word;
+    var trip = tr.far ? 'An easy reach after you fly in' : 'About ' + fmtH(tr.hours).replace('~', '') + ' ' + mw + ' from ' + (d.origin ? d.origin.name : 'you');
+    var fit = tr.hours <= (d.nights <= 2 ? 6 : d.nights <= 3 ? 9 : 12) ? ', which fits a ' + d.nights + '-night trip' : '. It is a long journey, so it suits longer trips';
+    parts.push(trip + fit + '.');
+    var more = [];
+    if (d.snowLvl === 3) more.push('snow is likely around your dates');
+    else if (d.snowLvl === 2) more.push('there is a chance of snow');
+    else if (d.inBest) more.push(MONTH_NAMES[d.month] + ' is one of its best months');
+    if (st.quiet && r.crowd < 35 && !d.offSeason) more.push('it should be quiet on your dates (about ' + Math.round(r.crowd) + '% crowd)');
+    if (d.hits && d.hits.length) more.push('it matches what you enjoy: ' + d.hits.join(' and '));
+    if (st.who === 'family' && d.alt < 2700) more.push('the altitude is gentle for a family');
+    else if (st.who === 'couple' && (d.vibes.indexOf('nature') >= 0 || d.vibes.indexOf('offbeat') >= 0)) more.push('it is peaceful, good for couples');
+    else if ((st.who === 'friends' || st.who === 'solo') && (d.vibes.indexOf('adventure') >= 0 || d.vibes.indexOf('trek') >= 0)) more.push('there is plenty of adventure for ' + (st.who === 'solo' ? 'a solo traveller' : 'a group of friends'));
+    if (more.length) { var last = more.pop(); parts.push((more.length ? more.join(', ') + ' and ' : '') + last + '.'); parts[1] = parts[1].charAt(0).toUpperCase() + parts[1].slice(1); }
+    return parts.join(' ');
   }
 
   function suggest() {
@@ -287,9 +353,14 @@
       // Old "Suggest a place" mode, or the simplified app's "Travelling from" city (window.PP_ORIGIN from simple.js).
       var o = st.origin && st.mode === 'suggest' ? st.origin : (window.PP_ORIGIN || null);
       if (!o) return null;
-      var t = travelFrom(o, p);
-      return t ? { from: o.name, hours: t.hours, label: fmtH(t.hours), route: t.route, far: !!t.far } : null;
+      var t = travelMode(o, p);
+      return t ? { from: o.name, hours: t.hours, label: fmtH(t.hours), route: t.route, far: !!t.far, mode: st.transport } : null;
     },
+    // Transport, shared with itinerary.js ("Getting around" pills).
+    transports: TRANSPORT,
+    getTransport: function () { return st.transport; },
+    setTransport: function (v) { if (!MODE[v]) return; st.transport = v; saveT(v); var w = document.getElementById('tfMode'); if (w) w.querySelectorAll('.tf-pill').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-v') === v); }); },
+    log: function (source, p, extra) { logIntent(source, p, extra); },
     setMode: setMode, run: run, plan: plan, pick: pick, toggle: toggle, more: function () { st.showAll = true; renderResults(); },
     _score: score, _travelFrom: travelFrom, _state: st, _origins: ORIGINS, _suggest: function () { return suggest(); },
     // Used by simple.js (the simplified app shell).
@@ -363,6 +434,7 @@
       '.tf-chips{display:flex;flex-wrap:wrap;gap:6px}',
       '.tf-chip{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#e3efe6;color:#1f4a32}',
       '.tf-chip.warn{background:#fbefe7;color:#8a4526}',
+      '.tf-why{font-size:13.5px;line-height:1.5;color:#2b3a30;background:#f1f6f2;border-left:3px solid #4a7c5f;border-radius:8px;padding:8px 10px}',
       '.tf-route{font-size:13px;line-height:1.45;background:#eaf0f6;color:#23466b;border-radius:10px;padding:8px 10px}',
       '.tf-plan{min-height:46px;border:none;border-radius:10px;background:var(--pine);color:#fff;font:700 14px var(--fb);cursor:pointer;margin-top:auto}',
       '.tf-more{margin-top:12px;min-height:42px;border:1.5px solid rgba(255,255,255,.35);background:none;color:#fff;border-radius:999px;padding:0 16px;font:600 13px var(--fb);cursor:pointer}',
@@ -404,6 +476,8 @@
       '</div>' +
       '<span class="tf-lbl">Who is going</span><div class="tf-pills" id="tfWho">' +
         WHO.map(function (w) { return '<button type="button" class="tf-pill' + (w[0] === st.who ? ' on' : '') + '" data-v="' + w[0] + '" onclick="PPTrip.toggle(\'who\',\'' + w[0] + '\')">' + w[1] + '</button>'; }).join('') + '</div>' +
+      '<span class="tf-lbl">How will you travel?</span><div class="tf-pills" id="tfMode">' +
+        TRANSPORT.map(function (t) { return '<button type="button" class="tf-pill' + (t[0] === st.transport ? ' on' : '') + '" data-v="' + t[0] + '" onclick="PPTrip.toggle(\'transport\',\'' + t[0] + '\')">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<span class="tf-lbl">What do you enjoy? (pick any)</span><div class="tf-pills" id="tfInt">' +
         INTERESTS.map(function (i) { return '<button type="button" class="tf-pill" data-v="' + i[0] + '" onclick="PPTrip.toggle(\'int\',\'' + i[0] + '\')">' + i[1] + '</button>'; }).join('') + '</div>' +
       '<span class="tf-lbl">Trip style</span><div class="tf-pills" id="tfStyle">' +
@@ -447,8 +521,10 @@
     if (kind === 'int') { var i = st.interests.indexOf(v); if (i >= 0) st.interests.splice(i, 1); else st.interests.push(v); }
     if (kind === 'quiet') st.quiet = v;
     if (kind === 'pace') st.pace = v;
+    if (kind === 'transport' && MODE[v]) { st.transport = v; saveT(v); }
     var mark = function (id, on) { var w = document.getElementById(id); if (w) w.querySelectorAll('.tf-pill').forEach(function (b) { b.classList.toggle('on', on(b.getAttribute('data-v'))); }); };
     mark('tfWho', function (x) { return x === st.who; });
+    mark('tfMode', function (x) { return x === st.transport; });
     mark('tfInt', function (x) { return st.interests.indexOf(x) >= 0; });
     mark('tfStyle', function (x) { return x === 'quiet' ? st.quiet : x === 'any' ? !st.quiet : x === st.pace; });
   }
@@ -481,6 +557,7 @@
     if (!st.origin) { notify('Please choose where you are starting from'); var s = document.getElementById('tfOrigin'); if (s) s.focus(); return; }
     st.results = suggest();
     st.showAll = false;
+    if (st.results[0]) logIntent('suggest', st.results[0].p, { origin: st.origin, date: val('tfDate') || null, nights: parseInt(val('tfNights'), 10) || null });
     st.chosen = null;
     renderResults();
     var r = document.getElementById('tfResults');
@@ -511,8 +588,10 @@
       '<div class="tf-dist">' + esc(p.district) + ' · ' + esc(p.altitude || '') + '</div></div></div>' +
       '<div class="tf-desc">' + esc(p.famousFor || p.desc || '') + '</div>' +
       '<div class="tf-chips">' + chips + '</div>' +
+      '<div class="tf-why"><b>Why this place?</b> ' + esc(whyLine(r)) + '</div>' +
+      (r.d && r.d.modeNote ? '<div class="tf-route" style="background:#fbefe7;color:#8a4526">⚠️ ' + esc(r.d.modeNote) + '</div>' : '') +
       (function () { var a = addonsFor(p.id).slice(0, 3); return a.length ? '<div class="tf-desc"><b>Add on the way:</b> ' + esc(a.join(' · ')) + '</div>' : ''; })() +
-      '<div class="tf-route">' + (tr.far ? '✈️ Fly into ' + esc(tr.hub) + ', then 🚗 ' + fmtH(tr.hours) + ' by road' : '🚗 ' + fmtH(tr.hours) + ' from ' + esc(st.origin.name) + ' ' + esc(tr.route)) +
+      '<div class="tf-route">' + (tr.far ? '✈️ Fly into ' + esc(tr.hub) + ', then ' + fmtH(tr.hours) + ' ' + esc((MODE[tr.mode] || MODE.car).word) : ({ car: '🚗 ', bike: '🏍️ ', bus: '🚌 ', taxi: '🚕 ' }[tr.mode] || '🚗 ') + fmtH(tr.hours) + ' from ' + esc(st.origin.name) + ' ' + esc(tr.route)) +
         (long ? '. Long drive: start before sunrise or break it overnight.' : '') + '</div>' +
       '<button type="button" class="tf-plan" onclick="PPTrip.plan(' + Number(p.id) + ')">Plan this trip →</button>' +
       '</div>';
@@ -525,6 +604,7 @@
     renderResults();
     var who = WHO.filter(function (w) { return w[0] === st.who; })[0] || WHO[0];
     window.PP_FINDER = { type: st.who === 'solo' ? 'friends' : st.who, pace: st.pace };
+    logIntent('plan', p, { origin: st.origin, date: val('tfDate') || null, nights: parseInt(val('tfNights'), 10) || null });
     var set = function (i, v) { var e = document.getElementById(i); if (e) e.value = v; };
     set('ppDate', val('tfDate') || todayISO());
     set('ppNights', Math.max(1, Math.min(14, parseInt(val('tfNights'), 10) || 2)));
