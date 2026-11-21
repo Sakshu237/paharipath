@@ -251,5 +251,5 @@ body.sp.sp-cookie-on #pp-wa,body.sp.sp-cookie-on .pp-wa{bottom:132px!important}
 body.sp-map-on .sp-mapstay{display:block}
 @media(min-width:900px){.sp-mapstay{bottom:28px}}
 /* lift the map's stay button above the cookie bar while that bar is showing */
-body:has(#cookieBanner[style*="display: flex"]) .sp-mapstay{bottom:calc(150px + env(safe-area-inset-bottom))}
-@media(min-width:900px){body:has(#cookieBanner[style*="display: flex"]) .sp-mapstay{bottom:90px}}
+body.sp-cookie-on .sp-mapstay{bottom:calc(150px + env(safe-area-inset-bottom))}
+@media(min-width:900px){body.sp-cookie-on .sp-mapstay{bottom:90px}}
