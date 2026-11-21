@@ -22,6 +22,10 @@
     {
       "source": "/host-login",
       "destination": "/index.html"
+    },
+    {
+      "source": "/sample-stays",
+      "destination": "/sample-stays.html"
     }
   ],
   "crons": [

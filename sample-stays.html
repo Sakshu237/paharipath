@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sample homestays — how PahariPath works</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" href="/icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--pine:#1a3d2b;--moss:#2d5a40;--sage:#4a7c5f;--mist:#e8ede9;--clay:#c4704a;--stone:#6b7c6e;--ink:#1c2420;--cream:#faf9f6;--demo:#b5651d;--fd:'Cormorant Garamond',Georgia,serif;--fb:'DM Sans',sans-serif}
+*{box-sizing:border-box}body{margin:0;font-family:var(--fb);color:var(--ink);background:var(--cream)}
+a{color:var(--pine)}
+header{background:var(--pine);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+header a{color:#fff;text-decoration:none;font-family:var(--fd);font-size:24px;font-weight:600}
+.banner{background:#fbefe3;border-bottom:2px solid var(--demo);color:#5a3410;padding:12px 20px;font-size:14px;text-align:center}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 18px 60px}
+h1{font-family:var(--fd);font-size:38px;margin:4px 0 6px;color:var(--pine)}
+.sub{color:var(--stone);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(26,61,43,.09);cursor:pointer;transition:transform .15s}
+.card:hover{transform:translateY(-3px)}
+.img{height:170px;position:relative;display:flex;align-items:center;justify-content:center;font-size:54px;background-size:cover;background-position:center}
+.badge{position:absolute;top:10px;left:10px;background:var(--demo);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.04em}
+.eco{position:absolute;top:10px;right:10px;background:#e6f4ec;color:#1e6b3c;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px}
+.body{padding:14px 16px 16px}
+.type{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--sage);font-weight:700}
+.name{font-family:var(--fd);font-size:21px;font-weight:600;margin:3px 0}
+.loc{font-size:13px;color:var(--stone)}
+.meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.price{font-weight:700;color:var(--pine)}.new{font-size:12px;color:var(--stone)}
+.btn{background:var(--pine);color:#fff;border:none;border-radius:10px;padding:12px 18px;font:600 14px var(--fb);cursor:pointer}
+.btn.ghost{background:#fff;color:var(--pine);border:1px solid rgba(26,61,43,.3)}
+.btn.clay{background:var(--clay)}
+.btn:disabled{opacity:.5;cursor:default}
+.mo{position:fixed;inset:0;background:rgba(10,20,15,.55);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;z-index:50;padding:30px 12px}
+.mo.open{display:flex}
+.box{background:#fff;border-radius:16px;max-width:620px;width:100%;overflow:hidden;position:relative}
+.x{position:absolute;top:10px;right:12px;background:rgba(255,255,255,.9);border:none;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;z-index:2}
+.pad{padding:20px 22px 24px}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{background:var(--mist);color:var(--moss);font-size:12px;padding:5px 11px;border-radius:20px}
+h3{font-family:var(--fd);font-size:20px;margin:18px 0 6px;color:var(--pine)}
+p{line-height:1.55}
+label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--stone);margin:12px 0 5px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d6ddd8;border-radius:9px;font:15px var(--fb)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sum{background:var(--mist);border-radius:10px;padding:12px 14px;margin:16px 0;font-size:14px}
+.sum div{display:flex;justify-content:space-between;margin:3px 0}
+.note{background:#fbefe3;border-left:4px solid var(--demo);padding:10px 12px;border-radius:6px;font-size:13px;color:#5a3410;margin:12px 0}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0}
+.st{font-size:11px;text-align:center;padding:8px 4px;border-radius:8px;background:#f1f3f1;color:var(--stone)}
+.st.on{background:var(--pine);color:#fff}
+.hostcard{border:1px solid #d6ddd8;border-radius:12px;padding:14px;margin-top:10px}
+.chat{background:#f5f6f4;border-radius:10px;padding:10px;margin-top:10px;font-size:14px}
+.msg{max-width:80%;padding:8px 11px;border-radius:12px;margin:6px 0}
+.msg.g{background:#fff;border:1px solid #e1e5e2}.msg.h{background:var(--pine);color:#fff;margin-left:auto}
+.cta{margin-top:40px;background:var(--pine);color:#fff;border-radius:16px;padding:26px 24px;text-align:center}
+.cta h2{font-family:var(--fd);font-size:30px;margin:0 0 6px}
+.cta p{color:#d9e4dc;margin:0 0 16px}
+.err{color:#b03a2e;font-size:13px;margin-top:8px;min-height:18px}
+footer{text-align:center;color:var(--stone);font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+<header><a href="/">PahariPath</a><span style="font-size:13px;opacity:.85">Sample homestays</span></header>
+<div class="banner"><b>Sample listings.</b> These homestays show how stays look and book on PahariPath. They are examples, not real properties, and no booking made here is real.</div>
+
+<div class="wrap">
+  <h1>How your homestay looks on PahariPath</h1>
+  <p class="sub">Open any sample to see the listing page, try a booking request, and see what the host receives.</p>
+  <div class="grid" id="grid"><p style="color:var(--stone)">Loading samples…</p></div>
+
+  <div class="cta">
+    <h2>Own a homestay in Himachal?</h2>
+    <p>Founding hosts pay 0% commission until 28 Feb 2027. Your real listing replaces a sample here.</p>
+    <a class="btn clay" style="display:inline-block;text-decoration:none" href="https://wa.me/919317110366?text=Hi%20PahariPath%2C%20I%20own%20a%20homestay%20and%20want%20to%20list%20it" target="_blank" rel="noopener">💬 Talk to us on WhatsApp</a>
+  </div>
+</div>
+<footer>PahariPath · Udyam/MSME registered · Nadaun, Hamirpur, HP · <a href="/privacy-policy.html">Privacy</a> · <a href="/terms-of-service.html">Terms</a></footer>
+
+<div class="mo" id="mo"><div class="box"><button class="x" onclick="closeMo()" aria-label="Close">×</button><div id="moBody"></div></div></div>
+
+<script>
+const SB = supabase.createClient("https://fcrkfemeirmfhhxhomgw.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjcmtmZW1laXJtZmhoeGhvbWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4MDE0NjksImV4cCI6MjA5NzM3NzQ2OX0.6OH8shrt0js3E-uh_GHxm2NFASygzTmKeMaNYobclM4");
+let STAYS = [], cur = null;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr = n => '₹' + Number(n || 0).toLocaleString('en-IN');
+const t12 = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return ((h % 12) || 12) + ':' + String(m || 0).padStart(2, '0') + (h < 12 ? ' AM' : ' PM'); };
+const cover = s => (s.photos && s.photos[0]) ? `background-image:url('${esc(s.photos[0])}')` : `background:${esc(s.color || '#d5e8d0')}`;
+
+async function load() {
+  const { data, error } = await SB.from('public_stays').select('*').eq('status', 'demo').order('id');
+  const g = document.getElementById('grid');
+  if (error || !data || !data.length) { g.innerHTML = '<p style="color:var(--stone)">No sample listings right now.</p>'; return; }
+  STAYS = data;
+  g.innerHTML = data.map(s => `
+    <div class="card" onclick="openStay(${s.id})">
+      <div class="img" style="${cover(s)}">${s.photos && s.photos[0] ? '' : esc(s.emoji || '🏡')}
+        <span class="badge">SAMPLE LISTING</span>${s.eco ? '<span class="eco">🌱 Eco</span>' : ''}</div>
+      <div class="body"><div class="type">${esc(s.type)}</div><div class="name">${esc(s.name)}</div>
+        <div class="loc">📍 ${esc(s.loc)}</div>
+        <div class="meta"><span class="price">${inr(s.pn)}<span style="font-weight:400;color:var(--stone)">/night</span></span><span class="new">✨ New</span></div></div>
+    </div>`).join('');
+}
+
+function openMo(html) { document.getElementById('moBody').innerHTML = html; document.getElementById('mo').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeMo() { document.getElementById('mo').classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('mo').addEventListener('click', e => { if (e.target.id === 'mo') closeMo(); });
+
+async function openStay(id) {
+  const s = STAYS.find(x => x.id === id); if (!s) return; cur = s;
+  if (s.description === undefined) {
+    try {
+      const r = await fetch('/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'stay-info', stayId: id }) });
+      const j = r.ok ? await r.json() : {};
+      s.description = j.description || '';
+      if (j.amenities && j.amenities.length) s.amenities = j.amenities;
+    } catch (e) { s.description = ''; }
+  }
+  const facts = [s.max_guests && `👥 Up to ${s.max_guests} guests`, s.rooms && `🛏 ${s.rooms} room${s.rooms > 1 ? 's' : ''}`, s.checkin_time && `Check-in ${t12(s.checkin_time)}`, s.checkout_time && `Check-out ${t12(s.checkout_time)}`].filter(Boolean);
+  const photos = (s.photos || []).slice(1, 5).map(p => `<div style="height:70px;flex:1;background:url('${esc(p)}') center/cover;border-radius:6px"></div>`).join('');
+  openMo(`
+    <div class="img" style="height:230px;${cover(s)}">${s.photos && s.photos[0] ? '' : esc(s.emoji || '🏡')}<span class="badge">SAMPLE LISTING</span></div>
+    ${photos ? `<div style="display:flex;gap:4px;padding:4px">${photos}</div>` : ''}
+    <div class="pad">
+      <div class="type">${esc(s.type)}${s.eco ? ' · 🌱 Eco stay' : ''}</div>
+      <div class="name" style="font-size:28px">${esc(s.name)}</div>
+      <div class="loc">📍 ${esc(s.loc)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span class="price" style="font-size:22px">${inr(s.pn)}<span style="font-size:13px;font-weight:400;color:var(--stone)"> /night</span></span><span class="new">✨ New on PahariPath</span></div>
+      <div class="facts">${facts.map(f => `<span class="chip">${esc(f)}</span>`).join('')}</div>
+      ${s.description ? `<h3>About this stay</h3><p>${esc(s.description)}</p>` : ''}
+      ${(s.amenities || []).length ? `<h3>Amenities</h3><div class="facts">${s.amenities.map(a => `<span class="chip">✓ ${esc(a)}</span>`).join('')}</div>` : ''}
+      ${s.house_rules ? `<h3>House rules</h3><p>${esc(s.house_rules)}</p>` : ''}
+      <h3>How booking works</h3>
+      <p style="font-size:14px;color:var(--stone)">You send a request with your dates. The host has 24 hours to accept. You can chat with the host on PahariPath before you travel. Nothing is charged until the host accepts.</p>
+      <div style="display:flex;gap:8px;margin-top:14px"><button class="btn" style="flex:1" onclick="openBook()">Request to book</button></div>
+      <div class="note">This is a sample listing. Trying the booking shows the full flow, but no request is saved or sent.</div>
+    </div>`);
+}
+
+function openBook() {
+  const s = cur, d = new Date(), iso = x => x.toISOString().slice(0, 10);
+  const a = new Date(d.getTime() + 7 * 864e5), b = new Date(d.getTime() + 9 * 864e5);
+  openMo(`<div class="pad">
+    <div class="type">Request to book · <span style="color:var(--demo)">Sample listing</span></div>
+    <div class="name" style="font-size:24px">${esc(s.name)}</div>
+    <div class="steps"><div class="st on">1 · Request</div><div class="st">2 · Host accepts</div><div class="st">3 · Chat</div><div class="st">4 · Stay</div></div>
+    <div class="row"><div><label>Check-in</label><input type="date" id="ci" min="${iso(d)}" value="${iso(a)}"></div><div><label>Check-out</label><input type="date" id="co" min="${iso(d)}" value="${iso(b)}"></div></div>
+    <div class="row"><div><label>Guests</label><select id="gu">${Array.from({ length: s.max_guests || 6 }, (_, i) => `<option>${i + 1}</option>`).join('')}</select></div><div><label>Your name</label><input id="gn" placeholder="Full name"></div></div>
+    <label>Message to host (optional)</label><textarea id="gm" rows="2" placeholder="Arriving by bus around 4 PM…"></textarea>
+    <div class="sum" id="sum"></div>
+    <button class="btn" style="width:100%" onclick="sendReq()">Send request</button>
+    <div class="err" id="err"></div>
+    <div class="note">Sample listing: this request will not be saved or sent to anyone. No phone number or payment needed.</div>
+    <button class="btn ghost" style="width:100%;margin-top:4px" onclick="openStay(${s.id})">← Back to listing</button>
+  </div>`);
+  ['ci', 'co', 'gu'].forEach(i => document.getElementById(i).addEventListener('change', calc)); calc();
+}
+
+function nights() { const a = new Date(document.getElementById('ci').value), b = new Date(document.getElementById('co').value); return Math.round((b - a) / 864e5); }
+function calc() {
+  const n = nights(), s = cur, el = document.getElementById('sum');
+  if (!(n >= 1)) { el.innerHTML = '<div>Choose a check-out after check-in</div>'; return; }
+  el.innerHTML = `<div><span>${inr(s.pn)} × ${n} night${n > 1 ? 's' : ''}</span><span>${inr(s.pn * n)}</span></div><div style="font-weight:700;border-top:1px solid #cfd8d2;padding-top:6px;margin-top:6px"><span>Total (pay after host accepts)</span><span>${inr(s.pn * n)}</span></div>`;
+}
+
+function sendReq() {
+  const n = nights(), name = document.getElementById('gn').value.trim(), err = document.getElementById('err');
+  if (!(n >= 1)) { err.textContent = 'Please choose valid dates.'; return; }
+  if (name.length < 2) { err.textContent = 'Please enter your name.'; return; }
+  const s = cur, ci = document.getElementById('ci').value, co = document.getElementById('co').value, g = document.getElementById('gu').value, m = document.getElementById('gm').value.trim();
+  const ref = 'SAMPLE-' + Math.floor(1000 + Math.random() * 9000);
+  openMo(`<div class="pad">
+    <div class="steps"><div class="st on">1 · Request</div><div class="st" id="s2">2 · Host accepts</div><div class="st" id="s3">3 · Chat</div><div class="st">4 · Stay</div></div>
+    <div class="name" style="font-size:24px">✅ Request sent (sample)</div>
+    <p style="margin:6px 0">Ref <b>${ref}</b> · ${esc(s.name)} · ${esc(ci)} → ${esc(co)} · ${esc(g)} guest${g > 1 ? 's' : ''} · ${inr(s.pn * n)}</p>
+    <div class="note"><b>Nothing was booked.</b> This is a sample listing, so no request was saved or sent. Below is what a real host would see.</div>
+    <h3>What the host sees</h3>
+    <div class="hostcard" id="hc">
+      <div style="display:flex;justify-content:space-between"><b>New booking request</b><span style="font-size:12px;color:var(--clay)">⏳ 23h 59m left to reply</span></div>
+      <div style="font-size:14px;color:var(--stone);margin-top:4px">${esc(name)} · ${esc(ci)} → ${esc(co)} · ${esc(g)} guest${g > 1 ? 's' : ''} · ${inr(s.pn * n)}</div>
+      ${m ? `<div style="font-size:14px;margin-top:6px;font-style:italic">“${esc(m)}”</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:12px" id="hb"><button class="btn" onclick="accept()">Accept</button><button class="btn ghost" onclick="decline()">Decline</button></div>
+    </div>
+    <div id="after"></div>
+    <button class="btn ghost" style="width:100%;margin-top:16px" onclick="closeMo()">Close</button>
+  </div>`);
+  window._req = { name, m };
+}
+
+function accept() {
+  document.getElementById('hb').innerHTML = '<span style="color:#1e6b3c;font-weight:700">✓ Accepted. The guest gets an email and can now chat with you.</span>';
+  document.getElementById('s2').classList.add('on'); document.getElementById('s3').classList.add('on');
+  const r = window._req;
+  document.getElementById('after').innerHTML = `<h3>Chat on PahariPath</h3><div class="chat">
+    <div class="msg g">${esc(r.m || 'Hi! Looking forward to the stay. How do we reach from the bus stand?')}</div>
+    <div class="msg h">Welcome ${esc(r.name.split(' ')[0])} ji! Take the local bus to the village stop, I will pick you up from there. Dinner will be ready when you arrive.</div></div>
+    <p style="font-size:13px;color:var(--stone)">Guests and hosts chat on PahariPath, so details stay in one place and both sides are protected.</p>`;
+}
+function decline() {
+  document.getElementById('hb').innerHTML = '<span style="color:var(--stone)">Declined. The guest is told kindly and shown other quiet stays nearby. Nothing is charged.</span>';
+}
+
+load();
+</script>
+</body>
+</html>
