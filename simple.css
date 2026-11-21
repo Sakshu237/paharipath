@@ -250,3 +250,6 @@ body.sp.sp-cookie-on #pp-wa,body.sp.sp-cookie-on .pp-wa{bottom:132px!important}
 .sp-mapstay{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom));z-index:450;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:#c4704a;color:#fff;font:700 15px var(--fb);box-shadow:0 6px 20px rgba(0,0,0,.22);cursor:pointer}
 body.sp-map-on .sp-mapstay{display:block}
 @media(min-width:900px){.sp-mapstay{bottom:28px}}
+/* lift the map's stay button above the cookie bar while that bar is showing */
+body:has(#cookieBanner[style*="display: flex"]) .sp-mapstay{bottom:calc(150px + env(safe-area-inset-bottom))}
+@media(min-width:900px){body:has(#cookieBanner[style*="display: flex"]) .sp-mapstay{bottom:90px}}
