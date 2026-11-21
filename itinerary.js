@@ -636,12 +636,18 @@
     // 0. Planning tonight for a long journey: don't start it at midnight or drive through the night.
     //    Rest tonight and leave early tomorrow (at the usual planned time).
     const travelMins0 = trip ? Math.round(trip.hours * 12) * 5 : 0;
-    if (today && trip && trip.hours >= 2 && (t >= 1320 || t + travelMins0 >= 1500)) {
-      const lv = plannedLeave(trip), arr = lv + travelMins0;
-      const nowM = new Date().getHours() * 60 + new Date().getMinutes();
-      out.push({ time: fmtClock(roundUp(nowM, 15)), part: 'Tonight', text: `It's too late to start a ${trip.label.replace('~', '')} journey tonight — rest, pack, and set off early tomorrow`, note: 'Tip: set your travel date to tomorrow so every day of this plan lines up.', quiet: '' });
-      out.push({ time: fmtClock(lv), part: 'Tomorrow', text: goText, note: arr > sunset ? `You'll reach after dark (~${fmtClock(sunset)}) — drive slow and keep your host informed.` : '', quiet: '' });
-      out.push({ time: fmtClock(arr), part: 'Tomorrow', text: `Reach ${name}. ${checkIn}`, note: '', quiet: '' });
+    // After midnight (before 5 am) it's already the travel day: sleep a few hours, leave at the usual time this morning.
+    const smallHours = today && trip && trip.hours >= 2 && t < 300;
+    if (smallHours || (today && trip && trip.hours >= 2 && (t >= 1320 || t + travelMins0 >= 1500))) {
+      const lv = Math.max(plannedLeave(trip), smallHours ? roundUp(t + 180, 15) : 0), arr = lv + travelMins0;
+      const nowM = new Date().getHours() * 60 + new Date().getMinutes(), when = smallHours ? 'This morning' : 'Tomorrow';
+      out.push({ time: fmtClock(roundUp(nowM, 15)), part: 'Tonight', text: smallHours
+        ? `It's the middle of the night — get some sleep before a ${trip.label.replace('~', '')} journey and leave at first light`
+        : `It's too late to start a ${trip.label.replace('~', '')} journey tonight — rest, pack, and set off early tomorrow`,
+        note: smallHours ? '' : 'Tip: set your travel date to tomorrow so every day of this plan lines up.', quiet: '' });
+      out.push({ time: fmtClock(lv), part: when, text: goText, note: arr > sunset ? `You'll reach after dark (~${fmtClock(sunset)}) — drive slow and keep your host informed.` : '', quiet: '' });
+      out.push({ time: fmtClock(arr), part: when, text: `Reach ${name}. ${checkIn}`, note: '', quiet: '' });
+      if (smallHours && arr < 1170) out.push({ time: fmtClock(Math.max(1170, roundUp(arr + 60, 15))), part: 'Dinner', text: 'Dinner at your stay — ask for a local dish', note: '', quiet: '' });
       return out;
     }
 
