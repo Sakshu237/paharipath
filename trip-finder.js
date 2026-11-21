@@ -592,7 +592,7 @@
       (r.d && r.d.modeNote ? '<div class="tf-route" style="background:#fbefe7;color:#8a4526">⚠️ ' + esc(r.d.modeNote) + '</div>' : '') +
       (function () { var a = addonsFor(p.id).slice(0, 3); return a.length ? '<div class="tf-desc"><b>Add on the way:</b> ' + esc(a.join(' · ')) + '</div>' : ''; })() +
       '<div class="tf-route">' + (tr.far ? '✈️ Fly into ' + esc(tr.hub) + ', then ' + fmtH(tr.hours) + ' ' + esc((MODE[tr.mode] || MODE.car).word) : ({ car: '🚗 ', bike: '🏍️ ', bus: '🚌 ', taxi: '🚕 ' }[tr.mode] || '🚗 ') + fmtH(tr.hours) + ' from ' + esc(st.origin.name) + ' ' + esc(tr.route)) +
-        (long ? '. Long drive: start before sunrise or break it overnight.' : '') + '</div>' +
+        (long ? ({ bike: '. Long ride: start before sunrise or break it overnight.', bus: '. Long journey: an overnight bus works best.', taxi: '. Long journey: start before sunrise or break it overnight.' }[tr.mode] || '. Long drive: start before sunrise or break it overnight.') : '') + '</div>' +
       '<button type="button" class="tf-plan" onclick="PPTrip.plan(' + Number(p.id) + ')">Plan this trip →</button>' +
       '</div>';
   }

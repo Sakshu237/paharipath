@@ -633,6 +633,18 @@
     out.skipped = skipped;
     let t = today ? sameDayStart(trip) : plannedLeave(trip);
 
+    // 0. Planning tonight for a long journey: don't start it at midnight or drive through the night.
+    //    Rest tonight and leave early tomorrow (at the usual planned time).
+    const travelMins0 = trip ? Math.round(trip.hours * 12) * 5 : 0;
+    if (today && trip && trip.hours >= 2 && (t >= 1320 || t + travelMins0 >= 1500)) {
+      const lv = plannedLeave(trip), arr = lv + travelMins0;
+      const nowM = new Date().getHours() * 60 + new Date().getMinutes();
+      out.push({ time: fmtClock(roundUp(nowM, 15)), part: 'Tonight', text: `It's too late to start a ${trip.label.replace('~', '')} journey tonight — rest, pack, and set off early tomorrow`, note: 'Tip: set your travel date to tomorrow so every day of this plan lines up.', quiet: '' });
+      out.push({ time: fmtClock(lv), part: 'Tomorrow', text: goText, note: arr > sunset ? `You'll reach after dark (~${fmtClock(sunset)}) — drive slow and keep your host informed.` : '', quiet: '' });
+      out.push({ time: fmtClock(arr), part: 'Tomorrow', text: `Reach ${name}. ${checkIn}`, note: '', quiet: '' });
+      return out;
+    }
+
     // 1. Leave / travel
     const leave = { time: fmtClock(t), part: today ? 'Start' : partOf(t), text: goText, note: '', quiet: '' };
     if (today) leave.quiet = `Planned from now — leave by ${fmtClock(t)}`;
