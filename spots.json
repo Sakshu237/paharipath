@@ -586,7 +586,8 @@
    "m": 5,
    "h": "45 min",
    "d": "The temple of Kullu's chief deity, brought from Ayodhya in the 1600s. During Dussehra every god of the valley comes to pay respects to Raghunath.",
-   "q": "Raghunath Temple Kullu"
+   "q": "Raghunath Temple Kullu",
+   "img": "Raghunath Mandir in Kullu 02.jpg"
   },
   {
    "n": "Basheshwar Mahadev, Bajaura",
@@ -604,7 +605,8 @@
    "h": "Half day",
    "b": "October",
    "d": "A week-long gathering of hundreds of village deities carried in palanquins to the Dhalpur ground — the biggest festival in Himachal.",
-   "t": "Dates follow the Hindu calendar; stays fill up months ahead."
+   "t": "Dates follow the Hindu calendar; stays fill up months ahead.",
+   "img": "Kullu Dussehra - Main procession.jpg"
   },
   {
    "n": "Kullu shawl weaving",
@@ -612,7 +614,8 @@
    "m": 15,
    "h": "1 hr",
    "d": "Watch handlooms weave the famous patterned Kullu shawls and caps at the weavers' cooperatives around Bhuntar and Kullu.",
-   "t": "Buy from cooperatives, not roadside 'factory outlets'."
+   "t": "Buy from cooperatives, not roadside 'factory outlets'.",
+   "img": "Weaving a Scarf (Unsplash).jpg"
   }
  ],
  "143": [
@@ -638,7 +641,8 @@
    "m": 5,
    "h": "1 hr",
    "d": "Weavers' cooperatives around Bhuntar make the famous patterned Kullu shawls and caps on handlooms.",
-   "t": "Buy from cooperatives, not roadside 'factory outlets'."
+   "t": "Buy from cooperatives, not roadside 'factory outlets'.",
+   "img": "Weaving a Scarf (Unsplash).jpg"
   }
  ],
  "86": [
@@ -667,7 +671,9 @@
    "m": 5,
    "h": "30 min",
    "d": "A colourful Tibetan monastery near the Manali bus stand, built by refugees in the late 1960s. Calm, and right in town.",
-   "q": "Gadhan Thekchhokling Gompa Manali"
+   "q": "Gadhan Thekchhokling Gompa Manali",
+   "img": "Buddhist Monastery at Manali.jpg",
+   "by": "Shubhankar Sakalkale"
   },
   {
    "n": "Hidimba Devi Temple",
@@ -689,14 +695,18 @@
    "m": 0,
    "h": "45 min",
    "d": "The temple of Manu at the top of Old Manali village — climb through the old wooden houses to reach it.",
-   "q": "Manu Temple Old Manali"
+   "q": "Manu Temple Old Manali",
+   "img": "Manu temple, Old Manali.jpg",
+   "by": "Arunavagora"
   },
   {
    "n": "Dhungri forest walk",
    "k": "forest",
    "m": 0,
    "h": "1–2 hrs",
-   "d": "Giant deodars between Old Manali and the Hidimba temple — walk through the forest instead of taking the road."
+   "d": "Giant deodars between Old Manali and the Hidimba temple — walk through the forest instead of taking the road.",
+   "img": "Tall trees Manali.jpg",
+   "by": "Rahul Dey"
   },
   {
    "n": "Hidimba Devi Temple",
@@ -731,7 +741,9 @@
    "m": 10,
    "h": "2–3 hrs",
    "d": "A walk up from Solang to a cave-temple under a waterfall; in winter the water freezes into a natural ice lingam.",
-   "q": "Anjani Mahadev Solang"
+   "q": "Anjani Mahadev Solang",
+   "img": "Pathway - Anjani Mahadev Mandir - Solang Valley - Kullu 2014-05-10 2563.JPG",
+   "by": "Biswarup Ganguly"
   }
  ],
  "138": [
@@ -779,7 +791,9 @@
    "h": "1 hr",
    "d": "The home of painter Nicholas Roerich, with his Himalayan paintings and the Urusvati folk art museum next door.",
    "t": "Closed on Mondays.",
-   "q": "Nicholas Roerich Art Gallery Naggar"
+   "q": "Nicholas Roerich Art Gallery Naggar",
+   "img": "Roerich Art Gallery Naggar DSC01335.jpg",
+   "by": "Debashritaiitmandi"
   },
   {
    "n": "Tripura Sundari Temple",
@@ -971,7 +985,9 @@
    "m": 0,
    "h": "1 hr",
    "d": "The home and studio of painter Sobha Singh, known for his portraits of Sikh Gurus and Sohni-Mahiwal.",
-   "q": "Sobha Singh Art Gallery Andretta"
+   "q": "Sobha Singh Art Gallery Andretta",
+   "img": "Bust of Prithviraj Kapoor.jpg",
+   "by": "Baghesukoon"
   },
   {
    "n": "Andretta Pottery",
@@ -979,7 +995,8 @@
    "m": 0,
    "h": "1 hr",
    "d": "A studio where you can watch potters at work, and sometimes join a short session.",
-   "q": "Andretta Pottery"
+   "q": "Andretta Pottery",
+   "img": "Andretta pottery at Dastkar Bazaar, Delhi.jpg"
   }
  ],
  "58": [
@@ -1007,7 +1024,8 @@
    "k": "temple",
    "m": 40,
    "h": "1 hr",
-   "d": "A Shiva temple with a natural stone lingam in two parts, at the meeting of the Beas and Choch rivers near Indora."
+   "d": "A Shiva temple with a natural stone lingam in two parts, at the meeting of the Beas and Choch rivers near Indora.",
+   "img": "Kathgarh Temple.JPG"
   }
  ],
  "77": [
@@ -1017,7 +1035,8 @@
    "m": 5,
    "h": "45 min",
    "d": "A large Tibetan monastery with a tall stupa in Bir's Tibetan colony.",
-   "q": "Chokling Monastery Bir"
+   "q": "Chokling Monastery Bir",
+   "img": "Chokling Monastery, Bir.jpg"
   },
   {
    "n": "Sherab Ling Monastery",
@@ -1032,7 +1051,8 @@
    "k": "experience",
    "m": 5,
    "h": "1 hr",
-   "d": "Walk through the tea gardens around Bir — at their best in the soft evening light."
+   "d": "Walk through the tea gardens around Bir — at their best in the soft evening light.",
+   "img": "A tea plantation, sights, scenic nature, and culture Himachal Pradesh India.jpg"
   }
  ],
  "78": [
@@ -1043,7 +1063,8 @@
    "h": "1 hr",
    "d": "Walk through the tea gardens and visit the cooperative tea factory to see how Kangra tea is made.",
    "t": "Factories are busiest Apr–Oct.",
-   "q": "Palampur Tea Factory"
+   "q": "Palampur Tea Factory",
+   "img": "Palampur tea plantation, Himachal Pradesh, India.jpg"
   },
   {
    "n": "Neugal Khad",
@@ -1076,7 +1097,9 @@
    "m": 10,
    "h": "45 min",
    "d": "One of the most important Devi temples of Kangra, in the old town.",
-   "busy": 1
+   "busy": 1,
+   "img": "Vajreshwari Devi ShaktiPeeth Kangra.jpg",
+   "by": "Guptaele"
   }
  ],
  "82": [
@@ -1114,7 +1137,8 @@
    "m": 25,
    "h": "1.5 hrs",
    "d": "Gardens and workshops where Tibetan arts — thangka painting, wood carving, embroidery — are kept alive.",
-   "q": "Norbulingka Institute"
+   "q": "Norbulingka Institute",
+   "img": "Norbulingka Institute.jpg"
   },
   {
    "n": "Kangra Art Museum",
@@ -1147,7 +1171,8 @@
    "m": 20,
    "h": "1.5 hrs",
    "d": "Gardens and workshops where Tibetan arts are kept alive.",
-   "q": "Norbulingka Institute"
+   "q": "Norbulingka Institute",
+   "img": "Norbulingka Institute.jpg"
   },
   {
    "n": "Aghanjar Mahadev",
@@ -1164,7 +1189,8 @@
    "m": 40,
    "h": "Half day",
    "d": "India's first notified heritage village and its neighbour — old mansions, cobbled lanes and a village tank.",
-   "q": "Pragpur heritage village"
+   "q": "Pragpur heritage village",
+   "img": "India's 1st heritage village (PRAGPUR), Distt. Kangra, Himachal pradesh.jpg"
   }
  ],
  "115": [
@@ -1191,7 +1217,8 @@
    "k": "heritage",
    "m": 0,
    "h": "1 hr",
-   "d": "Meditation caves cut into the cliff above the village, used by monks for centuries."
+   "d": "Meditation caves cut into the cliff above the village, used by monks for centuries.",
+   "img": "Caves of Tabo Monastery WLM22-07689.jpg"
   }
  ],
  "38": [
@@ -1202,7 +1229,8 @@
    "h": "2–3 hrs",
    "b": "Jun–Oct",
    "d": "A steep walk of about an hour up from the monastery to a small high lake with views of the Spiti and Pin valleys.",
-   "t": "You are above 4,000 m — go slowly."
+   "t": "You are above 4,000 m — go slowly.",
+   "img": "Dhankar lake.jpg"
   }
  ],
  "51": [
@@ -1218,7 +1246,8 @@
    "k": "village",
    "m": 30,
    "h": "1–2 hrs",
-   "d": "The last village in the Pin valley, where the road ends and the Pin-Parvati and Bhaba trails begin."
+   "d": "The last village in the Pin valley, where the road ends and the Pin-Parvati and Bhaba trails begin.",
+   "img": "Mud Village.jpg"
   }
  ],
  "43": [
@@ -1228,7 +1257,9 @@
    "m": 0,
    "h": "45 min",
    "b": "Jun–Sep",
-   "d": "A long waterfall dropping off the cliffs above Sissu, best when the snow melts."
+   "d": "A long waterfall dropping off the cliffs above Sissu, best when the snow melts.",
+   "img": "Sissu Water Fall.jpg",
+   "by": "Lalitgupta isgec"
   }
  ],
  "109": [
@@ -1262,7 +1293,9 @@
    "k": "village",
    "m": 15,
    "h": "1–2 hrs",
-   "d": "A traditional village a short drive from Kalpa, reached on a road cut into a sheer cliff with Kinner Kailash across the valley."
+   "d": "A traditional village a short drive from Kalpa, reached on a road cut into a sheer cliff with Kinner Kailash across the valley.",
+   "img": "Roghi village kalpa.jpg",
+   "by": "Rahulraees"
   },
   {
    "n": "Narayan-Nagini Temple",
@@ -1297,14 +1330,17 @@
    "k": "temple",
    "m": 0,
    "h": "30 min",
-   "d": "The village goddess's carved wooden temple in the middle of Chitkul."
+   "d": "The village goddess's carved wooden temple in the middle of Chitkul.",
+   "img": "Mathi Temple, Chitkul, The last Village of India.jpg",
+   "by": "Sidhant12sharma"
   },
   {
    "n": "Baspa riverside walk",
    "k": "hike",
    "m": 0,
    "h": "1–2 hrs",
-   "d": "Walk out beyond the village along the Baspa towards the border — the road ends, the mountains close in."
+   "d": "Walk out beyond the village along the Baspa towards the border — the road ends, the mountains close in.",
+   "img": "Baspa River flowing next to Chitkul.jpg"
   }
  ],
  "37": [
@@ -1314,7 +1350,8 @@
    "m": 90,
    "h": "Half day",
    "d": "A centuries-old naturally preserved monk's mummy in Gue village, just inside Spiti.",
-   "t": "Foreign travellers need an Inner Line Permit on this stretch; everyone should carry ID."
+   "t": "Foreign travellers need an Inner Line Permit on this stretch; everyone should carry ID.",
+   "img": "Mummy of Sangha Tenzin in Gue Monastery WLM22-07677.jpg"
   }
  ],
  "10": [
@@ -1342,21 +1379,25 @@
    "h": "1 hr",
    "d": "Chamba rumals, Pahari paintings and old copper plates from the Chamba kingdom.",
    "t": "Closed on Mondays.",
-   "q": "Bhuri Singh Museum Chamba"
+   "q": "Bhuri Singh Museum Chamba",
+   "img": "Fresco from Rangmahal, Chamba, Bhuri Singh Museum, Chamba, Himachal Pradesh.jpg"
   },
   {
    "n": "Chamunda Devi Temple",
    "k": "temple",
    "m": 10,
    "h": "45 min",
-   "d": "A wooden temple on a ridge above the town with the best view over Chamba and the Ravi."
+   "d": "A wooden temple on a ridge above the town with the best view over Chamba and the Ravi.",
+   "img": "0051723 Chamunda Devi temple, Chamba, Himachal Pradesh 007.jpg"
   },
   {
    "n": "Chamba rumal embroidery",
    "k": "experience",
    "m": 0,
    "h": "1 hr",
-   "d": "Fine double-sided embroidery that looks the same on both sides — watch it being made and buy from the artisans."
+   "d": "Fine double-sided embroidery that looks the same on both sides — watch it being made and buy from the artisans.",
+   "img": "Chamba Rumal with Scenes of Sita and Hanuman LACMA M.71.37.3.jpg",
+   "by": "LACMA"
   }
  ],
  "72": [
@@ -1379,7 +1420,9 @@
    "k": "heritage",
    "m": 0,
    "h": "30 min",
-   "d": "Dalhousie's oldest church, from 1863, near Gandhi Chowk."
+   "d": "Dalhousie's oldest church, from 1863, near Gandhi Chowk.",
+   "img": "St John's Church, Dalhousie.jpg",
+   "by": "Kanad Sanyal"
   },
   {
    "n": "Bakrota round walk",
@@ -1413,7 +1456,8 @@
    "k": "experience",
    "m": 0,
    "h": "1–2 hrs",
-   "d": "Bharmour is the home of the Gaddi shepherds — ask your host to meet a family and see their wool and flocks."
+   "d": "Bharmour is the home of the Gaddi shepherds — ask your host to meet a family and see their wool and flocks.",
+   "img": "Gaddi herd of sheep and goats ,Bharmour.jpg"
   }
  ],
  "1": [
@@ -1521,7 +1565,8 @@
    "k": "water",
    "m": 0,
    "h": "45 min",
-   "d": "An old royal tank and garden in the middle of Nahan."
+   "d": "An old royal tank and garden in the middle of Nahan.",
+   "img": "Rani Tal, Nahan, Himachal Pradesh.jpg"
   },
   {
    "n": "Villa Round walk",
@@ -1571,7 +1616,8 @@
    "h": "1 hr",
    "b": "Mar–Jun",
    "d": "Stone temples of the old town, drowned by the Bhakra reservoir, rise out of the water when the level drops in spring.",
-   "t": "Only visible when the water is low."
+   "t": "Only visible when the water is low.",
+   "img": "Bilaspur submerged Ranganatha temples, Gobind Sagar Bhakra Dam, Himachal Pradesh.jpg"
   },
   {
    "n": "Kandrour bridge",
@@ -1587,14 +1633,16 @@
    "k": "temple",
    "m": 0,
    "h": "45 min",
-   "d": "A temple built by Sansar Chand's queen with Kangra-style wall paintings inside."
+   "d": "A temple built by Sansar Chand's queen with Kangra-style wall paintings inside.",
+   "img": "0051123 Narbadeshwar temple, Sujanpur Tira, Himachal Pradesh 074.jpg"
   },
   {
    "n": "Sujanpur Fort",
    "k": "heritage",
    "m": 5,
    "h": "1 hr",
-   "d": "The ruined palace-fort of the Katoch rulers on a hill above the Beas, built in 1758."
+   "d": "The ruined palace-fort of the Katoch rulers on a hill above the Beas, built in 1758.",
+   "img": "Katoch Palace.jpg"
   },
   {
    "n": "Sujanpur Chaugan",
@@ -1633,7 +1681,8 @@
    "m": 60,
    "h": "Half day",
    "d": "India's first notified heritage village and its neighbour — old mansions and cobbled lanes.",
-   "q": "Pragpur heritage village"
+   "q": "Pragpur heritage village",
+   "img": "India's 1st heritage village (PRAGPUR), Distt. Kangra, Himachal pradesh.jpg"
   }
  ],
  "85": [
@@ -1661,7 +1710,9 @@
    "h": "1 hr",
    "b": "Jun–Oct",
    "d": "A small high-altitude lake beside the Manali–Leh road beyond Darcha, often still and mirror-like in the morning.",
-   "t": "You are close to 4,000 m — go slowly."
+   "t": "You are close to 4,000 m — go slowly.",
+   "img": "Deepak Tal Lake, Leh-Manali Highway, Himachal Pradesh, India.jpg",
+   "by": "Vyacheslav Argenberg"
   }
  ],
  "50": [
@@ -1672,7 +1723,9 @@
    "h": "Several days",
    "b": "Jan–Mar",
    "d": "Kibber is the base for winter snow leopard spotting in the high valleys around the village, run by local guides and homestays.",
-   "t": "Very cold (−20 °C at night). Book only with local Kibber guides."
+   "t": "Very cold (−20 °C at night). Book only with local Kibber guides.",
+   "img": "Snow leopard (Panthera uncia).JPG",
+   "by": "Ksuryawanshi"
   }
  ]
 }

@@ -47,7 +47,7 @@
   function load() {
     if (DATA) return Promise.resolve(DATA);
     if (!LOADING) {
-      LOADING = fetch('/spots.json?v=20261122d').then(function (r) { return r.json(); })
+      LOADING = fetch('/spots.json?v=20261122e').then(function (r) { return r.json(); })
         .then(function (j) { DATA = j || {}; return DATA; })
         .catch(function () { DATA = {}; return DATA; });
     }
