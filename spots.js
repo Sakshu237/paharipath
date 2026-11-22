@@ -47,7 +47,7 @@
   function load() {
     if (DATA) return Promise.resolve(DATA);
     if (!LOADING) {
-      LOADING = fetch('/spots.json?v=20261122b').then(function (r) { return r.json(); })
+      LOADING = fetch('/spots.json?v=20261122c').then(function (r) { return r.json(); })
         .then(function (j) { DATA = j || {}; return DATA; })
         .catch(function () { DATA = {}; return DATA; });
     }
@@ -99,16 +99,30 @@
       '#sp2Sheet .ds{font-size:14.5px;color:#3c4a40;line-height:1.7}' +
       '#sp2Sheet .tp{font-size:13.5px;color:#5a4a1e;background:#fbf6e8;border-radius:10px;padding:10px 12px;line-height:1.55}' +
       '#sp2Sheet .go{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;background:var(--pine);color:#fff;font-weight:600;font-size:15px;text-decoration:none;margin-top:4px}' +
+      '.sp2-art{overflow:hidden}' +
+      '.sp2-art .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}' +
+      '.sp2-art.has-ph .em{display:none}' +
+      '.sp2-art.has-ph::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55),rgba(0,0,0,0) 55%);pointer-events:none}' +
+      '.sp2-art .kd,.sp2-art .bz,.sp2-art .cr,.sp2-art .x{z-index:2}' +
+      '.sp2-art .kd{position:relative}' +
+      '.sp2-art .cr{position:absolute;right:8px;bottom:6px;font-size:10px;color:rgba(255,255,255,.85);text-decoration:none;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '#pdSpots .sp2-art{height:140px}#sp2Sheet .sp2-art{height:220px}' +
       '@keyframes sp2f{from{opacity:0}to{opacity:1}}@keyframes sp2u{from{transform:translateY(40px)}to{transform:none}}';
     document.head.appendChild(st);
   }
 
+  // Photos come from Wikimedia Commons (free licences, credited to the author).
+  // Special:FilePath serves a resized copy; if it fails, the coloured card stays.
+  function photoUrl(f, w) { return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(f) + '?width=' + (w || 640); }
+  function fileUrl(f) { return 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(String(f).replace(/ /g, '_')); }
   function art(s, big) {
     var k = KINDS[s.k] || KINDS.view, L = lang();
-    return '<div class="sp2-art" style="background:linear-gradient(135deg,' + k.c[0] + ',' + k.c[1] + ')">' +
+    var img = s.img ? '<img class="ph" src="' + esc(photoUrl(s.img, big ? 960 : 560)) + '" alt="' + esc(s.n) + '" loading="lazy" decoding="async" onerror="this.parentNode.classList.remove(\'has-ph\');this.remove()">' : '';
+    var credit = s.img ? '<a class="cr" href="' + esc(fileUrl(s.img)) + '" target="_blank" rel="noopener" data-sp2cr="1">📷 ' + esc(s.by || 'Wikimedia Commons') + '</a>' : '';
+    return '<div class="sp2-art' + (s.img ? ' has-ph' : '') + '" style="background:linear-gradient(135deg,' + k.c[0] + ',' + k.c[1] + ')">' + img +
       '<span class="em" aria-hidden="true">' + k.i + '</span>' +
       (s.busy && !big ? '<span class="bz">' + esc(T().busy) + '</span>' : '') +
-      '<span class="kd">' + esc(k[L] || k.en) + '</span></div>';
+      '<span class="kd">' + (s.img ? k.i + ' ' : '') + esc(k[L] || k.en) + '</span>' + credit + '</div>';
   }
   function dist(s) { var t = T(); return s.m > 0 ? t.away(s.m) : t.walk; }
 
@@ -153,10 +167,10 @@
     el.innerHTML =
       '<div class="sp2-h"><b>' + esc(t.title) + ' <em>' + esc(p.name) + '</em></b>' + (list.length > 1 ? '<span>' + esc(t.swipe) + '</span>' : '') + '</div>' +
       '<div class="sp2-row">' + list.map(function (s, i) {
-        return '<button type="button" class="sp2-c" data-sp2i="' + i + '">' + art(s) +
+        return '<div class="sp2-c" role="button" tabindex="0" aria-label="' + esc(s.n) + '" data-sp2i="' + i + '">' + art(s) +
           '<div class="sp2-b"><div class="sp2-n">' + esc(s.n) + '</div>' +
           '<div class="sp2-m">' + esc(dist(s)) + (s.h ? ' · ' + esc(s.h) : '') + '</div>' +
-          '<div class="sp2-d">' + esc(s.d) + '</div></div></button>';
+          '<div class="sp2-d">' + esc(s.d) + '</div></div></div>';
       }).join('') + '</div>';
   }
 
@@ -185,6 +199,7 @@
     var sh = document.getElementById('sp2Sheet');
     if (sh && (tgt === sh || tgt.closest('[data-sp2x]'))) { closeSheet(); return; }
     if (tgt.closest('#pdSpotsChip')) { var el = document.getElementById('pdSpots'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (tgt.closest('[data-sp2cr]')) return;   // photo credit link
     var c = tgt.closest('#pdSpots [data-sp2i]'); if (c) openSheet(+c.getAttribute('data-sp2i'));
   }
 
@@ -197,7 +212,10 @@
 
   function init() {
     document.addEventListener('click', onClick);
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeSheet();
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('#pdSpots [data-sp2i]') && !e.target.closest('[data-sp2cr]')) { e.preventDefault(); openSheet(+e.target.closest('[data-sp2i]').getAttribute('data-sp2i')); }
+    });
     var orig = window.openPD;
     if (typeof orig === 'function' && !orig._spots) {
       var wrapped = function (id) {

@@ -1,93 +1,582 @@
 {
-  "_note": "Things to do around each destination (day spots — NOT standalone destinations). Key = destination id from places.json. Fields: n name, k kind (forest|water|temple|heritage|village|view|hike|wildlife|experience), m approx drive minutes from the destination (0 = walkable), h time needed, d what it is (1-2 lines), t practical tip (optional), b best months (optional), busy 1 = popular/crowded spot (optional), q map search text if the name alone is ambiguous (optional). Batch 1 (Nov 2026): Shimla + Solan districts, checked against current sources. Edit freely — the site reads this file directly.",
-  "87": [
-    { "n": "Viceregal Lodge", "k": "heritage", "m": 15, "h": "1.5–2 hrs", "busy": 1, "d": "Grey-stone mansion from 1888 on Observatory Hill, where key talks before Partition took place. A short guided tour covers the grand halls; the lawns alone are worth the visit.", "t": "Closed on Mondays and national holidays.", "q": "Viceregal Lodge Shimla" },
-    { "n": "Himachal State Museum", "k": "heritage", "m": 10, "h": "1–1.5 hrs", "d": "Pahari miniature paintings, old temple woodwork, coins and textiles in a colonial house near Chaura Maidan. A calm hour away from the Mall.", "t": "Closed on Mondays.", "q": "Himachal State Museum Shimla" },
-    { "n": "Tara Devi Temple", "k": "temple", "m": 30, "h": "1.5 hrs", "d": "Hilltop temple of Goddess Tara south of Shimla, reached by road or a steep forest path. Wide views over the Shimla hills, and far fewer people than Jakhu.", "q": "Tara Devi Temple Shimla" },
-    { "n": "Chadwick Falls", "k": "water", "m": 30, "h": "2 hrs", "b": "Jul–Sep", "d": "A forest trail from the Summer Hill side down to a tall waterfall. At its best during and just after the monsoon — in dry months it can be a trickle.", "q": "Chadwick Falls Shimla" },
-    { "n": "The Glen", "k": "forest", "m": 20, "h": "2 hrs", "d": "A deep, shaded deodar forest below Annandale with a stream running through it — one of the few quiet corners left inside Shimla.", "q": "The Glen Annandale Shimla" },
-    { "n": "Shimla Water Catchment Sanctuary", "k": "forest", "m": 35, "h": "2–3 hrs", "d": "Untouched deodar and oak forest that has fed Shimla's water by gravity for over a century. Protected since 1952, a sanctuary since 1990, and almost empty on weekdays.", "t": "Walks start near Charabara. Check the entry rules at the forest gate before going in.", "q": "Shimla Water Catchment Wildlife Sanctuary" }
-  ],
-  "127": [
-    { "n": "Shimla Water Catchment Sanctuary", "k": "forest", "m": 10, "h": "2–3 hrs", "d": "Untouched deodar and oak forest that has fed Shimla's water by gravity for over a century — the only undisturbed middle-altitude forest left in these lower hills. Listen for koklass pheasants.", "t": "Walks start near Charabara. Check the entry rules at the forest gate before going in.", "q": "Shimla Water Catchment Wildlife Sanctuary" },
-    { "n": "Rashtrapati Niwas (The Retreat)", "k": "heritage", "m": 15, "h": "1.5 hrs", "d": "The President's summer retreat at Chharabra — an old wooden building with lawns and orchards, open to visitors since 2023.", "t": "Book online or at the counter. Closed on Mondays and public holidays; last entry 3 pm.", "q": "Rashtrapati Niwas Mashobra" },
-    { "n": "Sipi", "k": "village", "m": 15, "h": "1–2 hrs", "d": "A small village below Mashobra with an old temple in a deodar grove. Known for the village fair held there every May.", "q": "Sipi Mashobra" },
-    { "n": "Shali Tibba", "k": "hike", "m": 90, "h": "Full day", "b": "Mar–Dec", "d": "The lone 2,870 m peak behind Mashobra, with the Shali Mata temple on top. About 7 km one way from Khatnol village through blue pine and deodar, then a 360° view of the Himalaya.", "t": "Start early and carry food and water — there's nothing on the trail.", "q": "Shali Tibba Khatnol" }
-  ],
-  "89": [
-    { "n": "Fagu", "k": "village", "m": 15, "h": "1–2 hrs", "d": "A quiet ridge village past Kufri on the Theog road — potato fields, apple orchards and clear morning views. What Kufri felt like before the crowds.", "q": "Fagu Shimla" },
-    { "n": "Shimla Water Catchment Sanctuary", "k": "forest", "m": 15, "h": "2–3 hrs", "d": "The protected forest right below Kufri that supplies Shimla's water. Deodar, oak and silence — a complete contrast to Kufri's pony tracks.", "t": "Walks start near Charabara. Check the entry rules at the forest gate.", "q": "Shimla Water Catchment Wildlife Sanctuary" },
-    { "n": "Mahasu Peak", "k": "view", "m": 0, "h": "1–2 hrs", "busy": 1, "d": "The high point above Kufri, with snow-range views on a clear day. Reached on foot or by pony.", "t": "Walk if you can — the pony track gets muddy and crowded.", "q": "Mahasu Peak Kufri" },
-    { "n": "Himalayan Nature Park", "k": "wildlife", "m": 5, "h": "1–2 hrs", "busy": 1, "d": "A high-altitude zoo with Himalayan animals and pheasants, including the state bird, the western tragopan.", "q": "Himalayan Nature Park Kufri" }
-  ],
-  "69": [
-    { "n": "Shali Tibba", "k": "hike", "m": 60, "h": "Full day", "b": "Mar–Dec", "d": "A lone 2,870 m peak with the Shali Mata temple on top. About 7 km one way from Khatnol village through blue pine and deodar, with a 360° view at the end.", "t": "Start early and carry food and water.", "q": "Shali Tibba Khatnol" },
-    { "n": "Shimla Water Catchment Sanctuary", "k": "forest", "m": 35, "h": "2–3 hrs", "d": "Untouched deodar and oak forest that feeds Shimla's water — one of the quietest walks in the region.", "t": "Walks start near Charabara. Check the entry rules at the forest gate.", "q": "Shimla Water Catchment Wildlife Sanctuary" },
-    { "n": "Rashtrapati Niwas (The Retreat)", "k": "heritage", "m": 30, "h": "1.5 hrs", "d": "The President's summer retreat at Chharabra — an old wooden building with lawns and orchards, open to visitors.", "t": "Closed on Mondays and public holidays; last entry 3 pm.", "q": "Rashtrapati Niwas Mashobra" }
-  ],
-  "26": [
-    { "n": "Tannu Jubbar Lake", "k": "water", "m": 30, "h": "1–2 hrs", "d": "A small, still lake ringed by deodars with a Nag Devta temple at one end. The forest department runs a small eco park here, and the village holds a fair by the lake every year.", "t": "Small entry fee for the eco park. No boating.", "q": "Tannu Jubbar Lake" },
-    { "n": "Jau Bagh meadow", "k": "hike", "m": 25, "h": "2–3 hrs", "b": "Apr–Nov", "d": "A wide open meadow on the flank of Hatu, a 20-minute forest walk from the Hatu temple. Locals link it to the Pandavas; most people who reach Hatu never walk this far.", "t": "The Hatu road is narrow and steep — small cars only. Snowbound Dec–Feb.", "q": "Jau Bagh Hatu Peak" },
-    { "n": "Stokes Farm, Thanedar", "k": "experience", "m": 40, "h": "1–2 hrs", "d": "Where Satyanand Stokes brought new apple varieties and started the orchards that changed Himachal's economy. The family still runs the farm.", "q": "Stokes Farm Thanedar" }
-  ],
-  "66": [
-    { "n": "Stokes Farm & Paramjyoti Temple", "k": "experience", "m": 10, "h": "1–2 hrs", "d": "The orchard where Satyanand Stokes started Himachal's apple story, and the Paramjyoti temple he built nearby. Ask at the farm about apple products and seasonal visits.", "q": "Stokes Farm Thanedar" },
-    { "n": "Tannu Jubbar Lake", "k": "water", "m": 20, "h": "1–2 hrs", "d": "A small deodar-ringed lake with a Nag Devta temple at one end and a forest department eco park around it.", "t": "Small entry fee for the eco park. No boating.", "q": "Tannu Jubbar Lake" },
-    { "n": "Jau Bagh meadow", "k": "hike", "m": 50, "h": "Half day", "b": "Apr–Nov", "d": "A wide meadow a 20-minute forest walk beyond the Hatu temple, with big views and almost nobody around.", "t": "Small cars only on the Hatu road. Snowbound Dec–Feb.", "q": "Jau Bagh Hatu Peak" }
-  ],
-  "27": [
-    { "n": "Jau Bagh meadow", "k": "hike", "m": 0, "h": "1.5–2 hrs", "b": "Apr–Nov", "d": "A wide open meadow on the right flank of the peak, about 20 minutes' walk from the temple through deodar and oak. The best picnic spot on Hatu.", "q": "Jau Bagh Hatu Peak" },
-    { "n": "Bhim ka Chulha", "k": "view", "m": 0, "h": "30 min", "d": "Rock formations a short walk from the Hatu temple, which locals say the Pandavas used as a stove during their exile.", "q": "Bhim ka Chulha Hatu" },
-    { "n": "Tannu Jubbar Lake", "k": "water", "m": 45, "h": "1–2 hrs", "d": "A small deodar-ringed lake with a Nag Devta temple, on the road down towards Thanedar.", "t": "Small entry fee for the eco park.", "q": "Tannu Jubbar Lake" }
-  ],
-  "65": [
-    { "n": "Hateshwari Temple, Hatkoti", "k": "temple", "m": 25, "h": "1 hr", "d": "An old stone temple of Hateshwari Mata on the banks of the Pabbar, one of the most important shrines in upper Shimla.", "q": "Hateshwari Temple Hatkoti" },
-    { "n": "Giri Ganga & Kuppar", "k": "forest", "m": 60, "h": "Half day", "b": "Apr–Nov", "d": "From Kharapathar, a 7 km dirt track climbs through deodar and spruce to an old temple at the source of the Giri river. Fit walkers can carry on 2–3 hours up to the Kuppar meadow.", "t": "Very few people even in season. Carry food — only basic dhabas near the temple.", "q": "Giri Ganga Temple Kharapathar" },
-    { "n": "Pabbar riverside", "k": "experience", "m": 0, "h": "1–2 hrs", "d": "Slow walks along the Pabbar through apple country. The river is known for trout.", "t": "Angling needs a permit from the fisheries department — ask locally." }
-  ],
-  "70": [
-    { "n": "Hateshwari Temple, Hatkoti", "k": "temple", "m": 20, "h": "1 hr", "d": "An old stone temple of Hateshwari Mata beside the Pabbar river, the most revered shrine in this valley.", "q": "Hateshwari Temple Hatkoti" },
-    { "n": "Giri Ganga & Kuppar", "k": "forest", "m": 40, "h": "Half day", "b": "Apr–Nov", "d": "A 7 km forest track from Kharapathar to the old temple at the source of the Giri river — temple built by the Jubbal rulers. Kuppar meadow is 2–3 hours further up.", "t": "Carry food. The track is dirt and can be slushy after rain.", "q": "Giri Ganga Temple Kharapathar" },
-    { "n": "Kharapathar", "k": "village", "m": 35, "h": "1–2 hrs", "d": "A small ridge town at about 2,700 m on the Shimla–Rohru road, surrounded by apple orchards. Good for an evening view and a cup of tea.", "q": "Kharapathar" }
-  ],
-  "67": [
-    { "n": "Larot", "k": "village", "m": 30, "h": "1 hr", "d": "The last village on the Rohru side before the climb to Chanshal — a good place to stop, check road conditions and eat.", "q": "Larot Rohru" },
-    { "n": "Dodra Kwar", "k": "village", "m": 90, "h": "Full day", "b": "Jun–Oct", "d": "Twin villages beyond the pass in one of the most remote corners of Shimla district, cut off by snow for months every year.", "t": "Only when the pass is open. Ask in Rohru or Larot about the road the day before." }
-  ],
-  "68": [
-    { "n": "Sarahan Pheasantry", "k": "wildlife", "m": 5, "h": "1 hr", "d": "A breeding centre for the western tragopan, Himachal's rare state bird, which bred in captivity for the first time in the world here.", "t": "Closed on Mondays and during breeding season (April–August).", "q": "Sarahan Pheasantry" },
-    { "n": "Padam Palace, Rampur", "k": "heritage", "m": 60, "h": "1 hr", "d": "The palace of the former Bushahr rulers in Rampur, with carved wood and stone on the banks of the Sutlej.", "t": "Still owned by the royal family — you may only see it from outside.", "q": "Padam Palace Rampur Bushahr" }
-  ],
-  "71": [
-    { "n": "Tara Devi Temple", "k": "temple", "m": 15, "h": "1.5 hrs", "d": "Hilltop temple of Goddess Tara just above Shoghi, with wide views over the Shimla hills.", "q": "Tara Devi Temple Shimla" },
-    { "n": "Viceregal Lodge", "k": "heritage", "m": 30, "h": "1.5–2 hrs", "busy": 1, "d": "The 1888 stone mansion on Shimla's Observatory Hill where key talks before Partition were held. Guided tour plus big lawns.", "t": "Closed on Mondays and national holidays.", "q": "Viceregal Lodge Shimla" }
-  ],
-  "88": [
-    { "n": "Kali ka Tibba", "k": "temple", "m": 20, "h": "1 hr", "d": "A white temple of Goddess Kali on a hilltop about 7 km from Chail. On a clear day you see the snow range on one side and Churdhar on the other.", "b": "Sunrise or sunset", "q": "Kali ka Tibba Chail" },
-    { "n": "Sadhupul", "k": "water", "m": 30, "h": "1–2 hrs", "d": "A riverside stop on the Ashwini on the way up from Kandaghat, where dhabas put tables right in the shallow stream.", "t": "Don't wade in after heavy rain — the water rises fast.", "q": "Sadhupul Chail" },
-    { "n": "Chail Palace grounds", "k": "heritage", "m": 5, "h": "1 hr", "d": "The Maharaja of Patiala's old summer palace, now a heritage hotel, set in deodar forest. Walk the grounds or have tea on the lawns.", "q": "Chail Palace" }
-  ],
-  "90": [
-    { "n": "Gilbert Trail", "k": "hike", "m": 0, "h": "1–2 hrs", "d": "A quiet cliff-edge path through pine and oak, popular with birdwatchers early in the morning.", "t": "Parts of Kasauli are Air Force area — stay on the trail.", "q": "Gilbert Trail Kasauli" },
-    { "n": "Christ Church", "k": "heritage", "m": 0, "h": "30 min", "d": "A small 19th-century church on the Mall with old stained glass — a calm stop on a heritage walk.", "q": "Christ Church Kasauli" },
-    { "n": "Karol Tibba & Pandava Cave", "k": "hike", "m": 50, "h": "Full day", "d": "The highest hill around Solan, about 5–6 km up from Chambaghat through grassland and forest to a narrow cave and a Kali temple on top.", "t": "Carry a head torch for the cave, and start early.", "q": "Karol Tibba Chambaghat" }
-  ],
-  "91": [
-    { "n": "Dagshai Jail Museum", "k": "heritage", "m": 0, "h": "1 hr", "d": "A cantonment jail from 1849, with its cells and stories kept as a small museum.", "q": "Dagshai Jail Museum" },
-    { "n": "Old cantonment cemetery", "k": "heritage", "m": 0, "h": "30 min", "d": "A quiet colonial-era graveyard on the edge of town with old gravestones and big views.", "q": "Dagshai cemetery" },
-    { "n": "Karol Tibba & Pandava Cave", "k": "hike", "m": 30, "h": "Full day", "d": "The highest hill around Solan — 5–6 km up from Chambaghat to a narrow cave and a Kali temple on top, with views to Churdhar.", "t": "Carry a head torch for the cave.", "q": "Karol Tibba Chambaghat" }
-  ],
-  "92": [
-    { "n": "Shoolini Mata Temple, Solan", "k": "temple", "m": 30, "h": "1 hr", "d": "Temple of Solan's patron goddess. Her three-day fair every June is the town's biggest event.", "q": "Shoolini Mata Temple Solan" },
-    { "n": "Karol Tibba & Pandava Cave", "k": "hike", "m": 35, "h": "Full day", "d": "The highest hill around Solan — 5–6 km up from Chambaghat to a narrow cave and a Kali temple on top.", "t": "Carry a head torch for the cave.", "q": "Karol Tibba Chambaghat" }
-  ],
-  "93": [
-    { "n": "Karol Tibba & Pandava Cave", "k": "hike", "m": 25, "h": "Full day", "d": "The highest hill around Solan, about 5–6 km up from Chambaghat through grassland and forest to a narrow cave and a Kali temple on top.", "t": "Carry a head torch for the cave, and start early.", "q": "Karol Tibba Chambaghat" },
-    { "n": "Shoolini Mata Temple, Solan", "k": "temple", "m": 20, "h": "1 hr", "d": "Temple of Solan's patron goddess. Her three-day fair every June is the town's biggest event.", "q": "Shoolini Mata Temple Solan" }
-  ],
-  "94": [
-    { "n": "Habban Valley", "k": "forest", "m": 75, "h": "Half day", "d": "A deodar-forested valley at about 2,000 m, with apple and peach orchards and almost no tourism. A trail goes on to Churdhar for the fit.", "t": "There's a forest rest house; book through the HP eco-tourism site.", "q": "Habban Valley" },
-    { "n": "Shirgul Devta shrine, Shaya", "k": "temple", "m": 90, "h": "1 hr", "d": "A shrine of Shirgul Devta, the most revered deity of this region, about 10 km from Habban.", "q": "Shirgul Devta Shaya" },
-    { "n": "Peach orchards in bloom", "k": "experience", "m": 0, "h": "1–2 hrs", "b": "Mar–Apr", "d": "Rajgarh is known as the peach valley — in spring the slopes around town turn pink. Ask your host which orchards welcome walkers." }
-  ]
+ "_note": "Things to do around each destination (day spots — NOT standalone destinations). Key = destination id from places.json. Fields: n name, k kind (forest|water|temple|heritage|village|view|hike|wildlife|experience), m approx drive minutes from the destination (0 = walkable), h time needed, d what it is (1-2 lines), t practical tip (optional), b best months (optional), busy 1 = popular/crowded spot (optional), q map search text if the name alone is ambiguous (optional). Batch 1 (Nov 2026): Shimla + Solan districts, checked against current sources. Edit freely — the site reads this file directly. img = Wikimedia Commons file name (shown via Special:FilePath, credited to by + Commons link); spots without img show the coloured card.",
+ "87": [
+  {
+   "n": "Viceregal Lodge",
+   "k": "heritage",
+   "m": 15,
+   "h": "1.5–2 hrs",
+   "busy": 1,
+   "d": "Grey-stone mansion from 1888 on Observatory Hill, where key talks before Partition took place. A short guided tour covers the grand halls; the lawns alone are worth the visit.",
+   "t": "Closed on Mondays and national holidays.",
+   "q": "Viceregal Lodge Shimla",
+   "img": "Vice Regal Lodge, Shimla.jpg",
+   "by": "Mathewjoseph007"
+  },
+  {
+   "n": "Himachal State Museum",
+   "k": "heritage",
+   "m": 10,
+   "h": "1–1.5 hrs",
+   "d": "Pahari miniature paintings, old temple woodwork, coins and textiles in a colonial house near Chaura Maidan. A calm hour away from the Mall.",
+   "t": "Closed on Mondays.",
+   "q": "Himachal State Museum Shimla",
+   "img": "Himachal Pradesh state museum.jpg",
+   "by": "Jazze7"
+  },
+  {
+   "n": "Tara Devi Temple",
+   "k": "temple",
+   "m": 30,
+   "h": "1.5 hrs",
+   "d": "Hilltop temple of Goddess Tara south of Shimla, reached by road or a steep forest path. Wide views over the Shimla hills, and far fewer people than Jakhu.",
+   "q": "Tara Devi Temple Shimla",
+   "img": "Tara Devi temple Shimla.jpg",
+   "by": "Pankajkukreti03"
+  },
+  {
+   "n": "Chadwick Falls",
+   "k": "water",
+   "m": 30,
+   "h": "2 hrs",
+   "b": "Jul–Sep",
+   "d": "A forest trail from the Summer Hill side down to a tall waterfall. At its best during and just after the monsoon — in dry months it can be a trickle.",
+   "q": "Chadwick Falls Shimla",
+   "img": "ChadwickFallShimla.jpg"
+  },
+  {
+   "n": "The Glen",
+   "k": "forest",
+   "m": 20,
+   "h": "2 hrs",
+   "d": "A deep, shaded deodar forest below Annandale with a stream running through it — one of the few quiet corners left inside Shimla.",
+   "q": "The Glen Annandale Shimla"
+  },
+  {
+   "n": "Shimla Water Catchment Sanctuary",
+   "k": "forest",
+   "m": 35,
+   "h": "2–3 hrs",
+   "d": "Untouched deodar and oak forest that has fed Shimla's water by gravity for over a century. Protected since 1952, a sanctuary since 1990, and almost empty on weekdays.",
+   "t": "Walks start near Charabara. Check the entry rules at the forest gate before going in.",
+   "q": "Shimla Water Catchment Wildlife Sanctuary",
+   "img": "Entrance ,Shimla Water Catchment Wildlife Sanctuary, Himachal Pardes, India.JPG",
+   "by": "Harvinder Chandigarh"
+  }
+ ],
+ "127": [
+  {
+   "n": "Shimla Water Catchment Sanctuary",
+   "k": "forest",
+   "m": 10,
+   "h": "2–3 hrs",
+   "d": "Untouched deodar and oak forest that has fed Shimla's water by gravity for over a century — the only undisturbed middle-altitude forest left in these lower hills. Listen for koklass pheasants.",
+   "t": "Walks start near Charabara. Check the entry rules at the forest gate before going in.",
+   "q": "Shimla Water Catchment Wildlife Sanctuary",
+   "img": "Entrance ,Shimla Water Catchment Wildlife Sanctuary, Himachal Pardes, India.JPG",
+   "by": "Harvinder Chandigarh"
+  },
+  {
+   "n": "Rashtrapati Niwas (The Retreat)",
+   "k": "heritage",
+   "m": 15,
+   "h": "1.5 hrs",
+   "d": "The President's summer retreat at Chharabra — an old wooden building with lawns and orchards, open to visitors since 2023.",
+   "t": "Book online or at the counter. Closed on Mondays and public holidays; last entry 3 pm.",
+   "q": "Rashtrapati Niwas Mashobra",
+   "img": "Tulips.png",
+   "by": "Shivamagrawal wiki"
+  },
+  {
+   "n": "Sipi",
+   "k": "village",
+   "m": 15,
+   "h": "1–2 hrs",
+   "d": "A small village below Mashobra with an old temple in a deodar grove. Known for the village fair held there every May.",
+   "q": "Sipi Mashobra"
+  },
+  {
+   "n": "Shali Tibba",
+   "k": "hike",
+   "m": 90,
+   "h": "Full day",
+   "b": "Mar–Dec",
+   "d": "The lone 2,870 m peak behind Mashobra, with the Shali Mata temple on top. About 7 km one way from Khatnol village through blue pine and deodar, then a 360° view of the Himalaya.",
+   "t": "Start early and carry food and water — there's nothing on the trail.",
+   "q": "Shali Tibba Khatnol",
+   "img": "Shali Mata Temple.jpg",
+   "by": "502hsuya"
+  }
+ ],
+ "89": [
+  {
+   "n": "Fagu",
+   "k": "village",
+   "m": 15,
+   "h": "1–2 hrs",
+   "d": "A quiet ridge village past Kufri on the Theog road — potato fields, apple orchards and clear morning views. What Kufri felt like before the crowds.",
+   "q": "Fagu Shimla",
+   "img": "Fagu.jpg"
+  },
+  {
+   "n": "Shimla Water Catchment Sanctuary",
+   "k": "forest",
+   "m": 15,
+   "h": "2–3 hrs",
+   "d": "The protected forest right below Kufri that supplies Shimla's water. Deodar, oak and silence — a complete contrast to Kufri's pony tracks.",
+   "t": "Walks start near Charabara. Check the entry rules at the forest gate.",
+   "q": "Shimla Water Catchment Wildlife Sanctuary",
+   "img": "Entrance ,Shimla Water Catchment Wildlife Sanctuary, Himachal Pardes, India.JPG",
+   "by": "Harvinder Chandigarh"
+  },
+  {
+   "n": "Mahasu Peak",
+   "k": "view",
+   "m": 0,
+   "h": "1–2 hrs",
+   "busy": 1,
+   "d": "The high point above Kufri, with snow-range views on a clear day. Reached on foot or by pony.",
+   "t": "Walk if you can — the pony track gets muddy and crowded.",
+   "q": "Mahasu Peak Kufri",
+   "img": "Himalayan mountains, Kufri, Himachal Pradesh, India (2017).jpg",
+   "by": "Sirshendu biswas"
+  },
+  {
+   "n": "Himalayan Nature Park",
+   "k": "wildlife",
+   "m": 5,
+   "h": "1–2 hrs",
+   "busy": 1,
+   "d": "A high-altitude zoo with Himalayan animals and pheasants, including the state bird, the western tragopan.",
+   "q": "Himalayan Nature Park Kufri",
+   "img": "Bear of Himalayan Nature Park, Kufri.jpg"
+  }
+ ],
+ "69": [
+  {
+   "n": "Shali Tibba",
+   "k": "hike",
+   "m": 60,
+   "h": "Full day",
+   "b": "Mar–Dec",
+   "d": "A lone 2,870 m peak with the Shali Mata temple on top. About 7 km one way from Khatnol village through blue pine and deodar, with a 360° view at the end.",
+   "t": "Start early and carry food and water.",
+   "q": "Shali Tibba Khatnol",
+   "img": "Shali Mata Temple.jpg",
+   "by": "502hsuya"
+  },
+  {
+   "n": "Shimla Water Catchment Sanctuary",
+   "k": "forest",
+   "m": 35,
+   "h": "2–3 hrs",
+   "d": "Untouched deodar and oak forest that feeds Shimla's water — one of the quietest walks in the region.",
+   "t": "Walks start near Charabara. Check the entry rules at the forest gate.",
+   "q": "Shimla Water Catchment Wildlife Sanctuary",
+   "img": "Entrance ,Shimla Water Catchment Wildlife Sanctuary, Himachal Pardes, India.JPG",
+   "by": "Harvinder Chandigarh"
+  },
+  {
+   "n": "Rashtrapati Niwas (The Retreat)",
+   "k": "heritage",
+   "m": 30,
+   "h": "1.5 hrs",
+   "d": "The President's summer retreat at Chharabra — an old wooden building with lawns and orchards, open to visitors.",
+   "t": "Closed on Mondays and public holidays; last entry 3 pm.",
+   "q": "Rashtrapati Niwas Mashobra",
+   "img": "Tulips.png",
+   "by": "Shivamagrawal wiki"
+  }
+ ],
+ "26": [
+  {
+   "n": "Tannu Jubbar Lake",
+   "k": "water",
+   "m": 30,
+   "h": "1–2 hrs",
+   "d": "A small, still lake ringed by deodars with a Nag Devta temple at one end. The forest department runs a small eco park here, and the village holds a fair by the lake every year.",
+   "t": "Small entry fee for the eco park. No boating.",
+   "q": "Tannu Jubbar Lake",
+   "img": "Reflection in Tani Jubbar Lake at Narkanda.jpg",
+   "by": "Gkapatia"
+  },
+  {
+   "n": "Jau Bagh meadow",
+   "k": "hike",
+   "m": 25,
+   "h": "2–3 hrs",
+   "b": "Apr–Nov",
+   "d": "A wide open meadow on the flank of Hatu, a 20-minute forest walk from the Hatu temple. Locals link it to the Pandavas; most people who reach Hatu never walk this far.",
+   "t": "The Hatu road is narrow and steep — small cars only. Snowbound Dec–Feb.",
+   "q": "Jau Bagh Hatu Peak",
+   "img": "View of peaks from the way to Hatu Peak, Narkanda.jpg",
+   "by": "Vaibhav Garg"
+  },
+  {
+   "n": "Stokes Farm, Thanedar",
+   "k": "experience",
+   "m": 40,
+   "h": "1–2 hrs",
+   "d": "Where Satyanand Stokes brought new apple varieties and started the orchards that changed Himachal's economy. The family still runs the farm.",
+   "q": "Stokes Farm Thanedar",
+   "img": "Apple orchards in Kotgarh (21487239943).jpg"
+  }
+ ],
+ "66": [
+  {
+   "n": "Stokes Farm & Paramjyoti Temple",
+   "k": "experience",
+   "m": 10,
+   "h": "1–2 hrs",
+   "d": "The orchard where Satyanand Stokes started Himachal's apple story, and the Paramjyoti temple he built nearby. Ask at the farm about apple products and seasonal visits.",
+   "q": "Stokes Farm Thanedar",
+   "img": "Apple orchards in Kotgarh (21487239943).jpg"
+  },
+  {
+   "n": "Tannu Jubbar Lake",
+   "k": "water",
+   "m": 20,
+   "h": "1–2 hrs",
+   "d": "A small deodar-ringed lake with a Nag Devta temple at one end and a forest department eco park around it.",
+   "t": "Small entry fee for the eco park. No boating.",
+   "q": "Tannu Jubbar Lake",
+   "img": "Reflection in Tani Jubbar Lake at Narkanda.jpg",
+   "by": "Gkapatia"
+  },
+  {
+   "n": "Jau Bagh meadow",
+   "k": "hike",
+   "m": 50,
+   "h": "Half day",
+   "b": "Apr–Nov",
+   "d": "A wide meadow a 20-minute forest walk beyond the Hatu temple, with big views and almost nobody around.",
+   "t": "Small cars only on the Hatu road. Snowbound Dec–Feb.",
+   "q": "Jau Bagh Hatu Peak",
+   "img": "View of peaks from the way to Hatu Peak, Narkanda.jpg",
+   "by": "Vaibhav Garg"
+  }
+ ],
+ "27": [
+  {
+   "n": "Jau Bagh meadow",
+   "k": "hike",
+   "m": 0,
+   "h": "1.5–2 hrs",
+   "b": "Apr–Nov",
+   "d": "A wide open meadow on the right flank of the peak, about 20 minutes' walk from the temple through deodar and oak. The best picnic spot on Hatu.",
+   "q": "Jau Bagh Hatu Peak",
+   "img": "View of peaks from the way to Hatu Peak, Narkanda.jpg",
+   "by": "Vaibhav Garg"
+  },
+  {
+   "n": "Bhim ka Chulha",
+   "k": "view",
+   "m": 0,
+   "h": "30 min",
+   "d": "Rock formations a short walk from the Hatu temple, which locals say the Pandavas used as a stove during their exile.",
+   "q": "Bhim ka Chulha Hatu",
+   "img": "Hatu peak.jpg",
+   "by": "Wittystef"
+  },
+  {
+   "n": "Tannu Jubbar Lake",
+   "k": "water",
+   "m": 45,
+   "h": "1–2 hrs",
+   "d": "A small deodar-ringed lake with a Nag Devta temple, on the road down towards Thanedar.",
+   "t": "Small entry fee for the eco park.",
+   "q": "Tannu Jubbar Lake",
+   "img": "Reflection in Tani Jubbar Lake at Narkanda.jpg",
+   "by": "Gkapatia"
+  }
+ ],
+ "65": [
+  {
+   "n": "Hateshwari Temple, Hatkoti",
+   "k": "temple",
+   "m": 25,
+   "h": "1 hr",
+   "d": "An old stone temple of Hateshwari Mata on the banks of the Pabbar, one of the most important shrines in upper Shimla.",
+   "q": "Hateshwari Temple Hatkoti",
+   "img": "Varun Shiv Kapur, Hateshwari Temple in Hatkoti.jpg",
+   "by": "Varun Shiv Kapur"
+  },
+  {
+   "n": "Giri Ganga & Kuppar",
+   "k": "forest",
+   "m": 60,
+   "h": "Half day",
+   "b": "Apr–Nov",
+   "d": "From Kharapathar, a 7 km dirt track climbs through deodar and spruce to an old temple at the source of the Giri river. Fit walkers can carry on 2–3 hours up to the Kuppar meadow.",
+   "t": "Very few people even in season. Carry food — only basic dhabas near the temple.",
+   "q": "Giri Ganga Temple Kharapathar",
+   "img": "1-Giri Ganga Temple.JPG"
+  },
+  {
+   "n": "Pabbar riverside",
+   "k": "experience",
+   "m": 0,
+   "h": "1–2 hrs",
+   "d": "Slow walks along the Pabbar through apple country. The river is known for trout.",
+   "t": "Angling needs a permit from the fisheries department — ask locally.",
+   "img": "Pabbar valley, Rohru.jpg"
+  }
+ ],
+ "70": [
+  {
+   "n": "Hateshwari Temple, Hatkoti",
+   "k": "temple",
+   "m": 20,
+   "h": "1 hr",
+   "d": "An old stone temple of Hateshwari Mata beside the Pabbar river, the most revered shrine in this valley.",
+   "q": "Hateshwari Temple Hatkoti",
+   "img": "Varun Shiv Kapur, Hateshwari Temple in Hatkoti.jpg",
+   "by": "Varun Shiv Kapur"
+  },
+  {
+   "n": "Giri Ganga & Kuppar",
+   "k": "forest",
+   "m": 40,
+   "h": "Half day",
+   "b": "Apr–Nov",
+   "d": "A 7 km forest track from Kharapathar to the old temple at the source of the Giri river — temple built by the Jubbal rulers. Kuppar meadow is 2–3 hours further up.",
+   "t": "Carry food. The track is dirt and can be slushy after rain.",
+   "q": "Giri Ganga Temple Kharapathar",
+   "img": "1-Giri Ganga Temple.JPG"
+  },
+  {
+   "n": "Kharapathar",
+   "k": "village",
+   "m": 35,
+   "h": "1–2 hrs",
+   "d": "A small ridge town at about 2,700 m on the Shimla–Rohru road, surrounded by apple orchards. Good for an evening view and a cup of tea.",
+   "q": "Kharapathar"
+  }
+ ],
+ "67": [
+  {
+   "n": "Larot",
+   "k": "village",
+   "m": 30,
+   "h": "1 hr",
+   "d": "The last village on the Rohru side before the climb to Chanshal — a good place to stop, check road conditions and eat.",
+   "q": "Larot Rohru"
+  },
+  {
+   "n": "Dodra Kwar",
+   "k": "village",
+   "m": 90,
+   "h": "Full day",
+   "b": "Jun–Oct",
+   "d": "Twin villages beyond the pass in one of the most remote corners of Shimla district, cut off by snow for months every year.",
+   "t": "Only when the pass is open. Ask in Rohru or Larot about the road the day before."
+  }
+ ],
+ "68": [
+  {
+   "n": "Sarahan Pheasantry",
+   "k": "wildlife",
+   "m": 5,
+   "h": "1 hr",
+   "d": "A breeding centre for the western tragopan, Himachal's rare state bird, which bred in captivity for the first time in the world here.",
+   "t": "Closed on Mondays and during breeding season (April–August).",
+   "q": "Sarahan Pheasantry",
+   "img": "Captive Tragopan melanocephalus (male) at Sarahan Pheasantry Himachal Pradesh JEG8442.jpg",
+   "by": "PJeganathan"
+  },
+  {
+   "n": "Padam Palace, Rampur",
+   "k": "heritage",
+   "m": 60,
+   "h": "1 hr",
+   "d": "The palace of the former Bushahr rulers in Rampur, with carved wood and stone on the banks of the Sutlej.",
+   "t": "Still owned by the royal family — you may only see it from outside.",
+   "q": "Padam Palace Rampur Bushahr",
+   "img": "Padam Palace Rampur Bushahr.jpg"
+  }
+ ],
+ "71": [
+  {
+   "n": "Tara Devi Temple",
+   "k": "temple",
+   "m": 15,
+   "h": "1.5 hrs",
+   "d": "Hilltop temple of Goddess Tara just above Shoghi, with wide views over the Shimla hills.",
+   "q": "Tara Devi Temple Shimla",
+   "img": "Tara Devi temple Shimla.jpg",
+   "by": "Pankajkukreti03"
+  },
+  {
+   "n": "Viceregal Lodge",
+   "k": "heritage",
+   "m": 30,
+   "h": "1.5–2 hrs",
+   "busy": 1,
+   "d": "The 1888 stone mansion on Shimla's Observatory Hill where key talks before Partition were held. Guided tour plus big lawns.",
+   "t": "Closed on Mondays and national holidays.",
+   "q": "Viceregal Lodge Shimla",
+   "img": "Vice Regal Lodge, Shimla.jpg",
+   "by": "Mathewjoseph007"
+  }
+ ],
+ "88": [
+  {
+   "n": "Kali ka Tibba",
+   "k": "temple",
+   "m": 20,
+   "h": "1 hr",
+   "d": "A white temple of Goddess Kali on a hilltop about 7 km from Chail. On a clear day you see the snow range on one side and Churdhar on the other.",
+   "b": "Sunrise or sunset",
+   "q": "Kali ka Tibba Chail",
+   "img": "Kali Tibba Temple Chail.jpg",
+   "by": "Harvinder Chandigarh"
+  },
+  {
+   "n": "Sadhupul",
+   "k": "water",
+   "m": 30,
+   "h": "1–2 hrs",
+   "d": "A riverside stop on the Ashwini on the way up from Kandaghat, where dhabas put tables right in the shallow stream.",
+   "t": "Don't wade in after heavy rain — the water rises fast.",
+   "q": "Sadhupul Chail",
+   "img": "Ashwani Khadd or rivulet at Sadhu Pul ,near Chail ,Himachal Pradesh.jpg"
+  },
+  {
+   "n": "Chail Palace grounds",
+   "k": "heritage",
+   "m": 5,
+   "h": "1 hr",
+   "d": "The Maharaja of Patiala's old summer palace, now a heritage hotel, set in deodar forest. Walk the grounds or have tea on the lawns.",
+   "q": "Chail Palace",
+   "img": "The Palace at Chail near Shimla.jpg",
+   "by": "Shubhankar Sakalkale"
+  }
+ ],
+ "90": [
+  {
+   "n": "Gilbert Trail",
+   "k": "hike",
+   "m": 0,
+   "h": "1–2 hrs",
+   "d": "A quiet cliff-edge path through pine and oak, popular with birdwatchers early in the morning.",
+   "t": "Parts of Kasauli are Air Force area — stay on the trail.",
+   "q": "Gilbert Trail Kasauli",
+   "img": "Gulbert trail Kasauli.jpg"
+  },
+  {
+   "n": "Christ Church",
+   "k": "heritage",
+   "m": 0,
+   "h": "30 min",
+   "d": "A small 19th-century church on the Mall with old stained glass — a calm stop on a heritage walk.",
+   "q": "Christ Church Kasauli",
+   "img": "CHRIST CHURCH, KASAULI.JPG",
+   "by": "Suman Wadhwa"
+  },
+  {
+   "n": "Karol Tibba & Pandava Cave",
+   "k": "hike",
+   "m": 50,
+   "h": "Full day",
+   "d": "The highest hill around Solan, about 5–6 km up from Chambaghat through grassland and forest to a narrow cave and a Kali temple on top.",
+   "t": "Carry a head torch for the cave, and start early.",
+   "q": "Karol Tibba Chambaghat",
+   "img": "Solan city from mount karol.JPG"
+  }
+ ],
+ "91": [
+  {
+   "n": "Dagshai Jail Museum",
+   "k": "heritage",
+   "m": 0,
+   "h": "1 hr",
+   "d": "A cantonment jail from 1849, with its cells and stories kept as a small museum.",
+   "q": "Dagshai Jail Museum"
+  },
+  {
+   "n": "Old cantonment cemetery",
+   "k": "heritage",
+   "m": 0,
+   "h": "30 min",
+   "d": "A quiet colonial-era graveyard on the edge of town with old gravestones and big views.",
+   "q": "Dagshai cemetery"
+  },
+  {
+   "n": "Karol Tibba & Pandava Cave",
+   "k": "hike",
+   "m": 30,
+   "h": "Full day",
+   "d": "The highest hill around Solan — 5–6 km up from Chambaghat to a narrow cave and a Kali temple on top, with views to Churdhar.",
+   "t": "Carry a head torch for the cave.",
+   "q": "Karol Tibba Chambaghat",
+   "img": "Solan city from mount karol.JPG"
+  }
+ ],
+ "92": [
+  {
+   "n": "Shoolini Mata Temple, Solan",
+   "k": "temple",
+   "m": 30,
+   "h": "1 hr",
+   "d": "Temple of Solan's patron goddess. Her three-day fair every June is the town's biggest event.",
+   "q": "Shoolini Mata Temple Solan"
+  },
+  {
+   "n": "Karol Tibba & Pandava Cave",
+   "k": "hike",
+   "m": 35,
+   "h": "Full day",
+   "d": "The highest hill around Solan — 5–6 km up from Chambaghat to a narrow cave and a Kali temple on top.",
+   "t": "Carry a head torch for the cave.",
+   "q": "Karol Tibba Chambaghat",
+   "img": "Solan city from mount karol.JPG"
+  }
+ ],
+ "93": [
+  {
+   "n": "Karol Tibba & Pandava Cave",
+   "k": "hike",
+   "m": 25,
+   "h": "Full day",
+   "d": "The highest hill around Solan, about 5–6 km up from Chambaghat through grassland and forest to a narrow cave and a Kali temple on top.",
+   "t": "Carry a head torch for the cave, and start early.",
+   "q": "Karol Tibba Chambaghat",
+   "img": "Solan city from mount karol.JPG"
+  },
+  {
+   "n": "Shoolini Mata Temple, Solan",
+   "k": "temple",
+   "m": 20,
+   "h": "1 hr",
+   "d": "Temple of Solan's patron goddess. Her three-day fair every June is the town's biggest event.",
+   "q": "Shoolini Mata Temple Solan"
+  }
+ ],
+ "94": [
+  {
+   "n": "Habban Valley",
+   "k": "forest",
+   "m": 75,
+   "h": "Half day",
+   "d": "A deodar-forested valley at about 2,000 m, with apple and peach orchards and almost no tourism. A trail goes on to Churdhar for the fit.",
+   "t": "There's a forest rest house; book through the HP eco-tourism site.",
+   "q": "Habban Valley"
+  },
+  {
+   "n": "Shirgul Devta shrine, Shaya",
+   "k": "temple",
+   "m": 90,
+   "h": "1 hr",
+   "d": "A shrine of Shirgul Devta, the most revered deity of this region, about 10 km from Habban.",
+   "q": "Shirgul Devta Shaya"
+  },
+  {
+   "n": "Peach orchards in bloom",
+   "k": "experience",
+   "m": 0,
+   "h": "1–2 hrs",
+   "b": "Mar–Apr",
+   "d": "Rajgarh is known as the peach valley — in spring the slopes around town turn pink. Ask your host which orchards welcome walkers."
+  }
+ ]
 }
