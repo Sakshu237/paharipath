@@ -155,9 +155,10 @@
     for (let i = 0; i < short.length; i += 2) {
       // A spot with opening hours (a tip about closing / last entry) goes in the morning.
       const pair = short.slice(i, i + 2).sort((a, b) => (/last entry|closed|open/i.test(b.t || '') ? 1 : 0) - (/last entry|closed|open/i.test(a.t || '') ? 1 : 0));
-      const items = [line(pair[0]), 'Lunch at a local dhaba nearby'];
-      if (pair[1]) items.push(line(pair[1]));
-      items.push(`Evening walk around ${q.name}`);
+      const items = pair[1]
+        ? [line(pair[0]), `Lunch at a dhaba, then ${line(pair[1]).replace(/^\w/, c => c.toLowerCase())}`]
+        : [line(pair[0]), 'Lunch at a local dhaba nearby'];
+      items.push('Back to your stay for chai — ask your host what to do tomorrow');
       days.push({ kind: 'spots', pid: q.id, title: `Around ${q.name}: ${pair.map(s => s.n).join(' & ')}`, items });
     }
     // Quiet, nearby days first; the long outings after.
@@ -406,6 +407,12 @@
       offText: 'Paragliding is grounded 15 Jul – 15 Sep (monsoon ban) — evening walk through the Tibetan colony instead' },
     { re: /paraglid/i, name: 'paragliding', open: 570, close: 900, dur: 90, shut: ['07-15', '09-15'], tip: 'Calmest air is mid-morning — book your tandem a day ahead; flights stop in bad weather',
       offText: 'Paragliding is grounded 15 Jul – 15 Sep (monsoon ban) — ask your host about a valley walk instead' },
+    { re: /rashtrapati niwas \(the retreat\)|the retreat,? (mashobra|chharabra)/i, name: 'Rashtrapati Niwas', open: 600, close: 1020, closed: [1], dur: 120 },
+    { re: /water catchment/i, name: 'the Catchment forest', open: 'sunrise', close: 'sunset', dur: 120, daylight: true },
+    { re: /viceregal lodge/i, name: 'Viceregal Lodge', open: 600, close: 1020, closed: [1], dur: 90 },
+    { re: /himachal state museum/i, name: 'Himachal State Museum', open: 600, close: 1020, closed: [1], gaz: true, dur: 60 },
+    { re: /pheasantry/i, name: 'Sarahan Pheasantry', open: 600, close: 1020, closed: [1], dur: 60, shut: ['04-01', '08-31'],
+      offText: 'The pheasantry is shut for the breeding season (Apr–Aug) — walk the old lanes around the Bhimakali temple instead' },
     { re: /monkey point/i, name: 'Monkey Point', open: 540, close: 1020, dur: 60, soft: true, tip: 'It is inside an Air Force area — carry photo ID' },
     { re: /toy train/i, name: 'the toy train', open: 420, close: 960, dur: 120, soft: true, tip: 'Runs to a fixed timetable — book on IRCTC and pick a morning train' },
     { re: /trout hatchery/i, name: 'the trout hatchery', open: 600, close: 1020, dur: 60, soft: true },
