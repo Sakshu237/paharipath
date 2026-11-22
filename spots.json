@@ -578,5 +578,1101 @@
    "b": "Mar–Apr",
    "d": "Rajgarh is known as the peach valley — in spring the slopes around town turn pink. Ask your host which orchards welcome walkers."
   }
+ ],
+ "113": [
+  {
+   "n": "Raghunath Temple",
+   "k": "temple",
+   "m": 5,
+   "h": "45 min",
+   "d": "The temple of Kullu's chief deity, brought from Ayodhya in the 1600s. During Dussehra every god of the valley comes to pay respects to Raghunath.",
+   "q": "Raghunath Temple Kullu"
+  },
+  {
+   "n": "Basheshwar Mahadev, Bajaura",
+   "k": "heritage",
+   "m": 25,
+   "h": "45 min",
+   "d": "A carved stone Shiva temple from around the 9th century, one of the oldest in the Kullu valley, standing quietly in the fields near Bajaura.",
+   "q": "Basheshwar Mahadev Temple Bajaura",
+   "img": "0042523 Basheshar Mahadev Temple, Bajaura, Himachal Pradesh 005.jpg"
+  },
+  {
+   "n": "Kullu Dussehra at Dhalpur",
+   "k": "experience",
+   "m": 0,
+   "h": "Half day",
+   "b": "October",
+   "d": "A week-long gathering of hundreds of village deities carried in palanquins to the Dhalpur ground — the biggest festival in Himachal.",
+   "t": "Dates follow the Hindu calendar; stays fill up months ahead."
+  },
+  {
+   "n": "Kullu shawl weaving",
+   "k": "experience",
+   "m": 15,
+   "h": "1 hr",
+   "d": "Watch handlooms weave the famous patterned Kullu shawls and caps at the weavers' cooperatives around Bhuntar and Kullu.",
+   "t": "Buy from cooperatives, not roadside 'factory outlets'."
+  }
+ ],
+ "143": [
+  {
+   "n": "Basheshwar Mahadev, Bajaura",
+   "k": "heritage",
+   "m": 10,
+   "h": "45 min",
+   "d": "A carved stone Shiva temple from around the 9th century, one of the oldest in the Kullu valley.",
+   "q": "Basheshwar Mahadev Temple Bajaura",
+   "img": "0042523 Basheshar Mahadev Temple, Bajaura, Himachal Pradesh 005.jpg"
+  },
+  {
+   "n": "Beas–Parvati confluence",
+   "k": "water",
+   "m": 0,
+   "h": "30 min",
+   "d": "Bhuntar sits where the Parvati joins the Beas — walk down to the riverside to see the two colours of water meet."
+  },
+  {
+   "n": "Kullu shawl weaving",
+   "k": "experience",
+   "m": 5,
+   "h": "1 hr",
+   "d": "Weavers' cooperatives around Bhuntar make the famous patterned Kullu shawls and caps on handlooms.",
+   "t": "Buy from cooperatives, not roadside 'factory outlets'."
+  }
+ ],
+ "86": [
+  {
+   "n": "Jogini Falls",
+   "k": "hike",
+   "m": 10,
+   "h": "2–3 hrs",
+   "d": "A tall waterfall above Vashisht village, reached by a 2–3 km walk through orchards and pine. The best short walk from Manali.",
+   "t": "The path is slippery near the falls — good shoes.",
+   "q": "Jogini Waterfall Vashisht",
+   "img": "Jogini falls.jpg",
+   "by": "Aditya Verma"
+  },
+  {
+   "n": "Arjun Gufa",
+   "k": "hike",
+   "m": 20,
+   "h": "1.5 hrs",
+   "d": "A small cave near Prini village on the left bank of the Beas, linked to Arjuna's meditation in the Mahabharata. A 20-minute uphill walk from the road.",
+   "q": "Arjun Gufa Prini"
+  },
+  {
+   "n": "Gadhan Thekchhokling Gompa",
+   "k": "temple",
+   "m": 5,
+   "h": "30 min",
+   "d": "A colourful Tibetan monastery near the Manali bus stand, built by refugees in the late 1960s. Calm, and right in town.",
+   "q": "Gadhan Thekchhokling Gompa Manali"
+  },
+  {
+   "n": "Hidimba Devi Temple",
+   "k": "temple",
+   "m": 10,
+   "h": "1 hr",
+   "busy": 1,
+   "d": "A four-tiered wooden pagoda temple from 1553 inside a deodar forest — Manali's most famous sight.",
+   "t": "Go before 9 am to beat the queues.",
+   "q": "Hidimba Devi Temple Manali",
+   "img": "Hadimba Devi Mandir.jpg",
+   "by": "Rishabh gaur"
+  }
+ ],
+ "134": [
+  {
+   "n": "Manu Temple",
+   "k": "temple",
+   "m": 0,
+   "h": "45 min",
+   "d": "The temple of Manu at the top of Old Manali village — climb through the old wooden houses to reach it.",
+   "q": "Manu Temple Old Manali"
+  },
+  {
+   "n": "Dhungri forest walk",
+   "k": "forest",
+   "m": 0,
+   "h": "1–2 hrs",
+   "d": "Giant deodars between Old Manali and the Hidimba temple — walk through the forest instead of taking the road."
+  },
+  {
+   "n": "Hidimba Devi Temple",
+   "k": "temple",
+   "m": 10,
+   "h": "1 hr",
+   "busy": 1,
+   "d": "A four-tiered wooden pagoda temple from 1553 in the Dhungri forest.",
+   "t": "Go before 9 am to beat the queues.",
+   "q": "Hidimba Devi Temple Manali",
+   "img": "Hadimba Devi Mandir.jpg",
+   "by": "Rishabh gaur"
+  }
+ ],
+ "111": [
+  {
+   "n": "Jogini Falls",
+   "k": "hike",
+   "m": 0,
+   "h": "2–3 hrs",
+   "d": "A tall waterfall above the village, reached by a 2–3 km walk through orchards and pine forest.",
+   "t": "Slippery near the falls — good shoes.",
+   "q": "Jogini Waterfall Vashisht",
+   "img": "Jogini falls.jpg",
+   "by": "Aditya Verma"
+  }
+ ],
+ "117": [
+  {
+   "n": "Anjani Mahadev",
+   "k": "hike",
+   "m": 10,
+   "h": "2–3 hrs",
+   "d": "A walk up from Solang to a cave-temple under a waterfall; in winter the water freezes into a natural ice lingam.",
+   "q": "Anjani Mahadev Solang"
+  }
+ ],
+ "138": [
+  {
+   "n": "Rahala Falls",
+   "k": "water",
+   "m": 10,
+   "h": "1 hr",
+   "b": "May–Oct",
+   "d": "A waterfall fed by glacier melt just above Kothi on the old Rohtang road — cold, loud and impressive in early summer.",
+   "q": "Rahala Falls"
+  },
+  {
+   "n": "Beas gorge at Kothi",
+   "k": "view",
+   "m": 0,
+   "h": "30 min",
+   "d": "The Beas squeezes through a deep, narrow gorge right below the village — look down from the bridge."
+  }
+ ],
+ "137": [
+  {
+   "n": "Jagatsukh's old stone temples",
+   "k": "heritage",
+   "m": 0,
+   "h": "45 min",
+   "d": "Old shikhara-style Shiva and Gayatri Devi temples from the time when Jagatsukh was the capital of Kullu."
+  }
+ ],
+ "112": [
+  {
+   "n": "Naggar Castle",
+   "k": "heritage",
+   "m": 0,
+   "h": "1 hr",
+   "d": "A 500-year-old castle of stone and wood, built in the earthquake-proof kath-kuni style, with valley views from its balcony.",
+   "q": "Naggar Castle",
+   "img": "NaggarCastleRainyDay.jpg",
+   "by": "Akshat Sharma"
+  },
+  {
+   "n": "Roerich Art Gallery",
+   "k": "heritage",
+   "m": 5,
+   "h": "1 hr",
+   "d": "The home of painter Nicholas Roerich, with his Himalayan paintings and the Urusvati folk art museum next door.",
+   "t": "Closed on Mondays.",
+   "q": "Nicholas Roerich Art Gallery Naggar"
+  },
+  {
+   "n": "Tripura Sundari Temple",
+   "k": "temple",
+   "m": 5,
+   "h": "30 min",
+   "d": "A pagoda-style wooden temple with layered roofs in the upper village.",
+   "q": "Tripura Sundari Temple Naggar",
+   "img": "Tripura Sundari Temple Naggar Manali.jpg"
+  },
+  {
+   "n": "Jana Waterfall",
+   "k": "water",
+   "m": 40,
+   "h": "2 hrs",
+   "d": "A waterfall beside Jana village up the hill from Naggar, with dhabas serving siddu and local food.",
+   "q": "Jana Waterfall",
+   "img": "Jana waterfall.jpg"
+  }
+ ],
+ "122": [
+  {
+   "n": "Patlikuhal trout farm",
+   "k": "experience",
+   "m": 10,
+   "h": "45 min",
+   "d": "One of the oldest trout farms in Himachal, on the Beas — see the ponds and buy fresh trout.",
+   "q": "Patlikuhal trout farm"
+  },
+  {
+   "n": "Naggar Castle",
+   "k": "heritage",
+   "m": 20,
+   "h": "1 hr",
+   "d": "A 500-year-old castle of stone and wood across the river, with valley views.",
+   "q": "Naggar Castle",
+   "img": "NaggarCastleRainyDay.jpg",
+   "by": "Akshat Sharma"
+  }
+ ],
+ "63": [
+  {
+   "n": "Ram Temple, Manikaran",
+   "k": "temple",
+   "m": 0,
+   "h": "30 min",
+   "d": "An old stone temple near the gurudwara, one of several shrines around the hot springs."
+  }
+ ],
+ "28": [
+  {
+   "n": "Tosh glacier walk",
+   "k": "hike",
+   "m": 0,
+   "h": "Half day",
+   "b": "May–Oct",
+   "d": "Walk up the valley past the last fields towards the glacier and the snow peaks at the head of the Tosh nala."
+  }
+ ],
+ "23": [
+  {
+   "n": "Fairy forest",
+   "k": "forest",
+   "m": 0,
+   "h": "1–2 hrs",
+   "d": "An old deodar forest just above Pulga with mossy trunks and filtered light — the reason many people stay in Pulga."
+  }
+ ],
+ "11": [
+  {
+   "n": "Pulga fairy forest",
+   "k": "forest",
+   "m": 15,
+   "h": "1–2 hrs",
+   "d": "An old, mossy deodar forest a short walk from Kalga — quiet, especially in the morning."
+  }
+ ],
+ "36": [
+  {
+   "n": "Chhoie Waterfall",
+   "k": "water",
+   "m": 15,
+   "h": "1.5 hrs",
+   "d": "A waterfall in the forest a short walk from the road between Gushaini and Banjar."
+  },
+  {
+   "n": "Nagini trout farm",
+   "k": "experience",
+   "m": 10,
+   "h": "30 min",
+   "d": "A small government trout farm on the Tirthan, where the valley's trout are raised.",
+   "t": "Angling in the Tirthan needs a fisheries permit — ask your host."
+  }
+ ],
+ "16": [
+  {
+   "n": "Chhoie Waterfall",
+   "k": "water",
+   "m": 15,
+   "h": "1.5 hrs",
+   "d": "A forest waterfall a short walk from the Banjar road."
+  },
+  {
+   "n": "Nagini trout farm",
+   "k": "experience",
+   "m": 10,
+   "h": "30 min",
+   "d": "A small trout farm on the Tirthan river.",
+   "t": "Angling needs a fisheries permit."
+  }
+ ],
+ "31": [
+  {
+   "n": "Jibhi waterfall",
+   "k": "water",
+   "m": 5,
+   "h": "1 hr",
+   "d": "A small waterfall in the forest close to Jibhi village, with a wooden walkway and a pool."
+  },
+  {
+   "n": "Shringa Rishi Temple, Bagi",
+   "k": "temple",
+   "m": 30,
+   "h": "1 hr",
+   "d": "The temple of Shringa Rishi, the most revered deity of the Banjar area, in a pine forest above the valley."
+  }
+ ],
+ "32": [
+  {
+   "n": "Raghupur Fort",
+   "k": "hike",
+   "m": 15,
+   "h": "Half day",
+   "b": "Apr–Nov",
+   "d": "A 3 km walk from Jalori Pass to the ruins of an old fort on a grassy ridge, with Himalayan views on every side.",
+   "t": "Snowed in Dec–Feb. Carry water.",
+   "q": "Raghupur Fort Jalori"
+  }
+ ],
+ "33": [
+  {
+   "n": "Raghupur Fort",
+   "k": "hike",
+   "m": 0,
+   "h": "3–4 hrs",
+   "b": "Apr–Nov",
+   "d": "A 3 km walk west from the pass to old fort ruins on an open meadow ridge.",
+   "t": "Snowed in Dec–Feb.",
+   "q": "Raghupur Fort Jalori"
+  }
+ ],
+ "15": [
+  {
+   "n": "Barshangarh Waterfall",
+   "k": "water",
+   "m": 0,
+   "h": "2 hrs",
+   "d": "A cascade in the forest about 3 km from Shangarh village, through orchards and small villages.",
+   "q": "Barshangarh Waterfall"
+  },
+  {
+   "n": "Shangchul Mahadev Temple",
+   "k": "temple",
+   "m": 0,
+   "h": "30 min",
+   "d": "The deity who protects the Shangarh meadow — locals say he sheltered the Pandavas. Rules here are strict: no shoes or loud noise on the meadow."
+  }
+ ],
+ "121": [
+  {
+   "n": "Parshuram Temple, Nirmand",
+   "k": "temple",
+   "m": 0,
+   "h": "45 min",
+   "d": "One of the most important old temples of the Sutlej valley, linked to Parshuram, with fine wood carving."
+  },
+  {
+   "n": "Ambika Devi Temple",
+   "k": "temple",
+   "m": 0,
+   "h": "30 min",
+   "d": "An old temple of the goddess Ambika in the heritage lanes of Nirmand."
+  }
+ ],
+ "25": [
+  {
+   "n": "Sobha Singh Art Gallery",
+   "k": "heritage",
+   "m": 0,
+   "h": "1 hr",
+   "d": "The home and studio of painter Sobha Singh, known for his portraits of Sikh Gurus and Sohni-Mahiwal.",
+   "q": "Sobha Singh Art Gallery Andretta"
+  },
+  {
+   "n": "Andretta Pottery",
+   "k": "experience",
+   "m": 0,
+   "h": "1 hr",
+   "d": "A studio where you can watch potters at work, and sometimes join a short session.",
+   "q": "Andretta Pottery"
+  }
+ ],
+ "58": [
+  {
+   "n": "Dal Lake (Naddi)",
+   "k": "water",
+   "m": 10,
+   "h": "45 min",
+   "d": "A small deodar-ringed lake between Naddi and McLeod Ganj, with a Shiva temple on its bank.",
+   "q": "Dal Lake McLeod Ganj"
+  }
+ ],
+ "59": [
+  {
+   "n": "Gallu Devi Temple",
+   "k": "temple",
+   "m": 0,
+   "h": "1 hr",
+   "d": "A small temple above Dharamkot where the Triund trail begins — walk this far for the views even if you're not doing Triund."
+  }
+ ],
+ "62": [
+  {
+   "n": "Kathgarh Temple",
+   "k": "temple",
+   "m": 40,
+   "h": "1 hr",
+   "d": "A Shiva temple with a natural stone lingam in two parts, at the meeting of the Beas and Choch rivers near Indora."
+  }
+ ],
+ "77": [
+  {
+   "n": "Chokling Monastery",
+   "k": "temple",
+   "m": 5,
+   "h": "45 min",
+   "d": "A large Tibetan monastery with a tall stupa in Bir's Tibetan colony.",
+   "q": "Chokling Monastery Bir"
+  },
+  {
+   "n": "Sherab Ling Monastery",
+   "k": "temple",
+   "m": 20,
+   "h": "1 hr",
+   "d": "A big monastery in the pine forest near Bir, seat of a major Tibetan lama.",
+   "q": "Sherab Ling Monastery"
+  },
+  {
+   "n": "Bir tea gardens",
+   "k": "experience",
+   "m": 5,
+   "h": "1 hr",
+   "d": "Walk through the tea gardens around Bir — at their best in the soft evening light."
+  }
+ ],
+ "78": [
+  {
+   "n": "Palampur tea estate",
+   "k": "experience",
+   "m": 10,
+   "h": "1 hr",
+   "d": "Walk through the tea gardens and visit the cooperative tea factory to see how Kangra tea is made.",
+   "t": "Factories are busiest Apr–Oct.",
+   "q": "Palampur Tea Factory"
+  },
+  {
+   "n": "Neugal Khad",
+   "k": "view",
+   "m": 10,
+   "h": "1 hr",
+   "d": "A riverside gorge just outside Palampur, with Dhauladhar views and a café on the cliff."
+  },
+  {
+   "n": "Tashi Jong Monastery",
+   "k": "temple",
+   "m": 25,
+   "h": "45 min",
+   "d": "A peaceful Tibetan monastery village between Palampur and Baijnath."
+  }
+ ],
+ "79": [
+  {
+   "n": "Tashi Jong Monastery",
+   "k": "temple",
+   "m": 15,
+   "h": "45 min",
+   "d": "A peaceful Tibetan monastery village between Baijnath and Palampur."
+  }
+ ],
+ "80": [
+  {
+   "n": "Brajeshwari Temple",
+   "k": "temple",
+   "m": 10,
+   "h": "45 min",
+   "d": "One of the most important Devi temples of Kangra, in the old town.",
+   "busy": 1
+  }
+ ],
+ "82": [
+  {
+   "n": "St John in the Wilderness",
+   "k": "heritage",
+   "m": 10,
+   "h": "30 min",
+   "d": "A stone church from 1852 in the deodars between McLeod Ganj and Forsyth Ganj, with Belgian stained glass.",
+   "q": "St John in the Wilderness Church",
+   "img": "St. John in the Wilderness churchyard, McLeod Ganj, India - September 2014.jpg",
+   "by": "Rickard Törnblad"
+  },
+  {
+   "n": "Tibet Museum",
+   "k": "heritage",
+   "m": 0,
+   "h": "1 hr",
+   "d": "The story of Tibet and its people in exile, inside the main temple complex.",
+   "q": "Tibet Museum McLeod Ganj"
+  },
+  {
+   "n": "Dal Lake (Naddi)",
+   "k": "water",
+   "m": 15,
+   "h": "45 min",
+   "d": "A small lake with a Shiva temple on the way to Naddi.",
+   "q": "Dal Lake McLeod Ganj"
+  }
+ ],
+ "83": [
+  {
+   "n": "Norbulingka Institute",
+   "k": "heritage",
+   "m": 25,
+   "h": "1.5 hrs",
+   "d": "Gardens and workshops where Tibetan arts — thangka painting, wood carving, embroidery — are kept alive.",
+   "q": "Norbulingka Institute"
+  },
+  {
+   "n": "Kangra Art Museum",
+   "k": "heritage",
+   "m": 5,
+   "h": "1 hr",
+   "d": "Kangra miniature paintings, old coins and tribal costumes near the main bus stand.",
+   "q": "Kangra Art Museum Dharamshala"
+  },
+  {
+   "n": "War Memorial",
+   "k": "heritage",
+   "m": 5,
+   "h": "30 min",
+   "d": "A memorial park in the pine forest for soldiers of Himachal."
+  }
+ ],
+ "145": [
+  {
+   "n": "Kangra Art Museum",
+   "k": "heritage",
+   "m": 0,
+   "h": "1 hr",
+   "d": "Kangra miniature paintings, old coins and tribal costumes near the main bus stand.",
+   "q": "Kangra Art Museum Dharamshala"
+  },
+  {
+   "n": "Norbulingka Institute",
+   "k": "heritage",
+   "m": 20,
+   "h": "1.5 hrs",
+   "d": "Gardens and workshops where Tibetan arts are kept alive.",
+   "q": "Norbulingka Institute"
+  },
+  {
+   "n": "Aghanjar Mahadev",
+   "k": "temple",
+   "m": 25,
+   "h": "1 hr",
+   "d": "A Shiva temple by a stream in the forest near Khaniyara, quiet and cool."
+  }
+ ],
+ "84": [
+  {
+   "n": "Pragpur & Garli heritage villages",
+   "k": "village",
+   "m": 40,
+   "h": "Half day",
+   "d": "India's first notified heritage village and its neighbour — old mansions, cobbled lanes and a village tank.",
+   "q": "Pragpur heritage village"
+  }
+ ],
+ "115": [
+  {
+   "n": "Shiva Café walk",
+   "k": "hike",
+   "m": 0,
+   "h": "1.5 hrs",
+   "d": "Climb past the Bhagsu waterfall to the small cafés above it, with views back over the valley."
+  }
+ ],
+ "105": [
+  {
+   "n": "Sakya Tangyud Monastery",
+   "k": "temple",
+   "m": 0,
+   "h": "45 min",
+   "d": "The big new monastery in Kaza town, with bright murals."
+  }
+ ],
+ "107": [
+  {
+   "n": "Tabo caves",
+   "k": "heritage",
+   "m": 0,
+   "h": "1 hr",
+   "d": "Meditation caves cut into the cliff above the village, used by monks for centuries."
+  }
+ ],
+ "38": [
+  {
+   "n": "Dhankar Lake",
+   "k": "hike",
+   "m": 0,
+   "h": "2–3 hrs",
+   "b": "Jun–Oct",
+   "d": "A steep walk of about an hour up from the monastery to a small high lake with views of the Spiti and Pin valleys.",
+   "t": "You are above 4,000 m — go slowly."
+  }
+ ],
+ "51": [
+  {
+   "n": "Kungri Monastery",
+   "k": "temple",
+   "m": 10,
+   "h": "45 min",
+   "d": "The main monastery of the Pin valley, of the Nyingma tradition."
+  },
+  {
+   "n": "Mud village",
+   "k": "village",
+   "m": 30,
+   "h": "1–2 hrs",
+   "d": "The last village in the Pin valley, where the road ends and the Pin-Parvati and Bhaba trails begin."
+  }
+ ],
+ "43": [
+  {
+   "n": "Sissu Waterfall",
+   "k": "water",
+   "m": 0,
+   "h": "45 min",
+   "b": "Jun–Sep",
+   "d": "A long waterfall dropping off the cliffs above Sissu, best when the snow melts."
+  }
+ ],
+ "109": [
+  {
+   "n": "Kardang Monastery",
+   "k": "temple",
+   "m": 20,
+   "h": "1 hr",
+   "d": "One of the biggest and most important monasteries in Lahaul, on the slope across the river from Keylong."
+  },
+  {
+   "n": "Shashur Monastery",
+   "k": "temple",
+   "m": 15,
+   "h": "1 hr",
+   "d": "A monastery on a ridge above Keylong, known for its masked dance in summer."
+  }
+ ],
+ "108": [
+  {
+   "n": "Markula Devi Temple, Udaipur",
+   "k": "temple",
+   "m": 30,
+   "h": "45 min",
+   "d": "A plain-looking temple hiding some of the finest old wood carving in Himachal."
+  }
+ ],
+ "54": [
+  {
+   "n": "Roghi village & cliff road",
+   "k": "village",
+   "m": 15,
+   "h": "1–2 hrs",
+   "d": "A traditional village a short drive from Kalpa, reached on a road cut into a sheer cliff with Kinner Kailash across the valley."
+  },
+  {
+   "n": "Narayan-Nagini Temple",
+   "k": "temple",
+   "m": 0,
+   "h": "30 min",
+   "d": "A Kinnauri wooden temple in the old part of Kalpa."
+  }
+ ],
+ "41": [
+  {
+   "n": "Kamru Fort",
+   "k": "heritage",
+   "m": 10,
+   "h": "1 hr",
+   "d": "A tower-like wooden fort-temple above Sangla, once the seat of the Bushahr rulers.",
+   "t": "Cover your head and wear the cap given at the gate.",
+   "img": "Kamru Fort, Kamru village, Sangla Valley, Himachal Pradesh 02.jpg",
+   "by": "Amitabha Gupta"
+  },
+  {
+   "n": "Batseri village",
+   "k": "village",
+   "m": 15,
+   "h": "1 hr",
+   "d": "A pretty Kinnauri village of wooden houses and a carved temple, below Sangla."
+  }
+ ],
+ "45": [
+  {
+   "n": "Mathi Temple",
+   "k": "temple",
+   "m": 0,
+   "h": "30 min",
+   "d": "The village goddess's carved wooden temple in the middle of Chitkul."
+  },
+  {
+   "n": "Baspa riverside walk",
+   "k": "hike",
+   "m": 0,
+   "h": "1–2 hrs",
+   "d": "Walk out beyond the village along the Baspa towards the border — the road ends, the mountains close in."
+  }
+ ],
+ "37": [
+  {
+   "n": "Gue mummy",
+   "k": "heritage",
+   "m": 90,
+   "h": "Half day",
+   "d": "A centuries-old naturally preserved monk's mummy in Gue village, just inside Spiti.",
+   "t": "Foreign travellers need an Inner Line Permit on this stretch; everyone should carry ID."
+  }
+ ],
+ "10": [
+  {
+   "n": "Ribba vineyards",
+   "k": "experience",
+   "m": 0,
+   "h": "1 hr",
+   "d": "Ribba is known for its grapes and homemade angoori wine — ask your host about the vineyards."
+  }
+ ],
+ "74": [
+  {
+   "n": "Lakshmi Narayan temples",
+   "k": "heritage",
+   "m": 0,
+   "h": "1 hr",
+   "d": "A group of carved stone temples from the 10th century onwards, in the heart of Chamba.",
+   "img": "Lakshmi Narayan Temples in a row (6132466715).jpg"
+  },
+  {
+   "n": "Bhuri Singh Museum",
+   "k": "heritage",
+   "m": 0,
+   "h": "1 hr",
+   "d": "Chamba rumals, Pahari paintings and old copper plates from the Chamba kingdom.",
+   "t": "Closed on Mondays.",
+   "q": "Bhuri Singh Museum Chamba"
+  },
+  {
+   "n": "Chamunda Devi Temple",
+   "k": "temple",
+   "m": 10,
+   "h": "45 min",
+   "d": "A wooden temple on a ridge above the town with the best view over Chamba and the Ravi."
+  },
+  {
+   "n": "Chamba rumal embroidery",
+   "k": "experience",
+   "m": 0,
+   "h": "1 hr",
+   "d": "Fine double-sided embroidery that looks the same on both sides — watch it being made and buy from the artisans."
+  }
+ ],
+ "72": [
+  {
+   "n": "Panchpula",
+   "k": "water",
+   "m": 10,
+   "h": "1 hr",
+   "d": "Small falls and streams in the forest just below Dalhousie, with a memorial to Sardar Ajit Singh."
+  },
+  {
+   "n": "Satdhara Falls",
+   "k": "water",
+   "m": 10,
+   "h": "45 min",
+   "d": "Seven springs meeting in the forest, said to carry mica that helps the skin."
+  },
+  {
+   "n": "St John's Church",
+   "k": "heritage",
+   "m": 0,
+   "h": "30 min",
+   "d": "Dalhousie's oldest church, from 1863, near Gandhi Chowk."
+  },
+  {
+   "n": "Bakrota round walk",
+   "k": "forest",
+   "m": 5,
+   "h": "1–2 hrs",
+   "d": "A quiet circular road through deodar forest on the highest part of town."
+  }
+ ],
+ "73": [
+  {
+   "n": "Khajji Nag Temple",
+   "k": "temple",
+   "m": 0,
+   "h": "30 min",
+   "d": "A 12th-century wooden temple at the edge of the meadow, with carvings of the Pandavas.",
+   "img": "Khajjiar naag mandir, Khajjiar at Chamba Himachal Pradesh.jpg",
+   "by": "Rajkumarjnub"
+  }
+ ],
+ "55": [
+  {
+   "n": "Bharmani Mata Temple",
+   "k": "hike",
+   "m": 15,
+   "h": "2–3 hrs",
+   "d": "A walk of about 3 km up from Bharmour to a temple on a high meadow — pilgrims stop here before Manimahesh."
+  },
+  {
+   "n": "Gaddi shepherd life",
+   "k": "experience",
+   "m": 0,
+   "h": "1–2 hrs",
+   "d": "Bharmour is the home of the Gaddi shepherds — ask your host to meet a family and see their wool and flocks."
+  }
+ ],
+ "1": [
+  {
+   "n": "Sural Bhatori",
+   "k": "village",
+   "m": 90,
+   "h": "Full day",
+   "b": "Jun–Oct",
+   "d": "One of the remotest villages of Pangi, at the end of a road from Killar.",
+   "t": "Roads can close with landslides; ask in Killar."
+  },
+  {
+   "n": "Mindhal Temple",
+   "k": "temple",
+   "m": 30,
+   "h": "1 hr",
+   "d": "The most revered goddess temple of Pangi."
+  }
+ ],
+ "4": [
+  {
+   "n": "Pangna Fort",
+   "k": "heritage",
+   "m": 40,
+   "h": "1 hr",
+   "d": "A six-storey fort of wood and stone on a high stone base — the old capital of Suket, with the Mahamaya temple on top.",
+   "q": "Pangna Fort"
+  },
+  {
+   "n": "Kamaksha Devi Temple, Kao",
+   "k": "temple",
+   "m": 15,
+   "h": "45 min",
+   "d": "An old goddess temple about 7 km from Karsog with fine wood carving."
+  }
+ ],
+ "139": [
+  {
+   "n": "Kamaksha Devi Temple, Kao",
+   "k": "temple",
+   "m": 15,
+   "h": "45 min",
+   "d": "An old goddess temple near Karsog with fine wood carving."
+  },
+  {
+   "n": "Pangna Fort",
+   "k": "heritage",
+   "m": 40,
+   "h": "1 hr",
+   "d": "A six-storey fort of wood and stone, the old capital of Suket, with the Mahamaya temple on top.",
+   "q": "Pangna Fort"
+  }
+ ],
+ "35": [
+  {
+   "n": "Barot trout farm",
+   "k": "experience",
+   "m": 0,
+   "h": "45 min",
+   "d": "Trout ponds on the Uhl river, one of the old fishing centres of Himachal.",
+   "t": "Angling needs a permit from the fisheries office."
+  },
+  {
+   "n": "Uhl river walk to Lohardi",
+   "k": "hike",
+   "m": 0,
+   "h": "2–3 hrs",
+   "d": "Follow the river upstream from Barot through villages and forest."
+  }
+ ],
+ "49": [
+  {
+   "n": "Guru Padmasambhava statue & caves",
+   "k": "temple",
+   "m": 10,
+   "h": "1–2 hrs",
+   "d": "A giant statue on the hill above the lake and caves where Padmasambhava is said to have meditated.",
+   "q": "Padmasambhava Statue Rewalsar",
+   "img": "Guru Rinpoche in mist 2.jpg",
+   "by": "John Hill"
+  }
+ ],
+ "140": [
+  {
+   "n": "Mahamaya Temple, Sundernagar",
+   "k": "temple",
+   "m": 5,
+   "h": "45 min",
+   "d": "A hilltop temple of the Suket royal family with views over the Balh valley."
+  }
+ ],
+ "6": [
+  {
+   "n": "Bhangayani Mata Temple",
+   "k": "temple",
+   "m": 10,
+   "h": "45 min",
+   "d": "A temple on the ridge above Haripurdhar with views to Churdhar."
+  }
+ ],
+ "129": [
+  {
+   "n": "Rani Tal",
+   "k": "water",
+   "m": 0,
+   "h": "45 min",
+   "d": "An old royal tank and garden in the middle of Nahan."
+  },
+  {
+   "n": "Villa Round walk",
+   "k": "forest",
+   "m": 0,
+   "h": "1 hr",
+   "d": "A flat walk around the top of the town with views over the plains — locals walk it every evening."
+  },
+  {
+   "n": "Jaitak Fort ruins",
+   "k": "hike",
+   "m": 30,
+   "h": "Half day",
+   "d": "Ruins of a Gorkha-era fort on a hilltop above Nahan, reached by a steep path."
+  }
+ ],
+ "95": [
+  {
+   "n": "Parshuram Tal",
+   "k": "water",
+   "m": 0,
+   "h": "30 min",
+   "d": "The small sacred tank next to Renuka lake, dedicated to Renuka's son Parshuram."
+  },
+  {
+   "n": "Renuka mini zoo",
+   "k": "wildlife",
+   "m": 0,
+   "h": "1 hr",
+   "d": "A small zoo by the lake, part of the Renuka sanctuary."
+  }
+ ],
+ "96": [
+  {
+   "n": "Yamuna ghat",
+   "k": "water",
+   "m": 0,
+   "h": "45 min",
+   "d": "The riverbank right below the gurudwara — sit by the Yamuna in the evening."
+  }
+ ],
+ "99": [
+  {
+   "n": "Submerged temples of old Bilaspur",
+   "k": "heritage",
+   "m": 10,
+   "h": "1 hr",
+   "b": "Mar–Jun",
+   "d": "Stone temples of the old town, drowned by the Bhakra reservoir, rise out of the water when the level drops in spring.",
+   "t": "Only visible when the water is low."
+  },
+  {
+   "n": "Kandrour bridge",
+   "k": "view",
+   "m": 20,
+   "h": "30 min",
+   "d": "A high bridge over the Satluj gorge on the Bilaspur–Ghumarwin road."
+  }
+ ],
+ "102": [
+  {
+   "n": "Narbadeshwar Temple",
+   "k": "temple",
+   "m": 0,
+   "h": "45 min",
+   "d": "A temple built by Sansar Chand's queen with Kangra-style wall paintings inside."
+  },
+  {
+   "n": "Sujanpur Fort",
+   "k": "heritage",
+   "m": 5,
+   "h": "1 hr",
+   "d": "The ruined palace-fort of the Katoch rulers on a hill above the Beas, built in 1758."
+  },
+  {
+   "n": "Sujanpur Chaugan",
+   "k": "village",
+   "m": 0,
+   "h": "30 min",
+   "d": "One of the biggest open grounds in Himachal, where the famous Holi fair is held."
+  }
+ ],
+ "131": [
+  {
+   "n": "Amtar palace (Nadaun Fort)",
+   "k": "heritage",
+   "m": 5,
+   "h": "1 hr",
+   "d": "The summer court of Raja Sansar Chand, about 2 km from town. The building is crumbling but still has some old paintings.",
+   "q": "Amtar Nadaun Fort"
+  },
+  {
+   "n": "Beas riverside",
+   "k": "water",
+   "m": 0,
+   "h": "1 hr",
+   "d": "The Beas slows down at Nadaun — sit by the river, watch the anglers, or try a gentle stretch of rafting."
+  },
+  {
+   "n": "Bilkaleshwar Mahadev",
+   "k": "temple",
+   "m": 5,
+   "h": "30 min",
+   "d": "An old Shiva temple by the Beas, which locals link to the Pandavas."
+  },
+  {
+   "n": "Pragpur & Garli heritage villages",
+   "k": "village",
+   "m": 60,
+   "h": "Half day",
+   "d": "India's first notified heritage village and its neighbour — old mansions and cobbled lanes.",
+   "q": "Pragpur heritage village"
+  }
+ ],
+ "85": [
+  {
+   "n": "Parvati riverside walk",
+   "k": "water",
+   "m": 0,
+   "h": "1–2 hrs",
+   "d": "Walk along the Parvati from Kasol and cross the footbridge into the pine forest — quieter the further you go from the market."
+  }
+ ],
+ "110": [
+  {
+   "n": "Gemur Monastery",
+   "k": "temple",
+   "m": 10,
+   "h": "45 min",
+   "d": "A small old monastery near Jispa, known for its masked chham dance in summer.",
+   "img": "Top Gemur Gompa Lahaul Jun24 A7CR 00198.jpg"
+  },
+  {
+   "n": "Deepak Tal",
+   "k": "water",
+   "m": 30,
+   "h": "1 hr",
+   "b": "Jun–Oct",
+   "d": "A small high-altitude lake beside the Manali–Leh road beyond Darcha, often still and mirror-like in the morning.",
+   "t": "You are close to 4,000 m — go slowly."
+  }
+ ],
+ "50": [
+  {
+   "n": "Snow leopard winter trips",
+   "k": "wildlife",
+   "m": 0,
+   "h": "Several days",
+   "b": "Jan–Mar",
+   "d": "Kibber is the base for winter snow leopard spotting in the high valleys around the village, run by local guides and homestays.",
+   "t": "Very cold (−20 °C at night). Book only with local Kibber guides."
+  }
  ]
 }

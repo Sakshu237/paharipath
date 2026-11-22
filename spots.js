@@ -30,7 +30,7 @@
     experience: { i: '🍎', en: 'Local life', hi: 'स्थानीय अनुभव', c: ['#8f3040', '#dd7584'] }
   };
   var TXT = {
-    en: { title: 'Around', chip: function (n) { return '🧭 ' + n + ' things to do nearby'; }, walk: 'Walkable', away: function (m) { return fmt(m) + ' away'; }, busy: 'Busy', best: 'Best time', map: 'Get directions', close: 'Close', swipe: 'Swipe for more →' },
+    en: { title: 'Around', chip: function (n) { return '🧭 ' + n + (n === 1 ? ' thing' : ' things') + ' to do nearby'; }, walk: 'Walkable', away: function (m) { return fmt(m) + ' away'; }, busy: 'Busy', best: 'Best time', map: 'Get directions', close: 'Close', swipe: 'Swipe for more →' },
     hi: { title: 'आसपास —', chip: function (n) { return '🧭 पास में ' + n + ' जगहें'; }, walk: 'पैदल दूरी', away: function (m) { return fmt(m, 'hi') + ' दूर'; }, busy: 'भीड़', best: 'सबसे अच्छा समय', map: 'रास्ता देखें', close: 'बंद करें', swipe: 'और देखने के लिए स्वाइप करें →' }
   };
 
@@ -47,7 +47,7 @@
   function load() {
     if (DATA) return Promise.resolve(DATA);
     if (!LOADING) {
-      LOADING = fetch('/spots.json?v=20261122c').then(function (r) { return r.json(); })
+      LOADING = fetch('/spots.json?v=20261122d').then(function (r) { return r.json(); })
         .then(function (j) { DATA = j || {}; return DATA; })
         .catch(function () { DATA = {}; return DATA; });
     }
