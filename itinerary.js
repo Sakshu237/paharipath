@@ -136,6 +136,34 @@
     return e ? e.n.map(([pid, mins, hike, base]) => ({ id: pid, mins, hike: !!hike, base: !!base, p: place(pid) })).filter(x => x.p) : [];
   }
 
+  // Days built from the smaller spots around a place (spots.js / spots.json).
+  // A full-day or half-day spot gets its own day; short ones are paired up.
+  function spotDays(q, ownText) {
+    const list = window.PPSpots && window.PPSpots.of ? window.PPSpots.of(q.id) : [];
+    const text = String(ownText || '').toLowerCase();
+    const fresh = list.filter(s => s && s.n && !text.includes(s.n.toLowerCase().split(/[,(&]/)[0].trim()))
+      .sort((a, b) => (a.busy ? 1 : 0) - (b.busy ? 1 : 0) || (a.m || 0) - (b.m || 0));
+    const line = s => {
+      const where = s.m > 0 ? `${goTo(s.n, s.m, s.k === 'hike')}` : `${s.n} — walkable from your stay`;
+      const what = String(s.d || '').split(/(?<=\.)\s/)[0];
+      return `${where}. ${what}${s.t ? ' Tip: ' + s.t : ''}`;
+    };
+    const long = s => /full|half/i.test(s.h || '');
+    const days = [];
+    fresh.filter(long).forEach(s => days.push({ kind: 'spots', pid: q.id, title: `${s.n}`, items: [line(s), `Head back to ${q.name} before dark`, 'Dinner at your stay — ask for a local dish'] }));
+    const short = fresh.filter(s => !long(s));
+    for (let i = 0; i < short.length; i += 2) {
+      // A spot with opening hours (a tip about closing / last entry) goes in the morning.
+      const pair = short.slice(i, i + 2).sort((a, b) => (/last entry|closed|open/i.test(b.t || '') ? 1 : 0) - (/last entry|closed|open/i.test(a.t || '') ? 1 : 0));
+      const items = [line(pair[0]), 'Lunch at a local dhaba nearby'];
+      if (pair[1]) items.push(line(pair[1]));
+      items.push(`Evening walk around ${q.name}`);
+      days.push({ kind: 'spots', pid: q.id, title: `Around ${q.name}: ${pair.map(s => s.n).join(' & ')}`, items });
+    }
+    // Quiet, nearby days first; the long outings after.
+    return days.filter(d => /^Around /.test(d.title)).concat(days.filter(d => !/^Around /.test(d.title)));
+  }
+
   // Fetch written itineraries (place_itineraries) for places not cached yet.
   function loadItins(ids) {
     window._itnCache = window._itnCache || {};
@@ -192,6 +220,11 @@
     mids.slice(0, middleCount).forEach(d => blocks.push({ kind: 'local', pid: p.id, title: cleanTitle(d.title) || `Around ${p.name}`, items: (d.items || []).map(clean) }));
     let remaining = middleCount - blocks.length;
     const freeDays = remaining;
+    // 1b. Up to two days on the smaller spots right around the place (spots.json) —
+    //     closer and quieter than driving to another destination.
+    const ownText0 = (written || []).map(d => [d.title, ...(d.items || [])].join(' ')).join(' ').toLowerCase();
+    spotDays(p, ownText0).slice(0, Math.min(2, Math.max(0, remaining))).forEach(d => blocks.push(d));
+    remaining = middleCount - blocks.length;
 
     // 2. Nearby: user-added first, then the list order. Skip snow-bound places in snow season.
     const snow = c.season === 'snow';
@@ -240,6 +273,9 @@
               ...placeHighlights(n.p).slice(0, 2), `Head back to ${base.p.name} before dark`] });
         });
       }
+      // Spare days: smaller spots around where they're staying (spots.json), before any slow day.
+      const home = base ? base.p : p, used2 = new Set(blocks.map(b => b.title));
+      spotDays(home, ownText).forEach(d => { if (blocks.length < middleCount && !used2.has(d.title)) blocks.push(d); });
       while (blocks.length < middleCount) blocks.push({ kind: 'slow', pid: base ? base.id : p.id, title: 'A slow day — nowhere to be', items: SLOW_DAY.slice() });
     }
 
@@ -248,7 +284,7 @@
     //    never another added place. No free day (short trip): a close place
     //    becomes a stop on the way home; a far one asks for one more night.
     const stopovers = [], unfit = [];
-    const replaceable = ['slow', 'nearby', 'basedLocal', 'local'];
+    const replaceable = ['slow', 'spots', 'nearby', 'basedLocal', 'local'];
     S.added.forEach(id => {
       if (blocks.some(b => b.pid === id)) return;
       const n = near.find(x => x.id === id); if (!n) return;
@@ -1015,7 +1051,7 @@
     if (window.PPTrip && window.PPTrip.log) window.PPTrip.log('itinerary', ctx.place, { date: ctx.start.toISOString().slice(0, 10), nights: ctx.nights });
     if (S.focusAdded) { const id = S.focusAdded; S.focusAdded = null; setTimeout(() => showAdded(id), 700); }
     // Nearby data and nearby places' own itineraries arrive asynchronously.
-    loadNearby().then(() => {
+    Promise.all([loadNearby(), window.PPSpots ? window.PPSpots.ready() : null]).then(() => {
       render();
       const ids = nearbyOf(ctx.place.id).map(n => n.id);
       return loadItins(ids);
