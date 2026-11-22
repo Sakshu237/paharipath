@@ -30,8 +30,8 @@
     experience: { i: '🍎', en: 'Local life', hi: 'स्थानीय अनुभव', c: ['#8f3040', '#dd7584'] }
   };
   var TXT = {
-    en: { title: 'Around', chip: function (n) { return '🧭 ' + n + (n === 1 ? ' thing' : ' things') + ' to do nearby'; }, walk: 'Walkable', away: function (m) { return fmt(m) + ' away'; }, busy: 'Busy', best: 'Best time', map: 'Get directions', close: 'Close', swipe: 'Swipe for more →' },
-    hi: { title: 'आसपास —', chip: function (n) { return '🧭 पास में ' + n + ' जगहें'; }, walk: 'पैदल दूरी', away: function (m) { return fmt(m, 'hi') + ' दूर'; }, busy: 'भीड़', best: 'सबसे अच्छा समय', map: 'रास्ता देखें', close: 'बंद करें', swipe: 'और देखने के लिए स्वाइप करें →' }
+    en: { title: 'Around', chip: function (n) { return '🧭 ' + n + (n === 1 ? ' thing' : ' things') + ' to do nearby'; }, walk: 'Walkable', away: function (m) { return fmt(m) + ' away'; }, busy: 'Busy', sim: 'Similar view', best: 'Best time', map: 'Get directions', close: 'Close', swipe: 'Swipe for more →' },
+    hi: { title: 'आसपास —', chip: function (n) { return '🧭 पास में ' + n + ' जगहें'; }, walk: 'पैदल दूरी', away: function (m) { return fmt(m, 'hi') + ' दूर'; }, busy: 'भीड़', sim: 'मिलता-जुलता दृश्य', best: 'सबसे अच्छा समय', map: 'रास्ता देखें', close: 'बंद करें', swipe: 'और देखने के लिए स्वाइप करें →' }
   };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"'`]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]; }); }
@@ -47,7 +47,7 @@
   function load() {
     if (DATA) return Promise.resolve(DATA);
     if (!LOADING) {
-      LOADING = fetch('/spots.json?v=20261122f').then(function (r) { return r.json(); })
+      LOADING = fetch('/spots.json?v=20261122g').then(function (r) { return r.json(); })
         .then(function (j) { DATA = j || {}; return DATA; })
         .catch(function () { DATA = {}; return DATA; });
     }
@@ -125,7 +125,7 @@
   function art(s, big) {
     var k = KINDS[s.k] || KINDS.view, L = lang();
     var img = s.img ? '<img class="ph" src="' + esc(photoUrl(s.img, big ? 960 : 560)) + '" alt="' + esc(s.n) + '" loading="lazy" decoding="async" onerror="this.parentNode.classList.remove(\'has-ph\');this.remove()">' : '';
-    var credit = s.img ? '<a class="cr" href="' + esc(fileUrl(s)) + '" target="_blank" rel="noopener" data-sp2cr="1">📷 ' + esc((s.by || 'Wikimedia Commons') + (s.lic ? ' · ' + s.lic : '')) + '</a>' : '';
+    var credit = s.img ? '<a class="cr" href="' + esc(fileUrl(s)) + '" target="_blank" rel="noopener" data-sp2cr="1">📷 ' + esc((s.gen ? T().sim + ' · ' : '') + (s.by || 'Wikimedia Commons') + (s.lic ? ' · ' + s.lic : '')) + '</a>' : '';
     return '<div class="sp2-art' + (s.img ? ' has-ph' : '') + '" style="background:linear-gradient(135deg,' + k.c[0] + ',' + k.c[1] + ')">' + img +
       '<span class="em" aria-hidden="true">' + k.i + '</span>' +
       (s.busy && !big ? '<span class="bz">' + esc(T().busy) + '</span>' : '') +

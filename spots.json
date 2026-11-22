@@ -94,7 +94,10 @@
    "m": 15,
    "h": "1–2 hrs",
    "d": "A small village below Mashobra with an old temple in a deodar grove. Known for the village fair held there every May.",
-   "q": "Sipi Mashobra"
+   "q": "Sipi Mashobra",
+   "img": "Mashobra, shimla 01.jpg",
+   "by": "Kuma sumit",
+   "gen": 1
   },
   {
    "n": "Shali Tibba",
@@ -351,7 +354,9 @@
    "m": 35,
    "h": "1–2 hrs",
    "d": "A small ridge town at about 2,700 m on the Shimla–Rohru road, surrounded by apple orchards. Good for an evening view and a cup of tea.",
-   "q": "Kharapathar"
+   "q": "Kharapathar",
+   "img": "Winter Silence in an Apple Orchard, Himachal Pradesh.jpg",
+   "gen": 1
   }
  ],
  "67": [
@@ -361,7 +366,9 @@
    "m": 30,
    "h": "1 hr",
    "d": "The last village on the Rohru side before the climb to Chanshal — a good place to stop, check road conditions and eat.",
-   "q": "Larot Rohru"
+   "q": "Larot Rohru",
+   "img": "Chanshal pass 1.jpg",
+   "gen": 1
   },
   {
    "n": "Dodra Kwar",
@@ -370,7 +377,9 @@
    "h": "Full day",
    "b": "Jun–Oct",
    "d": "Twin villages beyond the pass in one of the most remote corners of Shimla district, cut off by snow for months every year.",
-   "t": "Only when the pass is open. Ask in Rohru or Larot about the road the day before."
+   "t": "Only when the pass is open. Ask in Rohru or Larot about the road the day before.",
+   "img": "Traditional woden structure houses in Barot area , Mandi ,Himachal Pardesh 05.jpg",
+   "gen": 1
   }
  ],
  "68": [
@@ -492,7 +501,9 @@
    "m": 0,
    "h": "1 hr",
    "d": "A cantonment jail from 1849, with its cells and stories kept as a small museum.",
-   "q": "Dagshai Jail Museum"
+   "q": "Dagshai Jail Museum",
+   "img": "Dagshai army barracks and parade ground c1918.jpg",
+   "gen": 1
   },
   {
    "n": "Old cantonment cemetery",
@@ -500,7 +511,9 @@
    "m": 0,
    "h": "30 min",
    "d": "A quiet colonial-era graveyard on the edge of town with old gravestones and big views.",
-   "q": "Dagshai cemetery"
+   "q": "Dagshai cemetery",
+   "img": "Dagshai army barracks and parade ground c1918.jpg",
+   "gen": 1
   },
   {
    "n": "Karol Tibba & Pandava Cave",
@@ -565,7 +578,9 @@
    "h": "Half day",
    "d": "A deodar-forested valley at about 2,000 m, with apple and peach orchards and almost no tourism. A trail goes on to Churdhar for the fit.",
    "t": "There's a forest rest house; book through the HP eco-tourism site.",
-   "q": "Habban Valley"
+   "q": "Habban Valley",
+   "img": "Deodar forests of Shimla in monsoon.jpg",
+   "gen": 1
   },
   {
    "n": "Shirgul Devta shrine, Shaya",
@@ -573,7 +588,10 @@
    "m": 90,
    "h": "1 hr",
    "d": "A shrine of Shirgul Devta, the most revered deity of this region, about 10 km from Habban.",
-   "q": "Shirgul Devta Shaya"
+   "q": "Shirgul Devta Shaya",
+   "img": "Shirgul Maharaj Temple, Churdhar, Himachal Pradesh, India.jpg",
+   "by": "UnpetitproleX",
+   "gen": 1
   },
   {
    "n": "Peach orchards in bloom",
@@ -581,7 +599,12 @@
    "m": 0,
    "h": "1–2 hrs",
    "b": "Mar–Apr",
-   "d": "Rajgarh is known as the peach valley — in spring the slopes around town turn pink. Ask your host which orchards welcome walkers."
+   "d": "Rajgarh is known as the peach valley — in spring the slopes around town turn pink. Ask your host which orchards welcome walkers.",
+   "img": "https://images.pexels.com/photos/29592818/pexels-photo-29592818.jpeg",
+   "by": "Anurag Jamwal",
+   "lic": "Pexels",
+   "src": "https://www.pexels.com/photo/beautiful-peach-tree-in-bloom-in-indian-garden-29592818/",
+   "gen": 1
   }
  ],
  "113": [
@@ -670,7 +693,10 @@
    "m": 20,
    "h": "1.5 hrs",
    "d": "A small cave near Prini village on the left bank of the Beas, linked to Arjuna's meditation in the Mahabharata. A 20-minute uphill walk from the road.",
-   "q": "Arjun Gufa Prini"
+   "q": "Arjun Gufa Prini",
+   "img": "Tall trees Manali.jpg",
+   "by": "Rahul Dey",
+   "gen": 1
   },
   {
    "n": "Gadhan Thekchhokling Gompa",
@@ -761,14 +787,19 @@
    "h": "1 hr",
    "b": "May–Oct",
    "d": "A waterfall fed by glacier melt just above Kothi on the old Rohtang road — cold, loud and impressive in early summer.",
-   "q": "Rahala Falls"
+   "q": "Rahala Falls",
+   "img": "Himachal Pradesh Waterfall.jpg",
+   "gen": 1
   },
   {
    "n": "Beas gorge at Kothi",
    "k": "view",
    "m": 0,
    "h": "30 min",
-   "d": "The Beas squeezes through a deep, narrow gorge right below the village — look down from the bridge."
+   "d": "The Beas squeezes through a deep, narrow gorge right below the village — look down from the bridge.",
+   "img": "Villages Palchan and Barua - Beas Valley - Kullu 2014-05-10 2502.JPG",
+   "by": "Biswarup Ganguly",
+   "gen": 1
   }
  ],
  "137": [
@@ -874,7 +905,9 @@
    "k": "forest",
    "m": 0,
    "h": "1–2 hrs",
-   "d": "An old deodar forest just above Pulga with mossy trunks and filtered light — the reason many people stay in Pulga."
+   "d": "An old deodar forest just above Pulga with mossy trunks and filtered light — the reason many people stay in Pulga.",
+   "img": "A view of Pulga and Kalga from Barsheni in Parvati Valley of Kullu District.png",
+   "gen": 1
   }
  ],
  "11": [
@@ -883,7 +916,9 @@
    "k": "forest",
    "m": 15,
    "h": "1–2 hrs",
-   "d": "An old, mossy deodar forest a short walk from Kalga — quiet, especially in the morning."
+   "d": "An old, mossy deodar forest a short walk from Kalga — quiet, especially in the morning.",
+   "img": "On the Way of Pulga.jpg",
+   "gen": 1
   }
  ],
  "36": [
@@ -892,7 +927,9 @@
    "k": "water",
    "m": 15,
    "h": "1.5 hrs",
-   "d": "A waterfall in the forest a short walk from the road between Gushaini and Banjar."
+   "d": "A waterfall in the forest a short walk from the road between Gushaini and Banjar.",
+   "img": "A Waterfall in Himachal Pradesh, India (2015).jpg",
+   "gen": 1
   },
   {
    "n": "Nagini trout farm",
@@ -913,7 +950,9 @@
    "k": "water",
    "m": 15,
    "h": "1.5 hrs",
-   "d": "A forest waterfall a short walk from the Banjar road."
+   "d": "A forest waterfall a short walk from the Banjar road.",
+   "img": "A Waterfall in Himachal Pradesh, India (2015).jpg",
+   "gen": 1
   },
   {
    "n": "Nagini trout farm",
@@ -942,7 +981,9 @@
    "k": "temple",
    "m": 30,
    "h": "1 hr",
-   "d": "The temple of Shringa Rishi, the most revered deity of the Banjar area, in a pine forest above the valley."
+   "d": "The temple of Shringa Rishi, the most revered deity of the Banjar area, in a pine forest above the valley.",
+   "img": "Kath Kuni Style Local Deity Temple, Kullu District, Himachal Pradesh.jpg",
+   "gen": 1
   }
  ],
  "32": [
@@ -978,7 +1019,10 @@
    "m": 0,
    "h": "2 hrs",
    "d": "A cascade in the forest about 3 km from Shangarh village, through orchards and small villages.",
-   "q": "Barshangarh Waterfall"
+   "q": "Barshangarh Waterfall",
+   "img": "Rudranag waterfall, Himachal Pradesh.jpg",
+   "by": "Yuvraj Anand",
+   "gen": 1
   },
   {
    "n": "Shangchul Mahadev Temple",
@@ -995,7 +1039,9 @@
    "k": "temple",
    "m": 0,
    "h": "45 min",
-   "d": "One of the most important old temples of the Sutlej valley, linked to Parshuram, with fine wood carving."
+   "d": "One of the most important old temples of the Sutlej valley, linked to Parshuram, with fine wood carving.",
+   "img": "Nirmand, Kullu district, Himachal Pradesh.jpg",
+   "gen": 1
   },
   {
    "n": "Ambika Devi Temple",
@@ -1044,7 +1090,9 @@
    "k": "temple",
    "m": 0,
    "h": "1 hr",
-   "d": "A small temple above Dharamkot where the Triund trail begins — walk this far for the views even if you're not doing Triund."
+   "d": "A small temple above Dharamkot where the Triund trail begins — walk this far for the views even if you're not doing Triund.",
+   "img": "Mcleod and triund.jpg",
+   "gen": 1
   }
  ],
  "62": [
@@ -1073,7 +1121,10 @@
    "m": 20,
    "h": "1 hr",
    "d": "A big monastery in the pine forest near Bir, seat of a major Tibetan lama.",
-   "q": "Sherab Ling Monastery"
+   "q": "Sherab Ling Monastery",
+   "img": "Tsering Jong Monastery, Bir (HP), India.jpg",
+   "by": "Deepak Bhargava",
+   "gen": 1
   },
   {
    "n": "Bir tea gardens",
@@ -1100,14 +1151,18 @@
    "k": "view",
    "m": 10,
    "h": "1 hr",
-   "d": "A riverside gorge just outside Palampur, with Dhauladhar views and a café on the cliff."
+   "d": "A riverside gorge just outside Palampur, with Dhauladhar views and a café on the cliff.",
+   "img": "Mountain Brook (4101899491).jpg",
+   "gen": 1
   },
   {
    "n": "Tashi Jong Monastery",
    "k": "temple",
    "m": 25,
    "h": "45 min",
-   "d": "A peaceful Tibetan monastery village between Palampur and Baijnath."
+   "d": "A peaceful Tibetan monastery village between Palampur and Baijnath.",
+   "img": "Distant view of main gompa Tsering Jong.jpg",
+   "gen": 1
   }
  ],
  "79": [
@@ -1116,7 +1171,9 @@
    "k": "temple",
    "m": 15,
    "h": "45 min",
-   "d": "A peaceful Tibetan monastery village between Baijnath and Palampur."
+   "d": "A peaceful Tibetan monastery village between Baijnath and Palampur.",
+   "img": "Distant view of main gompa Tsering Jong.jpg",
+   "gen": 1
   }
  ],
  "80": [
@@ -1214,7 +1271,9 @@
    "k": "temple",
    "m": 25,
    "h": "1 hr",
-   "d": "A Shiva temple by a stream in the forest near Khaniyara, quiet and cool."
+   "d": "A Shiva temple by a stream in the forest near Khaniyara, quiet and cool.",
+   "img": "Shiva Temple at Kareri Lake.jpg",
+   "gen": 1
   }
  ],
  "84": [
@@ -1234,7 +1293,9 @@
    "k": "hike",
    "m": 0,
    "h": "1.5 hrs",
-   "d": "Climb past the Bhagsu waterfall to the small cafés above it, with views back over the valley."
+   "d": "Climb past the Bhagsu waterfall to the small cafés above it, with views back over the valley.",
+   "img": "Bhagsu Waterfall, Mcleodganj, Himachal Pradesh.jpg",
+   "by": "Bana1989"
   }
  ],
  "105": [
@@ -1306,14 +1367,19 @@
    "k": "temple",
    "m": 20,
    "h": "1 hr",
-   "d": "One of the biggest and most important monasteries in Lahaul, on the slope across the river from Keylong."
+   "d": "One of the biggest and most important monasteries in Lahaul, on the slope across the river from Keylong.",
+   "img": "Keylong 2.jpg",
+   "by": "Jen",
+   "gen": 1
   },
   {
    "n": "Shashur Monastery",
    "k": "temple",
    "m": 15,
    "h": "1 hr",
-   "d": "A monastery on a ridge above Keylong, known for its masked dance in summer."
+   "d": "A monastery on a ridge above Keylong, known for its masked dance in summer.",
+   "img": "Keylong 3.jpg",
+   "gen": 1
   }
  ],
  "108": [
@@ -1341,7 +1407,9 @@
    "k": "temple",
    "m": 0,
    "h": "30 min",
-   "d": "A Kinnauri wooden temple in the old part of Kalpa."
+   "d": "A Kinnauri wooden temple in the old part of Kalpa.",
+   "img": "Hindu Temple at Kalpa, Himachal Pradesh.jpg",
+   "gen": 1
   }
  ],
  "41": [
@@ -1400,7 +1468,10 @@
    "k": "experience",
    "m": 0,
    "h": "1 hr",
-   "d": "Ribba is known for its grapes and homemade angoori wine — ask your host about the vineyards."
+   "d": "Ribba is known for its grapes and homemade angoori wine — ask your host about the vineyards.",
+   "img": "Kinnaur.jpg",
+   "by": "Abhay.yambur",
+   "gen": 1
   }
  ],
  "74": [
@@ -1446,14 +1517,18 @@
    "k": "water",
    "m": 10,
    "h": "1 hr",
-   "d": "Small falls and streams in the forest just below Dalhousie, with a memorial to Sardar Ajit Singh."
+   "d": "Small falls and streams in the forest just below Dalhousie, with a memorial to Sardar Ajit Singh.",
+   "img": "Himalaya streams forest Himachal Pradesh India nature forest views 2015.jpg",
+   "gen": 1
   },
   {
    "n": "Satdhara Falls",
    "k": "water",
    "m": 10,
    "h": "45 min",
-   "d": "Seven springs meeting in the forest, said to carry mica that helps the skin."
+   "d": "Seven springs meeting in the forest, said to carry mica that helps the skin.",
+   "img": "Distant waterfall.jpg",
+   "gen": 1
   },
   {
    "n": "St John's Church",
@@ -1469,7 +1544,9 @@
    "k": "forest",
    "m": 5,
    "h": "1–2 hrs",
-   "d": "A quiet circular road through deodar forest on the highest part of town."
+   "d": "A quiet circular road through deodar forest on the highest part of town.",
+   "img": "Kalatop Wildlife Sanctuary.JPG",
+   "gen": 1
   }
  ],
  "73": [
@@ -1509,14 +1586,19 @@
    "h": "Full day",
    "b": "Jun–Oct",
    "d": "One of the remotest villages of Pangi, at the end of a road from Killar.",
-   "t": "Roads can close with landslides; ask in Killar."
+   "t": "Roads can close with landslides; ask in Killar.",
+   "img": "A Village near Trilokinath temple, Lahaul.jpg",
+   "by": "Himalayan Trails",
+   "gen": 1
   },
   {
    "n": "Mindhal Temple",
    "k": "temple",
    "m": 30,
    "h": "1 hr",
-   "d": "The most revered goddess temple of Pangi."
+   "d": "The most revered goddess temple of Pangi.",
+   "img": "Traditional Kathkuni Temple (Himachal Pradesh).jpg",
+   "gen": 1
   }
  ],
  "4": [
@@ -1526,7 +1608,9 @@
    "m": 40,
    "h": "1 hr",
    "d": "A six-storey fort of wood and stone on a high stone base — the old capital of Suket, with the Mahamaya temple on top.",
-   "q": "Pangna Fort"
+   "q": "Pangna Fort",
+   "img": "Kamru Fort, Kamru village, Sangla Valley, Himachal Pradesh 02.jpg",
+   "gen": 1
   },
   {
    "n": "Kamaksha Devi Temple, Kao",
@@ -1554,7 +1638,9 @@
    "m": 40,
    "h": "1 hr",
    "d": "A six-storey fort of wood and stone, the old capital of Suket, with the Mahamaya temple on top.",
-   "q": "Pangna Fort"
+   "q": "Pangna Fort",
+   "img": "Kamru Fort, Kamru village, Sangla Valley, Himachal Pradesh 02.jpg",
+   "gen": 1
   }
  ],
  "35": [
@@ -1598,7 +1684,9 @@
    "k": "temple",
    "m": 5,
    "h": "45 min",
-   "d": "A hilltop temple of the Suket royal family with views over the Balh valley."
+   "d": "A hilltop temple of the Suket royal family with views over the Balh valley.",
+   "img": "Kamrunag Temple mandi himachal pradesh.jpg",
+   "gen": 1
   }
  ],
  "6": [
@@ -1607,7 +1695,9 @@
    "k": "temple",
    "m": 10,
    "h": "45 min",
-   "d": "A temple on the ridge above Haripurdhar with views to Churdhar."
+   "d": "A temple on the ridge above Haripurdhar with views to Churdhar.",
+   "img": "Wooden temple dedicated to local devta Bondra at Banchuchh Rohru Shimla.jpg",
+   "gen": 1
   }
  ],
  "129": [
@@ -1624,7 +1714,9 @@
    "k": "forest",
    "m": 0,
    "h": "1 hr",
-   "d": "A flat walk around the top of the town with views over the plains — locals walk it every evening."
+   "d": "A flat walk around the top of the town with views over the plains — locals walk it every evening.",
+   "img": "Coniferous forest between Shimla and Kufri.jpg",
+   "gen": 1
   },
   {
    "n": "Jaitak Fort ruins",
@@ -1649,7 +1741,10 @@
    "k": "wildlife",
    "m": 0,
    "h": "1 hr",
-   "d": "A small zoo by the lake, part of the Renuka sanctuary."
+   "d": "A small zoo by the lake, part of the Renuka sanctuary.",
+   "img": "Renuka lake.JPG",
+   "by": "Harvinder Chandigarh",
+   "gen": 1
   }
  ],
  "96": [
@@ -1678,7 +1773,9 @@
    "k": "view",
    "m": 20,
    "h": "30 min",
-   "d": "A high bridge over the Satluj gorge on the Bilaspur–Ghumarwin road."
+   "d": "A high bridge over the Satluj gorge on the Bilaspur–Ghumarwin road.",
+   "img": "The Sutlej, from Bilaspur.jpg",
+   "gen": 1
   }
  ],
  "102": [
@@ -1703,7 +1800,9 @@
    "k": "village",
    "m": 0,
    "h": "30 min",
-   "d": "One of the biggest open grounds in Himachal, where the famous Holi fair is held."
+   "d": "One of the biggest open grounds in Himachal, where the famous Holi fair is held.",
+   "img": "Tira Sujanpur from Katoch Palace Mar19 R16 00198.jpg",
+   "gen": 1
   }
  ],
  "131": [
@@ -1713,21 +1812,27 @@
    "m": 5,
    "h": "1 hr",
    "d": "The summer court of Raja Sansar Chand, about 2 km from town. The building is crumbling but still has some old paintings.",
-   "q": "Amtar Nadaun Fort"
+   "q": "Amtar Nadaun Fort",
+   "img": "Katoch Palace, Tira sujanpur.jpg",
+   "gen": 1
   },
   {
    "n": "Beas riverside",
    "k": "water",
    "m": 0,
    "h": "1 hr",
-   "d": "The Beas slows down at Nadaun — sit by the river, watch the anglers, or try a gentle stretch of rafting."
+   "d": "The Beas slows down at Nadaun — sit by the river, watch the anglers, or try a gentle stretch of rafting.",
+   "img": "Beas bridge.jpg",
+   "gen": 1
   },
   {
    "n": "Bilkaleshwar Mahadev",
    "k": "temple",
    "m": 5,
    "h": "30 min",
-   "d": "An old Shiva temple by the Beas, which locals link to the Pandavas."
+   "d": "An old Shiva temple by the Beas, which locals link to the Pandavas.",
+   "img": "0042623 Pancha Vaktra temple group, Mandi, Himachal Pradesh.jpg",
+   "gen": 1
   },
   {
    "n": "Pragpur & Garli heritage villages",
