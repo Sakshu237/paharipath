@@ -50,7 +50,8 @@
    "m": 20,
    "h": "2 hrs",
    "d": "A deep, shaded deodar forest below Annandale with a stream running through it — one of the few quiet corners left inside Shimla.",
-   "q": "The Glen Annandale Shimla"
+   "q": "The Glen Annandale Shimla",
+   "img": "Walking Trail 3 of Glen, Shimla.jpg"
   },
   {
    "n": "Shimla Water Catchment Sanctuary",
@@ -519,7 +520,9 @@
    "m": 30,
    "h": "1 hr",
    "d": "Temple of Solan's patron goddess. Her three-day fair every June is the town's biggest event.",
-   "q": "Shoolini Mata Temple Solan"
+   "q": "Shoolini Mata Temple Solan",
+   "img": "Goddess Shoolini devi temple,Solan,Himachal Pradesh.jpg",
+   "by": "Harvinder Chandigarh"
   },
   {
    "n": "Karol Tibba & Pandava Cave",
@@ -549,7 +552,9 @@
    "m": 20,
    "h": "1 hr",
    "d": "Temple of Solan's patron goddess. Her three-day fair every June is the town's biggest event.",
-   "q": "Shoolini Mata Temple Solan"
+   "q": "Shoolini Mata Temple Solan",
+   "img": "Goddess Shoolini devi temple,Solan,Himachal Pradesh.jpg",
+   "by": "Harvinder Chandigarh"
   }
  ],
  "94": [
@@ -633,7 +638,9 @@
    "k": "water",
    "m": 0,
    "h": "30 min",
-   "d": "Bhuntar sits where the Parvati joins the Beas — walk down to the riverside to see the two colours of water meet."
+   "d": "Bhuntar sits where the Parvati joins the Beas — walk down to the riverside to see the two colours of water meet.",
+   "img": "Confluence - River Beas and River Parvati - Bhuntar - Kullu - 2014-05-09 2169.JPG",
+   "by": "Biswarup Ganguly"
   },
   {
    "n": "Kullu shawl weaving",
@@ -770,7 +777,8 @@
    "k": "heritage",
    "m": 0,
    "h": "45 min",
-   "d": "Old shikhara-style Shiva and Gayatri Devi temples from the time when Jagatsukh was the capital of Kullu."
+   "d": "Old shikhara-style Shiva and Gayatri Devi temples from the time when Jagatsukh was the capital of Kullu.",
+   "img": "Jagatsukh Shiva Temple.JPG"
   }
  ],
  "112": [
@@ -821,7 +829,11 @@
    "m": 10,
    "h": "45 min",
    "d": "One of the oldest trout farms in Himachal, on the Beas — see the ponds and buy fresh trout.",
-   "q": "Patlikuhal trout farm"
+   "q": "Patlikuhal trout farm",
+   "img": "https://images.pexels.com/photos/15059730/pexels-photo-15059730.jpeg",
+   "by": "Collab Media",
+   "lic": "Pexels",
+   "src": "https://www.pexels.com/photo/a-large-group-of-fish-swimming-in-a-tank-15059730/"
   },
   {
    "n": "Naggar Castle",
@@ -840,7 +852,9 @@
    "k": "temple",
    "m": 0,
    "h": "30 min",
-   "d": "An old stone temple near the gurudwara, one of several shrines around the hot springs."
+   "d": "An old stone temple near the gurudwara, one of several shrines around the hot springs.",
+   "img": "Manikaran.jpg",
+   "by": "John Hill"
   }
  ],
  "28": [
@@ -850,7 +864,8 @@
    "m": 0,
    "h": "Half day",
    "b": "May–Oct",
-   "d": "Walk up the valley past the last fields towards the glacier and the snow peaks at the head of the Tosh nala."
+   "d": "Walk up the valley past the last fields towards the glacier and the snow peaks at the head of the Tosh nala.",
+   "img": "Tosh Glacier.jpg"
   }
  ],
  "23": [
@@ -885,7 +900,11 @@
    "m": 10,
    "h": "30 min",
    "d": "A small government trout farm on the Tirthan, where the valley's trout are raised.",
-   "t": "Angling in the Tirthan needs a fisheries permit — ask your host."
+   "t": "Angling in the Tirthan needs a fisheries permit — ask your host.",
+   "img": "https://images.pexels.com/photos/15059730/pexels-photo-15059730.jpeg",
+   "by": "Collab Media",
+   "lic": "Pexels",
+   "src": "https://www.pexels.com/photo/a-large-group-of-fish-swimming-in-a-tank-15059730/"
   }
  ],
  "16": [
@@ -902,7 +921,11 @@
    "m": 10,
    "h": "30 min",
    "d": "A small trout farm on the Tirthan river.",
-   "t": "Angling needs a fisheries permit."
+   "t": "Angling needs a fisheries permit.",
+   "img": "https://images.pexels.com/photos/15059730/pexels-photo-15059730.jpeg",
+   "by": "Collab Media",
+   "lic": "Pexels",
+   "src": "https://www.pexels.com/photo/a-large-group-of-fish-swimming-in-a-tank-15059730/"
   }
  ],
  "31": [
@@ -911,7 +934,8 @@
    "k": "water",
    "m": 5,
    "h": "1 hr",
-   "d": "A small waterfall in the forest close to Jibhi village, with a wooden walkway and a pool."
+   "d": "A small waterfall in the forest close to Jibhi village, with a wooden walkway and a pool.",
+   "img": "Jibhi Waterfall, Jibhi, Himachal Pradesh.jpg"
   },
   {
    "n": "Shringa Rishi Temple, Bagi",
@@ -930,7 +954,8 @@
    "b": "Apr–Nov",
    "d": "A 3 km walk from Jalori Pass to the ruins of an old fort on a grassy ridge, with Himalayan views on every side.",
    "t": "Snowed in Dec–Feb. Carry water.",
-   "q": "Raghupur Fort Jalori"
+   "q": "Raghupur Fort Jalori",
+   "img": "Raghupur Fort in Himachal Pradesh 04.jpg"
   }
  ],
  "33": [
@@ -942,7 +967,8 @@
    "b": "Apr–Nov",
    "d": "A 3 km walk west from the pass to old fort ruins on an open meadow ridge.",
    "t": "Snowed in Dec–Feb.",
-   "q": "Raghupur Fort Jalori"
+   "q": "Raghupur Fort Jalori",
+   "img": "Raghupur Fort in Himachal Pradesh 04.jpg"
   }
  ],
  "15": [
@@ -959,7 +985,8 @@
    "k": "temple",
    "m": 0,
    "h": "30 min",
-   "d": "The deity who protects the Shangarh meadow — locals say he sheltered the Pandavas. Rules here are strict: no shoes or loud noise on the meadow."
+   "d": "The deity who protects the Shangarh meadow — locals say he sheltered the Pandavas. Rules here are strict: no shoes or loud noise on the meadow.",
+   "img": "0042223 Shanghchul Mahadev temple, Shangarh Himachal Pradesh 048.jpg"
   }
  ],
  "121": [
@@ -975,7 +1002,8 @@
    "k": "temple",
    "m": 0,
    "h": "30 min",
-   "d": "An old temple of the goddess Ambika in the heritage lanes of Nirmand."
+   "d": "An old temple of the goddess Ambika in the heritage lanes of Nirmand.",
+   "img": "004182023 Ambike Devi Temple, Nirmand Himachal Pradesh 004.jpg"
   }
  ],
  "25": [
@@ -1006,7 +1034,8 @@
    "m": 10,
    "h": "45 min",
    "d": "A small deodar-ringed lake between Naddi and McLeod Ganj, with a Shiva temple on its bank.",
-   "q": "Dal Lake McLeod Ganj"
+   "q": "Dal Lake McLeod Ganj",
+   "img": "Dal Lake McLeodgunj.jpg"
   }
  ],
  "59": [
@@ -1119,7 +1148,9 @@
    "m": 0,
    "h": "1 hr",
    "d": "The story of Tibet and its people in exile, inside the main temple complex.",
-   "q": "Tibet Museum McLeod Ganj"
+   "q": "Tibet Museum McLeod Ganj",
+   "img": "Visitor Viewed through Photos of Destruction - Tibet Museum - Tsuglagkhang Complex - McLeod Ganj - Himachal Pradesh - India (26170690544).jpg",
+   "by": "Adam Jones"
   },
   {
    "n": "Dal Lake (Naddi)",
@@ -1127,7 +1158,8 @@
    "m": 15,
    "h": "45 min",
    "d": "A small lake with a Shiva temple on the way to Naddi.",
-   "q": "Dal Lake McLeod Ganj"
+   "q": "Dal Lake McLeod Ganj",
+   "img": "Dal Lake McLeodgunj.jpg"
   }
  ],
  "83": [
@@ -1146,14 +1178,16 @@
    "m": 5,
    "h": "1 hr",
    "d": "Kangra miniature paintings, old coins and tribal costumes near the main bus stand.",
-   "q": "Kangra Art Museum Dharamshala"
+   "q": "Kangra Art Museum Dharamshala",
+   "img": "Museum of Kangra Art, Dharamshala, Front Entrance.jpg"
   },
   {
    "n": "War Memorial",
    "k": "heritage",
    "m": 5,
    "h": "30 min",
-   "d": "A memorial park in the pine forest for soldiers of Himachal."
+   "d": "A memorial park in the pine forest for soldiers of Himachal.",
+   "img": "Shaheed samarak(the martyrs monument).jpg"
   }
  ],
  "145": [
@@ -1163,7 +1197,8 @@
    "m": 0,
    "h": "1 hr",
    "d": "Kangra miniature paintings, old coins and tribal costumes near the main bus stand.",
-   "q": "Kangra Art Museum Dharamshala"
+   "q": "Kangra Art Museum Dharamshala",
+   "img": "Museum of Kangra Art, Dharamshala, Front Entrance.jpg"
   },
   {
    "n": "Norbulingka Institute",
@@ -1208,7 +1243,9 @@
    "k": "temple",
    "m": 0,
    "h": "45 min",
-   "d": "The big new monastery in Kaza town, with bright murals."
+   "d": "The big new monastery in Kaza town, with bright murals.",
+   "img": "Sakya Tangyud Monastery (Kaza).jpg",
+   "by": "Nrr1729"
   }
  ],
  "107": [
@@ -1239,7 +1276,8 @@
    "k": "temple",
    "m": 10,
    "h": "45 min",
-   "d": "The main monastery of the Pin valley, of the Nyingma tradition."
+   "d": "The main monastery of the Pin valley, of the Nyingma tradition.",
+   "img": "Hayagriva Mandala.jpg"
   },
   {
    "n": "Mud village",
@@ -1284,7 +1322,8 @@
    "k": "temple",
    "m": 30,
    "h": "45 min",
-   "d": "A plain-looking temple hiding some of the finest old wood carving in Himachal."
+   "d": "A plain-looking temple hiding some of the finest old wood carving in Himachal.",
+   "img": "Mrikula Devi temple, Udaipur Himachal Pradesh.jpg"
   }
  ],
  "54": [
@@ -1321,7 +1360,8 @@
    "k": "village",
    "m": 15,
    "h": "1 hr",
-   "d": "A pretty Kinnauri village of wooden houses and a carved temple, below Sangla."
+   "d": "A pretty Kinnauri village of wooden houses and a carved temple, below Sangla.",
+   "img": "Batseri Village April 10.jpg"
   }
  ],
  "45": [
@@ -1449,7 +1489,8 @@
    "k": "hike",
    "m": 15,
    "h": "2–3 hrs",
-   "d": "A walk of about 3 km up from Bharmour to a temple on a high meadow — pilgrims stop here before Manimahesh."
+   "d": "A walk of about 3 km up from Bharmour to a temple on a high meadow — pilgrims stop here before Manimahesh.",
+   "img": "BHARMANI TEMPLE BHARMOUR VIEW.jpg"
   },
   {
    "n": "Gaddi shepherd life",
@@ -1492,7 +1533,9 @@
    "k": "temple",
    "m": 15,
    "h": "45 min",
-   "d": "An old goddess temple about 7 km from Karsog with fine wood carving."
+   "d": "An old goddess temple about 7 km from Karsog with fine wood carving.",
+   "img": "Kamaksha Temple, Karsog, Himachal Pradesh.jpg",
+   "by": "Vinod Bahal"
   }
  ],
  "139": [
@@ -1501,7 +1544,9 @@
    "k": "temple",
    "m": 15,
    "h": "45 min",
-   "d": "An old goddess temple near Karsog with fine wood carving."
+   "d": "An old goddess temple near Karsog with fine wood carving.",
+   "img": "Kamaksha Temple, Karsog, Himachal Pradesh.jpg",
+   "by": "Vinod Bahal"
   },
   {
    "n": "Pangna Fort",
@@ -1519,14 +1564,20 @@
    "m": 0,
    "h": "45 min",
    "d": "Trout ponds on the Uhl river, one of the old fishing centres of Himachal.",
-   "t": "Angling needs a permit from the fisheries office."
+   "t": "Angling needs a permit from the fisheries office.",
+   "img": "https://images.pexels.com/photos/15059730/pexels-photo-15059730.jpeg",
+   "by": "Collab Media",
+   "lic": "Pexels",
+   "src": "https://www.pexels.com/photo/a-large-group-of-fish-swimming-in-a-tank-15059730/"
   },
   {
    "n": "Uhl river walk to Lohardi",
    "k": "hike",
    "m": 0,
    "h": "2–3 hrs",
-   "d": "Follow the river upstream from Barot through villages and forest."
+   "d": "Follow the river upstream from Barot through villages and forest.",
+   "img": "Uhl River at Barot Oct 2017 D72 2280.jpg",
+   "by": "Timothy Gonsalves"
   }
  ],
  "49": [
@@ -1580,7 +1631,8 @@
    "k": "hike",
    "m": 30,
    "h": "Half day",
-   "d": "Ruins of a Gorkha-era fort on a hilltop above Nahan, reached by a steep path."
+   "d": "Ruins of a Gorkha-era fort on a hilltop above Nahan, reached by a steep path.",
+   "img": "Ruins of Jaitak Fort from Haweli.JPG"
   }
  ],
  "95": [
@@ -1589,7 +1641,8 @@
    "k": "water",
    "m": 0,
    "h": "30 min",
-   "d": "The small sacred tank next to Renuka lake, dedicated to Renuka's son Parshuram."
+   "d": "The small sacred tank next to Renuka lake, dedicated to Renuka's son Parshuram.",
+   "img": "Pershuram Talab , Renuka lake.JPG"
   },
   {
    "n": "Renuka mini zoo",
@@ -1605,7 +1658,8 @@
    "k": "water",
    "m": 0,
    "h": "45 min",
-   "d": "The riverbank right below the gurudwara — sit by the Yamuna in the evening."
+   "d": "The riverbank right below the gurudwara — sit by the Yamuna in the evening.",
+   "img": "Yamuna Ghat In Paonta Sahib.jpg"
   }
  ],
  "99": [
@@ -1691,7 +1745,11 @@
    "k": "water",
    "m": 0,
    "h": "1–2 hrs",
-   "d": "Walk along the Parvati from Kasol and cross the footbridge into the pine forest — quieter the further you go from the market."
+   "d": "Walk along the Parvati from Kasol and cross the footbridge into the pine forest — quieter the further you go from the market.",
+   "img": "https://images.unsplash.com/photo-1581791534721-e599df4417f7",
+   "by": "Ashwini Chaudhary",
+   "lic": "Unsplash",
+   "src": "https://unsplash.com/photos/river-in-the-middle-of-forest-during-daytime-EEsqZyA8b0E"
   }
  ],
  "110": [

@@ -47,7 +47,7 @@
   function load() {
     if (DATA) return Promise.resolve(DATA);
     if (!LOADING) {
-      LOADING = fetch('/spots.json?v=20261122e').then(function (r) { return r.json(); })
+      LOADING = fetch('/spots.json?v=20261122f').then(function (r) { return r.json(); })
         .then(function (j) { DATA = j || {}; return DATA; })
         .catch(function () { DATA = {}; return DATA; });
     }
@@ -113,12 +113,19 @@
 
   // Photos come from Wikimedia Commons (free licences, credited to the author).
   // Special:FilePath serves a resized copy; if it fails, the coloured card stays.
-  function photoUrl(f, w) { return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(f) + '?width=' + (w || 640); }
-  function fileUrl(f) { return 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(String(f).replace(/ /g, '_')); }
+  // A few photos come from Unsplash / Pexels (free licences): there `img` is the
+  // CDN address, `src` the photo's page and `lic` the site name for the credit.
+  function photoUrl(f, w) {
+    w = w || 640;
+    if (/^https:\/\/images\.unsplash\.com\//.test(f)) return f + '?auto=format&fit=crop&q=70&w=' + w;
+    if (/^https:\/\/images\.pexels\.com\//.test(f)) return f + '?auto=compress&cs=tinysrgb&w=' + w;
+    return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(f) + '?width=' + w;
+  }
+  function fileUrl(s) { return s.src || 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(String(s.img).replace(/ /g, '_')); }
   function art(s, big) {
     var k = KINDS[s.k] || KINDS.view, L = lang();
     var img = s.img ? '<img class="ph" src="' + esc(photoUrl(s.img, big ? 960 : 560)) + '" alt="' + esc(s.n) + '" loading="lazy" decoding="async" onerror="this.parentNode.classList.remove(\'has-ph\');this.remove()">' : '';
-    var credit = s.img ? '<a class="cr" href="' + esc(fileUrl(s.img)) + '" target="_blank" rel="noopener" data-sp2cr="1">📷 ' + esc(s.by || 'Wikimedia Commons') + '</a>' : '';
+    var credit = s.img ? '<a class="cr" href="' + esc(fileUrl(s)) + '" target="_blank" rel="noopener" data-sp2cr="1">📷 ' + esc((s.by || 'Wikimedia Commons') + (s.lic ? ' · ' + s.lic : '')) + '</a>' : '';
     return '<div class="sp2-art' + (s.img ? ' has-ph' : '') + '" style="background:linear-gradient(135deg,' + k.c[0] + ',' + k.c[1] + ')">' + img +
       '<span class="em" aria-hidden="true">' + k.i + '</span>' +
       (s.busy && !big ? '<span class="bz">' + esc(T().busy) + '</span>' : '') +
