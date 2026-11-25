@@ -246,8 +246,8 @@
     // Treks and high passes are seasonal: outside their months they're snowbound or unsafe,
     // even when the crowd engine hasn't marked them closed (low "crowd" there just means nobody can go).
     var bmT = bestMonths(p.bestTime), offSeason = (pr && pr.inSeason === false) || (bmT ? !bmT[m] : false);
-    var isTrek = bf === 'trekkers' || ((p.vibes || []).indexOf('trek') >= 0 && a >= 2800);
-    if (isTrek && offSeason) return null;
+    var isTrek = bf === 'trekkers' || (p.vibes || []).indexOf('trek') >= 0;
+    if (isTrek && offSeason && (bf === 'trekkers' || a >= 2800)) return null;
     if (isTrek && st.who === 'family' && a > 3500) return null;
     var zs = (seasons()[z] || seasons().kullu || [])[m] || 'good';
     var closedHigh = HIGH_ZONES[z] && zs === 'snow';
@@ -284,7 +284,8 @@
 
     var vibes = p.vibes || [];
     var picked = st.interests.filter(function (i) { return i !== 'snow'; });
-    var hits = picked.filter(function (i) { return vibes.indexOf(i) >= 0; });
+    // A trek counts as a "Treks" match even when its tags only say adventure/nature (e.g. Triund, Kheerganga).
+    var hits = picked.filter(function (i) { return vibes.indexOf(i) >= 0 || (i === 'trek' && isTrek); });
     s += hits.length * 15;
     if (picked.length && !hits.length) s -= 60;   // places that match the answer always come before ones that don't
     hits.forEach(function (h) { why.push(h.charAt(0).toUpperCase() + h.slice(1)); });
@@ -331,6 +332,25 @@
   function suggest() {
     var o = st.origin, date = new Date(val('tfDate') || todayISO()), nights = Math.max(1, Math.min(14, parseInt(val('tfNights'), 10) || 2));
     var list = places().map(function (p) { return score(p, o, date, nights); }).filter(Boolean).sort(function (a, b) { return b.s - a.s; });
+    st.noMatch = false;
+    var picked = st.interests.filter(function (i) { return i !== 'snow'; });
+    if (picked.length && st.maxH === 'auto') {
+      // Too few places match what they enjoy within the usual travel time? Look a bit further for
+      // matching places (flagged "Long journey") before falling back to places that don't match.
+      var hit = list.filter(function (r) { return r.match; });
+      if (hit.length < 2) {
+        var near = {}; hit.forEach(function (r) { near[r.p.id] = 1; });
+        st.maxH = '16';
+        try {
+          places().map(function (p) { return score(p, o, date, nights); }).filter(Boolean).forEach(function (r) {
+            if (r.match && !near[r.p.id]) { r.why = r.why.slice(0, 3).concat('Long journey'); hit.push(r); }
+          });
+        } finally { st.maxH = 'auto'; }
+        hit.sort(function (a, b) { return b.s - a.s; });
+      }
+      if (hit.length) list = hit.concat(list.filter(function (r) { return !r.match; }));
+      else if (list.length) st.noMatch = true;   // nothing matches on these dates — say so on screen
+    }
     if (!list.length && st.maxH === 'auto') {
       st.maxH = '16';
       try { list = places().map(function (p) { return score(p, o, date, nights); }).filter(Boolean).sort(function (a, b) { return b.s - a.s; }); }
@@ -575,7 +595,17 @@
       return;
     }
     var list = st.showAll ? st.results : st.results.slice(0, 3);
-    el.innerHTML = '<div class="tf-head">✨ Our picks for you · from ' + esc(st.origin.name) + ' · ' + nights + ' night' + (nights > 1 ? 's' : '') + '</div>' +
+    var note = '';
+    if (st.noMatch) {
+      var names = st.interests.filter(function (i) { return i !== 'snow'; }).map(function (i) {
+        var f = INTERESTS.filter(function (x) { return x[0] === i; })[0]; return f ? f[1].replace(/^\S+\s/, '') : i;
+      });
+      var d = new Date(val('tfDate') || todayISO());
+      note = '<div class="tf-route" style="background:#fbefe7;color:#8a4526;margin-bottom:12px">⚠️ No ' + esc(names.join(' or ').toLowerCase()) +
+        ' are in season around ' + d.getDate() + ' ' + MONTH_NAMES[d.getMonth()] + ' within reach of ' + esc(st.origin.name) +
+        ' (most high treks close for winter). These quiet places suit your dates instead — or try other dates or interests.</div>';
+    }
+    el.innerHTML = '<div class="tf-head">✨ Our picks for you · from ' + esc(st.origin.name) + ' · ' + nights + ' night' + (nights > 1 ? 's' : '') + '</div>' + note +
       '<div class="tf-cards">' + list.map(card).join('') + '</div>' +
       (!st.showAll && st.results.length > 3 ? '<button type="button" class="tf-more" onclick="PPTrip.more()">Show ' + (st.results.length - 3) + ' more ideas</button>' : '');
   }
