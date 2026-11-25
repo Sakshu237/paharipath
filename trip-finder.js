@@ -21,7 +21,8 @@
   var ROAD = {
     PLAINS_FACTOR: 1.25, PLAINS_KMH: 55,   // highways outside HP
     HILL_FACTOR: 1.6, HILL_KMH: 30,        // hill roads inside HP
-    HIGH_EXTRA: 1.35                       // Spiti, Lahaul, high Kinnaur/Chamba
+    HIGH_EXTRA: 1.35,                      // Spiti, Lahaul, high Kinnaur/Chamba
+    ZONE_KMH: { kangra: 40 }               // Kangra valley: broad low hills on good highways (Una–Kangra–Dharamshala)
   };
 
   // Where people start from. kind: hill = inside HP, road = drive in, far = fly/train in.
@@ -171,7 +172,7 @@
     var f = ROAD.HILL_FACTOR;
     var z = String(p.zone || '').toLowerCase();
     if (HIGH_ZONES[z] || (alt(p) > 2600 && (z === 'kinnaur' || z === 'chamba'))) f *= ROAD.HIGH_EXTRA;
-    return km(aLat, aLng, c[0], c[1]) * f / ROAD.HILL_KMH;
+    return km(aLat, aLng, c[0], c[1]) * f / (ROAD.ZONE_KMH[z] || ROAD.HILL_KMH);
   }
   function plainsHours(a, b, c, d) { return km(a, b, c, d) * ROAD.PLAINS_FACTOR / ROAD.PLAINS_KMH; }
 
@@ -183,8 +184,8 @@
     if (o.kind === 'road') {
       var best = null;
       GATEWAYS.forEach(function (gw) {
-        var h = plainsHours(o.lat, o.lng, gw[1], gw[2]) + hillHours(gw[1], gw[2], p, c);
-        if (!best || h < best.hours) best = { hours: h, route: 'by road via ' + gw[0] };
+        var ph = plainsHours(o.lat, o.lng, gw[1], gw[2]), hh = hillHours(gw[1], gw[2], p, c), h = ph + hh;
+        if (!best || h < best.hours) best = { hours: h, plains: ph, hill: hh, route: 'by road via ' + gw[0] };
       });
       return best;
     }
@@ -206,7 +207,11 @@
   function travelMode(o, p) {
     var t = travelFrom(o, p); if (!t) return null;
     var m = MODE[st.transport] || MODE.car;
-    var r = { hours: t.hours * m.f, route: t.route, far: t.far, hub: t.hub, mode: st.transport };
+    var h = t.hours * m.f;
+    // Buses (overnight Volvos) run about as fast as a car on the plains highways; they only lose time
+    // on hill roads (stops, slower climbs). So the bus factor applies to the hill part of the journey only.
+    if (st.transport === 'bus' && t.plains != null) h = t.plains + t.hill * m.f;
+    var r = { hours: h, route: t.route, far: t.far, hub: t.hub, mode: st.transport };
     r.route = t.far ? String(t.route).replace(/^by road/, m.word) : String(t.route).replace(/^by road/, m.word);
     return r;
   }
@@ -214,7 +219,10 @@
   function maxHoursFor(nights) {
     if (st.maxH !== 'auto') return +st.maxH;
     // 3 nights allows an overnight bus/drive from Delhi to Jibhi/Tirthan/Kasol (estimates run ~1h high)
-    return nights <= 1 ? 6 : nights === 2 ? 8 : nights <= 5 ? 12 : 16;
+    var h = nights <= 1 ? 6 : nights === 2 ? 8 : nights <= 5 ? 12 : 16;
+    // An overnight bus travels while you sleep, so on 3+ night trips it can take a little longer.
+    if (st.transport === 'bus' && nights >= 3) h += 1;
+    return h;
   }
 
   /* ---------- scoring ---------- */
